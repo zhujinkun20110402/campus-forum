@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { postSchema, commentSchema, registerSchema } from "@/lib/validations"
+import { postSchema, commentSchema, registerSchema, profileSchema } from "@/lib/validations"
 
 export async function registerUser(
   _prevState: unknown,
@@ -190,4 +190,34 @@ export async function banUser(userId: string) {
   })
 
   revalidatePath("/admin")
+}
+
+export async function updateProfile(_prevState: unknown, formData: FormData) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/auth/signin")
+  }
+
+  const validated = profileSchema.safeParse({
+    name: formData.get("name"),
+    bio: formData.get("bio"),
+  })
+
+  if (!validated.success) {
+    return {
+      errors: validated.error.flatten().fieldErrors,
+      message: "请检查表单填写",
+    }
+  }
+
+  const { name, bio } = validated.data
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { name, bio },
+  })
+
+  revalidatePath("/profile/" + session.user.id)
+  revalidatePath("/profile/settings")
+  return { success: true, message: "资料已更新" }
 }

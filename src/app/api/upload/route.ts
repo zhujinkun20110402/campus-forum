@@ -22,6 +22,16 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+    if (!allowedTypes.includes(file.type)) {
+      return NextResponse.json({ error: "仅支持 JPG、PNG、GIF、WebP 格式的图片" }, { status: 400 })
+    }
+
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      return NextResponse.json({ error: "图片大小不能超过 5MB" }, { status: 400 })
+    }
+
     const uploadsDir = path.join(process.cwd(), "public", "uploads")
     await mkdir(uploadsDir, { recursive: true })
 

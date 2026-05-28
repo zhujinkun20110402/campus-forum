@@ -11,15 +11,16 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  name      String?
-  email     String    @unique
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
   emailVerified DateTime?
-  image     String?
-  password  String?
-  role      String    @default("USER")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  image         String?
+  password      String?
+  role          String    @default("USER")
+  bio           String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   posts    Post[]
   comments Comment[]
