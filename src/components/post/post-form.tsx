@@ -1,31 +1,61 @@
 "use client"
 
-import { useActionState } from "react"
+import { useTransition } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { createPost } from "@/lib/actions"
+import { postSchema, type PostInput } from "@/lib/validations"
 
 interface PostFormProps {
   categories: { id: string; name: string }[]
 }
 
 export function PostForm({ categories }: PostFormProps) {
-  const [state, formAction, isPending] = useActionState(createPost, null)
+  const [isPending, startTransition] = useTransition()
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<PostInput>({
+    resolver: zodResolver(postSchema),
+    defaultValues: {
+      title: "",
+      content: "",
+      categoryId: "",
+    },
+  })
+
+  function onSubmit(data: PostInput) {
+    const formData = new FormData()
+    formData.append("title", data.title)
+    formData.append("content", data.content)
+    formData.append("categoryId", data.categoryId)
+
+    startTransition(async () => {
+      const result = await createPost(null, formData)
+      if (result && "message" in result) {
+        setError("root", { message: result.message })
+      }
+    })
+  }
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="space-y-2">
         <label htmlFor="title" className="block text-sm font-medium text-gray-700">
           标题
         </label>
         <Input
           id="title"
-          name="title"
+          {...register("title")}
           placeholder="请输入帖子标题"
         />
-        {state?.errors?.title && (
-          <p className="text-sm text-red-500">{state.errors.title[0]}</p>
+        {errors.title && (
+          <p className="text-sm text-red-500">{errors.title.message}</p>
         )}
       </div>
 
@@ -35,7 +65,7 @@ export function PostForm({ categories }: PostFormProps) {
         </label>
         <select
           id="categoryId"
-          name="categoryId"
+          {...register("categoryId")}
           className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
         >
           <option value="">请选择分类</option>
@@ -45,8 +75,8 @@ export function PostForm({ categories }: PostFormProps) {
             </option>
           ))}
         </select>
-        {state?.errors?.categoryId && (
-          <p className="text-sm text-red-500">{state.errors.categoryId[0]}</p>
+        {errors.categoryId && (
+          <p className="text-sm text-red-500">{errors.categoryId.message}</p>
         )}
       </div>
 
@@ -56,17 +86,17 @@ export function PostForm({ categories }: PostFormProps) {
         </label>
         <Textarea
           id="content"
-          name="content"
+          {...register("content")}
           placeholder="请输入帖子内容，支持 Markdown 格式"
           rows={8}
         />
-        {state?.errors?.content && (
-          <p className="text-sm text-red-500">{state.errors.content[0]}</p>
+        {errors.content && (
+          <p className="text-sm text-red-500">{errors.content.message}</p>
         )}
       </div>
 
-      {state?.message && (
-        <p className="text-sm text-red-500">{state.message}</p>
+      {errors.root && (
+        <p className="text-sm text-red-500">{errors.root.message}</p>
       )}
 
       <Button type="submit" disabled={isPending}>
