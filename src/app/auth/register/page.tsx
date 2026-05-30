@@ -20,7 +20,7 @@ export default function RegisterPage() {
         <CardContent>
           <form action={formAction} className="space-y-4">
             {state && "message" in state && state.message && (
-              <div className="rounded-lg bg-red-50 p-3 text-sm text-red-500">
+              <div className="rounded-lg bg-red-50 dark:bg-red-950 p-3 text-sm text-red-500 dark:text-red-400">
                 {state.message}
               </div>
             )}
@@ -84,9 +84,9 @@ export default function RegisterPage() {
           </form>
         </CardContent>
         <CardFooter className="justify-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             已有账号？{" "}
-            <Link href="/auth/signin" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link href="/auth/signin" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
               立即登录
             </Link>
           </p>

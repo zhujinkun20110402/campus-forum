@@ -29,10 +29,10 @@ export default function SignInPage() {
           </form>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-200" />
+              <span className="w-full border-t border-gray-200 dark:border-gray-700" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-gray-500">或使用邮箱登录</span>
+              <span className="bg-white dark:bg-gray-900 px-2 text-gray-500 dark:text-gray-400">或使用邮箱登录</span>
             </div>
           </div>
           <Suspense fallback={<div className="text-sm text-gray-400">加载中...</div>}>
@@ -40,9 +40,9 @@ export default function SignInPage() {
           </Suspense>
         </CardContent>
         <CardFooter className="justify-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             还没有账号？{" "}
-            <Link href="/auth/register" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link href="/auth/register" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
               立即注册
             </Link>
           </p>

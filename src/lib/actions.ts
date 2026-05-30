@@ -201,6 +201,7 @@ export async function updateProfile(_prevState: unknown, formData: FormData) {
   const validated = profileSchema.safeParse({
     name: formData.get("name"),
     bio: formData.get("bio"),
+    image: formData.get("image"),
   })
 
   if (!validated.success) {
@@ -210,11 +211,11 @@ export async function updateProfile(_prevState: unknown, formData: FormData) {
     }
   }
 
-  const { name, bio } = validated.data
+  const { name, bio, image } = validated.data
 
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { name, bio },
+    data: { name, bio, image: image || null },
   })
 
   revalidatePath("/profile/" + session.user.id)
