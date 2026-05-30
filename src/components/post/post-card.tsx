@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import { MessageCircle, Heart } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card"
