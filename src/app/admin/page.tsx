@@ -130,7 +130,7 @@ export default async function AdminPage() {
                             alt={user.name ?? ""}
                           />
                           <AvatarFallback className="text-xs">
-                            {(user.name ?? user.email).slice(0, 2).toUpperCase()}
+                            {(user.name ?? user.email ?? "U").slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <span className="font-medium text-gray-900">
@@ -153,7 +153,7 @@ export default async function AdminPage() {
                     </td>
                     <td className="px-4 py-3">
                       {user.role !== "ADMIN" && (
-                        <BanUserButton userId={user.id} userName={user.name ?? user.email} />
+                        <BanUserButton userId={user.id} userName={user.name ?? user.email ?? "未知用户"} />
                       )}
                     </td>
                   </tr>

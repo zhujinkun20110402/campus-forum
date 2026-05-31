@@ -24,6 +24,13 @@ export default async function ProfileSettingsPage() {
     redirect("/auth/signin")
   }
 
+  const profileUser = {
+    name: user.name,
+    email: user.email ?? "",
+    image: user.image,
+    bio: user.bio,
+  }
+
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       <Card>
@@ -34,7 +41,7 @@ export default async function ProfileSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ProfileForm user={user} />
+          <ProfileForm user={profileUser} />
         </CardContent>
       </Card>
     </div>

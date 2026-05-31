@@ -38,7 +38,7 @@ export function PostForm({ categories }: PostFormProps) {
     startTransition(async () => {
       const result = await createPost(null, formData)
       if (result && "message" in result) {
-        setError("root", { message: result.message })
+        setError("root", { message: result.message } as { message: string })
       }
     })
   }
@@ -46,7 +46,7 @@ export function PostForm({ categories }: PostFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="space-y-2">
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="title" className="block text-sm font-medium text-stone-700 dark:text-stone-300">
           标题
         </label>
         <Input
@@ -60,13 +60,13 @@ export function PostForm({ categories }: PostFormProps) {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="categoryId" className="block text-sm font-medium text-stone-700 dark:text-stone-300">
           分类
         </label>
         <select
           id="categoryId"
           {...register("categoryId")}
-          className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+          className="flex h-10 w-full rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-2 text-sm text-stone-800 dark:text-stone-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-stone-950"
         >
           <option value="">请选择分类</option>
           {categories.map((category) => (
@@ -81,7 +81,7 @@ export function PostForm({ categories }: PostFormProps) {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="content" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="content" className="block text-sm font-medium text-stone-700 dark:text-stone-300">
           内容
         </label>
         <Textarea

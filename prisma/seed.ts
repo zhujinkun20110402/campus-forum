@@ -11,6 +11,9 @@ async function main() {
     { name: "二手交易", slug: "secondhand" },
     { name: "失物招领", slug: "lostfound" },
     { name: "校园活动", slug: "activity" },
+    { name: "校园公告", slug: "announcement" },
+    { name: "难题讨论", slug: "problem-discussion" },
+    { name: "表白墙", slug: "confession" },
   ]
 
   for (const cat of categories) {

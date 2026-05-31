@@ -70,7 +70,7 @@ export default async function ProfilePage({
             <Avatar className="h-16 w-16">
               <AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} />
               <AvatarFallback className="text-lg dark:bg-blue-900 dark:text-blue-300">
-                {(user.name ?? user.email).slice(0, 2).toUpperCase()}
+                {(user.name ?? user.email ?? "U").slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">

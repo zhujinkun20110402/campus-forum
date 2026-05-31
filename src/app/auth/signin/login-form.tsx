@@ -14,18 +14,18 @@ async function loginAction(
   _prevState: LoginFormState,
   formData: FormData
 ): Promise<LoginFormState> {
-  const email = formData.get("email") as string
+  const username = formData.get("username") as string
   const password = formData.get("password") as string
 
   try {
     const result = await signIn("credentials", {
-      email,
+      username,
       password,
       redirect: false,
     })
 
     if (result?.error) {
-      return { error: "邮箱或密码错误" }
+      return { error: "用户名或密码错误" }
     }
 
     window.location.href = "/"
@@ -41,32 +41,31 @@ export function LoginForm() {
   const [state, formAction, isPending] = useActionState(loginAction, {})
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-5">
       {registered === "true" && (
-        <div className="rounded-lg bg-green-50 p-3 text-sm text-green-700">
+        <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 p-3 text-sm text-emerald-700 dark:text-emerald-300">
           注册成功，请登录
         </div>
       )}
       {state?.error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-500">
+        <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/50 p-3 text-sm text-red-600 dark:text-red-400">
           {state.error}
         </div>
       )}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-          邮箱
+        <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          用户名 / 邮箱
         </label>
         <Input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="请输入邮箱"
+          id="username"
+          name="username"
+          type="text"
+          placeholder="请输入用户名或邮箱"
           required
-          className="mt-1"
         />
       </div>
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
           密码
         </label>
         <Input
@@ -75,7 +74,6 @@ export function LoginForm() {
           type="password"
           placeholder="请输入密码"
           required
-          className="mt-1"
         />
       </div>
       <Button type="submit" disabled={isPending} className="w-full">

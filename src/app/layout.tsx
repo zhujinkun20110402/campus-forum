@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "北京二中经开区学校论坛",
-  description: "北京二中经开区学校校园论坛，为师生提供学习交流、二手交易、失物招领、校园活动的平台",
+  description: "北京二中经开区学校校园论坛，为师生提供学习交流、失物招领、校园公告、表白墙的平台",
 }
 
 export default function RootLayout({
@@ -49,7 +49,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+      <body className="min-h-full flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-200">
         <Providers>
           <Header />
           <main className="flex-1">{children}</main>

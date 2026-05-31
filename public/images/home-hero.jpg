@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#f5f5f4"/>
+  <text x="400" y="200" text-anchor="middle" fill="#d6d3d1" font-family="sans-serif" font-size="20" font-weight="300">
+    替换为你的学校背景图
+  </text>
+  <text x="400" y="230" text-anchor="middle" fill="#d6d3d1" font-family="sans-serif" font-size="14">
+    800 × 400px
+  </text>
+</svg>

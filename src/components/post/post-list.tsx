@@ -19,13 +19,14 @@ interface PostListProps {
     }
     createdAt: Date | string
   }[]
+  hideAuthor?: boolean
 }
 
-export function PostList({ posts }: PostListProps) {
+export function PostList({ posts, hideAuthor = false }: PostListProps) {
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-4">
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+        <PostCard key={post.id} post={post} hideAuthor={hideAuthor} />
       ))}
     </div>
   )

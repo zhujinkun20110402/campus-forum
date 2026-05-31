@@ -5,7 +5,7 @@ const Avatar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElem
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700", className)}
+      className={cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800", className)}
       {...props}
     />
   )
@@ -23,7 +23,7 @@ const AvatarFallback = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTM
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("flex h-full w-full items-center justify-center rounded-full text-sm font-medium text-gray-600", className)}
+      className={cn("flex h-full w-full items-center justify-center rounded-full text-sm font-medium text-stone-500", className)}
       {...props}
     />
   )

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { PostList } from "@/components/post/post-list"
+import { Search } from "lucide-react"
 
 export default async function SearchPage({
   searchParams,
@@ -8,7 +9,15 @@ export default async function SearchPage({
 }) {
   const { q } = await searchParams
 
-  let posts = null
+  let posts: {
+    id: string
+    title: string
+    content: string
+    author: { name: string | null; image: string | null }
+    category: { name: string; slug: string }
+    _count: { comments: number; likes: number }
+    createdAt: Date | string
+  }[] | null = null
 
   if (q && q.trim().length > 0) {
     posts = await prisma.post.findMany({
@@ -35,45 +44,44 @@ export default async function SearchPage({
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="mx-auto max-w-2xl px-4 py-8">
       <form className="mb-8">
         <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
           <input
             type="search"
             name="q"
             defaultValue={q ?? ""}
             placeholder="搜索帖子..."
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 pl-10 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            className="w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 pl-10 text-sm text-stone-800 dark:text-stone-200 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:border-stone-400 dark:focus:border-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-200 dark:focus:ring-stone-800"
           />
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
         </div>
       </form>
 
       {q && q.trim().length > 0 && (
         <>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-stone-500 dark:text-stone-400 mb-6">
             搜索 &quot;{q}&quot; 的结果：{posts?.length ?? 0} 条
           </p>
           {posts && posts.length > 0 ? (
             <PostList posts={posts} />
           ) : (
-            <div className="text-center py-20">
-              <p className="text-gray-500 text-lg">没有找到相关帖子</p>
+            <div className="rounded-2xl border border-dashed border-stone-300 dark:border-stone-700 py-20 text-center">
+              <p className="text-stone-400 dark:text-stone-500 text-lg">
+                没有找到相关帖子
+              </p>
             </div>
           )}
         </>
+      )}
+
+      {(!q || q.trim().length === 0) && (
+        <div className="rounded-2xl border border-dashed border-stone-300 dark:border-stone-700 py-20 text-center">
+          <Search className="mx-auto h-10 w-10 text-stone-200 dark:text-stone-700" />
+          <p className="mt-4 text-stone-400 dark:text-stone-500">
+            输入关键词搜索帖子
+          </p>
+        </div>
       )}
     </div>
   )

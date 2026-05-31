@@ -5,16 +5,16 @@ import { redirect } from "next/navigation"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { postSchema, commentSchema, registerSchema, profileSchema } from "@/lib/validations"
+import { postSchema, commentSchema, registerSchema, confessionSchema, profileSchema } from "@/lib/validations"
 
 export async function registerUser(
   _prevState: unknown,
   formData: FormData
 ) {
   const validated = registerSchema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
+    username: formData.get("username"),
     password: formData.get("password"),
+    email: formData.get("email") || undefined,
   })
 
   if (!validated.success) {
@@ -24,10 +24,20 @@ export async function registerUser(
     }
   }
 
-  const { name, email, password } = validated.data
+  const { username, password, email } = validated.data
 
-  const existingUser = await prisma.user.findUnique({ where: { email } })
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { username },
+        ...(email ? [{ email }] : []),
+      ],
+    },
+  })
   if (existingUser) {
+    if (existingUser.username === username) {
+      return { message: "该用户名已被使用" }
+    }
     return { message: "该邮箱已被注册" }
   }
 
@@ -35,8 +45,9 @@ export async function registerUser(
 
   await prisma.user.create({
     data: {
-      name,
-      email,
+      name: username,
+      username,
+      email: email || null,
       password: hashedPassword,
     },
   })
@@ -65,6 +76,18 @@ export async function createPost(_prevState: unknown, formData: FormData) {
 
   const { title, content, categoryId } = validated.data
 
+  const category = await prisma.category.findUnique({
+    where: { id: categoryId },
+  })
+
+  if (!category) {
+    return { message: "分类不存在" }
+  }
+
+  if (category.slug === "announcement" && session.user.role !== "ADMIN") {
+    return { message: "只有管理员可以发布公告" }
+  }
+
   const post = await prisma.post.create({
     data: {
       title,
@@ -75,7 +98,48 @@ export async function createPost(_prevState: unknown, formData: FormData) {
   })
 
   revalidatePath("/")
+  if (category.slug === "confession") {
+    redirect("/confession")
+  }
   redirect(`/post/${post.id}`)
+}
+
+export async function createConfession(_prevState: unknown, formData: FormData) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    redirect("/auth/signin")
+  }
+
+  const validated = confessionSchema.safeParse({
+    content: formData.get("content"),
+  })
+
+  if (!validated.success) {
+    return {
+      errors: validated.error.flatten().fieldErrors,
+      message: "请检查表单填写",
+    }
+  }
+
+  const confessionCategory = await prisma.category.findUnique({
+    where: { slug: "confession" },
+  })
+
+  if (!confessionCategory) {
+    return { message: "表白墙分类不存在" }
+  }
+
+  const post = await prisma.post.create({
+    data: {
+      title: "匿名表白",
+      content: validated.data.content,
+      authorId: session.user.id,
+      categoryId: confessionCategory.id,
+    },
+  })
+
+  revalidatePath("/confession")
+  redirect("/confession")
 }
 
 export async function createComment(postId: string, _prevState: unknown, formData: FormData) {
@@ -135,6 +199,7 @@ export async function toggleLike(postId: string) {
   }
 
   revalidatePath(`/post/${postId}`)
+  revalidatePath("/confession")
 }
 
 export async function deletePost(postId: string) {
@@ -155,6 +220,7 @@ export async function deletePost(postId: string) {
 
   await prisma.post.delete({ where: { id: postId } })
   revalidatePath("/")
+  revalidatePath("/confession")
   redirect("/")
 }
 
@@ -221,4 +287,25 @@ export async function updateProfile(_prevState: unknown, formData: FormData) {
   revalidatePath("/profile/" + session.user.id)
   revalidatePath("/profile/settings")
   return { success: true, message: "资料已更新" }
+}
+
+export async function getMorePosts(page: number, pageSize = 12) {
+  const posts = await prisma.post.findMany({
+    skip: page * pageSize,
+    take: pageSize,
+    orderBy: { createdAt: "desc" },
+    include: {
+      author: {
+        select: { name: true, image: true },
+      },
+      category: {
+        select: { name: true, slug: true },
+      },
+      _count: {
+        select: { comments: true, likes: true },
+      },
+    },
+  })
+
+  return posts
 }

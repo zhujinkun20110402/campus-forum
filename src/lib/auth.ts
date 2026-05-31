@@ -19,29 +19,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       name: "credentials",
       credentials: {
-        email: { label: "邮箱", type: "email" },
+        username: { label: "用户名或邮箱", type: "text" },
         password: { label: "密码", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("请输入邮箱和密码")
+        if (!credentials?.username || !credentials?.password) {
+          throw new Error("请输入用户名/邮箱和密码")
         }
 
-        const email = credentials.email as string
+        const login = credentials.username as string
         const password = credentials.password as string
 
-        const user = await prisma.user.findUnique({
-          where: { email },
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { username: login },
+              { email: login },
+            ],
+          },
         })
 
         if (!user || !user.password) {
-          throw new Error("邮箱或密码错误")
+          throw new Error("用户名或密码错误")
         }
 
         const isValid = await bcrypt.compare(password, user.password)
 
         if (!isValid) {
-          throw new Error("邮箱或密码错误")
+          throw new Error("用户名或密码错误")
         }
 
         return {
