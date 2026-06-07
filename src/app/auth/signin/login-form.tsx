@@ -14,12 +14,12 @@ async function loginAction(
   _prevState: LoginFormState,
   formData: FormData
 ): Promise<LoginFormState> {
-  const username = formData.get("username") as string
+  const name = formData.get("name") as string
   const password = formData.get("password") as string
 
   try {
     const result = await signIn("credentials", {
-      username,
+      name,
       password,
       redirect: false,
     })
@@ -53,12 +53,12 @@ export function LoginForm() {
         </div>
       )}
       <div>
-        <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
           用户名 / 邮箱
         </label>
         <Input
-          id="username"
-          name="username"
+          id="name"
+          name="name"
           type="text"
           placeholder="请输入用户名或邮箱"
           required

@@ -12,9 +12,9 @@ export async function registerUser(
   formData: FormData
 ) {
   const validated = registerSchema.safeParse({
-    username: formData.get("username"),
+    name: formData.get("name"),
+    email: formData.get("email"),
     password: formData.get("password"),
-    email: formData.get("email") || undefined,
   })
 
   if (!validated.success) {
@@ -24,20 +24,19 @@ export async function registerUser(
     }
   }
 
-  const { username, password, email } = validated.data
+  const { name, email, password } = validated.data
 
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { username },
-        ...(email ? [{ email }] : []),
-      ],
-    },
+  const existingByName = await prisma.user.findFirst({
+    where: { name },
   })
-  if (existingUser) {
-    if (existingUser.username === username) {
-      return { message: "该用户名已被使用" }
-    }
+  if (existingByName) {
+    return { message: "该用户名已被使用" }
+  }
+
+  const existingByEmail = await prisma.user.findUnique({
+    where: { email },
+  })
+  if (existingByEmail) {
     return { message: "该邮箱已被注册" }
   }
 
@@ -45,9 +44,8 @@ export async function registerUser(
 
   await prisma.user.create({
     data: {
-      name: username,
-      username,
-      email: email || null,
+      name,
+      email,
       password: hashedPassword,
     },
   })

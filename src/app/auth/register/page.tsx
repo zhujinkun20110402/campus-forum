@@ -54,30 +54,31 @@ export default function RegisterPage() {
             )}
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                 用户名 <span className="text-red-400">*</span>
               </label>
               <Input
-                id="username"
-                name="username"
+                id="name"
+                name="name"
                 type="text"
                 placeholder="中英文、数字、下划线"
                 required
               />
-              {state && "errors" in state && state.errors?.username && (
-                <p className="mt-1 text-sm text-red-500">{state.errors.username[0]}</p>
+              {state && "errors" in state && state.errors?.name && (
+                <p className="mt-1 text-sm text-red-500">{state.errors.name[0]}</p>
               )}
             </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                邮箱 <span className="text-stone-400 dark:text-stone-500 font-normal">(选填)</span>
+                邮箱 <span className="text-red-400">*</span>
               </label>
               <Input
                 id="email"
                 name="email"
                 type="email"
-                placeholder="选填，用于找回密码"
+                placeholder="用于登录和找回密码"
+                required
               />
               {state && "errors" in state && state.errors?.email && (
                 <p className="mt-1 text-sm text-red-500">{state.errors.email[0]}</p>

@@ -19,21 +19,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       name: "credentials",
       credentials: {
-        username: { label: "用户名或邮箱", type: "text" },
+        name: { label: "用户名或邮箱", type: "text" },
         password: { label: "密码", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
+        if (!credentials?.name || !credentials?.password) {
           throw new Error("请输入用户名/邮箱和密码")
         }
 
-        const login = credentials.username as string
+        const login = credentials.name as string
         const password = credentials.password as string
 
         const user = await prisma.user.findFirst({
           where: {
             OR: [
-              { username: login },
+              { name: login },
               { email: login },
             ],
           },
