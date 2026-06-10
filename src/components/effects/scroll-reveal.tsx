@@ -1,57 +1,47 @@
 "use client"
 
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import { useIntersection } from "@/hooks/use-intersection"
+import { cn } from "@/lib/utils"
 
 interface ScrollRevealProps {
-  children: ReactNode
+  children: React.ReactNode
   className?: string
   delay?: number
   direction?: "up" | "down" | "left" | "right"
+  duration?: number
 }
 
 export function ScrollReveal({
   children,
-  className = "",
+  className,
   delay = 0,
   direction = "up",
+  duration = 0.6,
 }: ScrollRevealProps) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [isVisible, setIsVisible] = useState(false)
+  const [ref, isVisible] = useIntersection<HTMLDivElement>({ threshold: 0.1 })
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.1 }
-    )
-
-    if (ref.current) {
-      observer.observe(ref.current)
-    }
-
-    return () => observer.disconnect()
-  }, [])
-
-  const directionClasses = {
-    up: "translate-y-8",
-    down: "-translate-y-8",
-    left: "translate-x-8",
-    right: "-translate-x-8",
+  const directionMap = {
+    up: "translate-y-6",
+    down: "-translate-y-6",
+    left: "translate-x-6",
+    right: "-translate-x-6",
   }
 
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ease-out ${className} ${
-        isVisible
-          ? "opacity-100 translate-x-0 translate-y-0"
-          : `opacity-0 ${directionClasses[direction]}`
-      }`}
-      style={{ transitionDelay: `${delay}ms` }}
+      className={cn(
+        "transition-all",
+        directionMap[direction],
+        "opacity-0",
+        isVisible && "translate-x-0 translate-y-0 opacity-100",
+        className
+      )}
+      style={{
+        transitionDuration: `${duration}s`,
+        transitionDelay: `${delay}s`,
+        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+      }}
     >
       {children}
     </div>

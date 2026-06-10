@@ -1,23 +1,35 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Noto_Serif_SC, Noto_Sans_SC, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/components/layout/providers"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const notoSerif = Noto_Serif_SC({
+  variable: "--font-noto-serif-sc",
   subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  display: "swap",
 })
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const notoSans = Noto_Sans_SC({
+  variable: "--font-noto-sans-sc",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+  display: "swap",
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
 })
 
 export const metadata: Metadata = {
-  title: "北京二中经开区学校论坛",
-  description: "北京二中经开区学校校园论坛，为师生提供学习交流、失物招领、校园公告、表白墙的平台",
+  title: "北京二中经开区学校 · 校园论坛",
+  description:
+    "北京二中经开区学校校园论坛，本固枝盛，学富国强。为师生提供学习交流、失物招领、校园公告、表白墙的平台",
 }
 
 export default function RootLayout({
@@ -28,7 +40,7 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${notoSerif.variable} ${notoSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
@@ -49,7 +61,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-200">
+      <body className="min-h-full flex flex-col bg-slate-50 dark:bg-indigo-950 text-slate-800 dark:text-slate-100">
         <Providers>
           <Header />
           <main className="flex-1">{children}</main>

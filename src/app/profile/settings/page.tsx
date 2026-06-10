@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ProfileForm } from "@/components/profile/profile-form"
+import { ScrollReveal } from "@/components/effects/scroll-reveal"
+import { Settings, Shield, Sparkles } from "lucide-react"
 
 export default async function ProfileSettingsPage() {
   const session = await auth()
@@ -32,18 +33,62 @@ export default async function ProfileSettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>账号设置</CardTitle>
-          <CardDescription className="dark:text-gray-400">
-            修改你的个人资料和头像
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ProfileForm user={profileUser} />
-        </CardContent>
-      </Card>
+    <div className="min-h-screen bg-slate-50 dark:bg-indigo-950">
+      {/* Header */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-900 pt-28 pb-12">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.06),_transparent_60%)]" />
+        <div className="relative mx-auto max-w-2xl px-4 sm:px-6">
+          <ScrollReveal>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gold-400 to-gold-500 flex items-center justify-center shadow-lg shadow-gold-500/20">
+                <Settings className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
+                  账号设置
+                </h1>
+                <p className="text-sm text-indigo-300/50">
+                  管理你的个人资料和头像
+                </p>
+              </div>
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Form */}
+      <div className="relative -mt-6 mx-auto max-w-2xl px-4 sm:px-6 pb-20">
+        <ScrollReveal>
+          <div className="rounded-3xl bg-white dark:bg-indigo-900/40 border border-slate-200 dark:border-indigo-800/60 shadow-xl shadow-slate-200/20 dark:shadow-indigo-950/30 p-6 sm:p-8">
+            <ProfileForm user={profileUser} />
+          </div>
+        </ScrollReveal>
+
+        {/* Security Note */}
+        <ScrollReveal delay={0.1}>
+          <div className="mt-6 rounded-2xl bg-gradient-to-br from-indigo-900 to-indigo-950 border border-indigo-800/40 p-5">
+            <div className="flex items-start gap-3">
+              <div className="h-8 w-8 rounded-lg bg-indigo-800/50 flex items-center justify-center shrink-0">
+                <Shield className="h-4 w-4 text-gold-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-white mb-1">账号安全</h3>
+                <p className="text-xs text-indigo-300/50 leading-relaxed">
+                  你的个人信息受到保护。我们不会向第三方分享你的数据。
+                  邮箱地址用于登录和找回密码，不可修改。
+                </p>
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal delay={0.15}>
+          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+            <Sparkles className="h-3.5 w-3.5 text-gold-400" />
+            <span>北京二中经开区学校 · 校园论坛</span>
+          </div>
+        </ScrollReveal>
+      </div>
     </div>
   )
 }

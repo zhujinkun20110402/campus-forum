@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, Suspense } from "react"
 import { signIn } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
 import { Input } from "@/components/ui/input"
@@ -35,7 +35,7 @@ async function loginAction(
   }
 }
 
-export function LoginForm() {
+function LoginFormInner() {
   const searchParams = useSearchParams()
   const registered = searchParams.get("registered")
   const [state, formAction, isPending] = useActionState(loginAction, {})
@@ -80,5 +80,13 @@ export function LoginForm() {
         {isPending ? "登录中..." : "登录"}
       </Button>
     </form>
+  )
+}
+
+export function LoginForm() {
+  return (
+    <Suspense fallback={<div className="text-sm text-slate-400">加载中...</div>}>
+      <LoginFormInner />
+    </Suspense>
   )
 }
