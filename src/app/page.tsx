@@ -1,5 +1,5 @@
 import Link from "next/link"
-import Image from "next/image"
+import { SafeImage } from "@/components/ui/safe-image"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { FeedLoader } from "@/components/home/feed-loader"
@@ -146,19 +146,12 @@ export default async function HomePage() {
           <ScrollReveal delay={0}>
             <div className="flex justify-center mb-8">
               <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-2xl shadow-indigo-900/50 overflow-hidden">
-                <Image
+                <SafeImage
                   src="/images/school-logo.png"
                   alt="校徽"
                   fill
                   className="object-contain p-3"
-                  onError={(e) => {
-                    const target = e.target as HTMLElement
-                    target.style.display = "none"
-                    const parent = target.parentElement
-                    if (parent) {
-                      parent.innerHTML = '<span class="flex h-full w-full items-center justify-center text-3xl font-bold text-gold-400">二</span>'
-                    }
-                  }}
+                  fallback="二"
                 />
               </div>
             </div>
@@ -405,15 +398,11 @@ export default async function HomePage() {
           {campusImages.map((img, index) => (
             <ScrollReveal key={img.src} delay={index * 0.1}>
               <div className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 dark:bg-indigo-900/50">
-                <Image
+                <SafeImage
                   src={img.src}
                   alt={img.alt}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  onError={(e) => {
-                    const target = e.target as HTMLElement
-                    target.style.display = "none"
-                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">

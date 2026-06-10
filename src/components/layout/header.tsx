@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
+import { SafeImage } from "@/components/ui/safe-image"
 import { useState } from "react"
 import { useScrollDirection } from "@/hooks/use-scroll-direction"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
@@ -56,20 +56,12 @@ export function Header() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative h-10 w-10 overflow-hidden rounded-xl bg-gradient-to-br from-indigo-700 to-indigo-900 dark:from-indigo-600 dark:to-indigo-800 shadow-lg shadow-indigo-700/20 group-hover:shadow-indigo-700/30 transition-shadow">
-                <Image
+                <SafeImage
                   src="/images/school-logo.png"
                   alt="校徽"
                   fill
                   className="object-contain p-1.5"
-                  onError={(e) => {
-                    // 如果图片加载失败，显示文字 fallback
-                    const target = e.target as HTMLElement
-                    target.style.display = "none"
-                    const parent = target.parentElement
-                    if (parent) {
-                      parent.innerHTML = '<span class="flex h-full w-full items-center justify-center text-sm font-bold text-white">二</span>'
-                    }
-                  }}
+                  fallback="二"
                 />
               </div>
               <div className="hidden sm:block">

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
+import { SafeImage } from "@/components/ui/safe-image"
 import { MottoStream } from "@/components/effects/motto-stream"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { GraduationCap, Mail, MapPin, Phone } from "lucide-react"
@@ -46,19 +46,12 @@ export function Footer() {
           <div className="py-16 sm:py-20 text-center border-b border-indigo-800/50">
             <div className="flex justify-center mb-6">
               <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-800 to-indigo-900 border border-indigo-700/50 shadow-lg shadow-indigo-900/50 overflow-hidden">
-                <Image
+                <SafeImage
                   src="/images/school-logo.png"
                   alt="校徽"
                   fill
                   className="object-contain p-2"
-                  onError={(e) => {
-                    const target = e.target as HTMLElement
-                    target.style.display = "none"
-                    const parent = target.parentElement
-                    if (parent) {
-                      parent.innerHTML = '<span class="flex h-full w-full items-center justify-center text-lg font-bold text-gold-400">二</span>'
-                    }
-                  }}
+                  fallback="二"
                 />
               </div>
             </div>
