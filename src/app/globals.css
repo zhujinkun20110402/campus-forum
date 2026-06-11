@@ -82,23 +82,23 @@
 }
 
 .dark {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
-  --card: #1e1b4b;
-  --card-foreground: #f1f5f9;
-  --primary: #6366f1;
-  --primary-foreground: #ffffff;
-  --secondary: #312e81;
-  --secondary-foreground: #e2e8f0;
-  --muted: #312e81;
-  --muted-foreground: #94a3b8;
-  --accent: #312e81;
-  --accent-foreground: #e2e8f0;
+  --background: #0a0a0a;
+  --foreground: #e8e6e3;
+  --card: #141414;
+  --card-foreground: #e8e6e3;
+  --primary: #d4af37;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1c1c1c;
+  --secondary-foreground: #d4d4d4;
+  --muted: #1c1c1c;
+  --muted-foreground: #737373;
+  --accent: #1c1c1c;
+  --accent-foreground: #d4d4d4;
   --destructive: #e11d48;
   --destructive-foreground: #ffffff;
-  --border: #312e81;
-  --input: #312e81;
-  --ring: #6366f1;
+  --border: #262626;
+  --input: #262626;
+  --ring: #d4af37;
   --radius: 0.625rem;
 }
 
@@ -250,13 +250,13 @@ body {
 
 /* 选中文本 */
 ::selection {
-  background: #e0e7ff;
-  color: #4338ca;
+  background: #f9edc0;
+  color: #5c4a15;
 }
 
 .dark ::selection {
-  background: #312e81;
-  color: #818cf8;
+  background: #3d3318;
+  color: #d4af37;
 }
 
 /* 卡片光泽扫过效果 */

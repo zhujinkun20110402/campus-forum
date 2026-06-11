@@ -61,7 +61,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-slate-50 dark:bg-indigo-950 text-slate-800 dark:text-slate-100">
+      <body className="min-h-full flex flex-col bg-[#faf9f7] dark:bg-[#0a0a0a] text-[#1c1917] dark:text-[#e8e6e3]">
         <Providers>
           <Header />
           <main className="flex-1">{children}</main>

@@ -12,8 +12,9 @@ import { LikeButton } from "@/components/post/like-button"
 import { CommentList } from "@/components/comment/comment-list"
 import { CommentForm } from "@/components/comment/comment-form"
 import { DeleteButton } from "@/components/post/delete-button"
+import { ShareButton } from "@/components/post/share-button"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
-import { MessageSquare, Share2, Clock } from "lucide-react"
+import { MessageSquare, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const categoryStyles: Record<string, string> = {
@@ -184,19 +185,7 @@ export default async function PostPage({
             <span>{post._count.comments} 条评论</span>
           </button>
 
-          <button
-            onClick={async () => {
-              "use client"
-              try {
-                await navigator.clipboard.writeText(`${window.location.origin}/post/${post.id}`)
-                // Could add toast here
-              } catch {}
-            }}
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-indigo-700 bg-white dark:bg-indigo-900/40 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-indigo-800/50 transition-colors"
-          >
-            <Share2 className="h-4 w-4" />
-            <span>分享</span>
-          </button>
+          <ShareButton postId={post.id} />
 
           {(isAuthor || isAdmin) && (
             <DeleteButton postId={post.id} />

@@ -30,22 +30,24 @@ const footerLinks = [
 
 export function Footer() {
   return (
-    <footer className="relative bg-indigo-950 text-slate-300 overflow-hidden">
+    <footer className="relative bg-[#0a0a0a] text-[#a3a3a3] overflow-hidden">
       {/* Decorative top border */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gold-400/40 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent" />
 
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-indigo-600 blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-gold-500 blur-3xl" />
-      </div>
+      {/* Subtle noise texture */}
+      <div
+        className="absolute inset-0 opacity-[0.02] pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+        }}
+      />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Motto Section */}
         <ScrollReveal>
-          <div className="py-16 sm:py-20 text-center border-b border-indigo-800/50">
+          <div className="py-16 sm:py-20 text-center border-b border-[#1c1c1c]">
             <div className="flex justify-center mb-6">
-              <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-800 to-indigo-900 border border-indigo-700/50 shadow-lg shadow-indigo-900/50 overflow-hidden">
+              <div className="relative h-16 w-16 rounded-2xl bg-[#141414] border border-[#262626] shadow-lg overflow-hidden">
                 <SafeImage
                   src="/images/school-logo.png"
                   alt="校徽"
@@ -56,7 +58,7 @@ export function Footer() {
               </div>
             </div>
             <MottoStream size="md" className="mb-4" />
-            <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+            <p className="text-sm text-[#525252] max-w-md mx-auto leading-relaxed">
               北京二中经开区学校秉承"本固枝盛，学富国强"的校训，
               致力于培养德智体美劳全面发展的社会主义建设者和接班人。
             </p>
@@ -68,26 +70,26 @@ export function Footer() {
           {/* School Info */}
           <div className="sm:col-span-2 lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <GraduationCap className="h-6 w-6 text-gold-400" />
-              <span className="text-lg font-serif font-semibold text-white">
+              <GraduationCap className="h-6 w-6 text-[#d4af37]" />
+              <span className="text-lg font-serif font-semibold text-[#e8e6e3]">
                 北京二中经开区学校论坛
               </span>
             </div>
-            <p className="text-sm text-slate-400 leading-relaxed mb-6 max-w-sm">
+            <p className="text-sm text-[#525252] leading-relaxed mb-6 max-w-sm">
               为师生搭建学习交流、失物招领、校园公告、匿名表白的线上社区平台，
               连接每一个校园故事，共建温暖校园。
             </p>
-            <div className="space-y-2 text-sm text-slate-400">
+            <div className="space-y-2 text-sm text-[#525252]">
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-gold-400/70" />
+                <MapPin className="h-4 w-4 text-[#d4af37]/70" />
                 <span>北京市经济技术开发区</span>
               </div>
               <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-gold-400/70" />
+                <Mail className="h-4 w-4 text-[#d4af37]/70" />
                 <span>contact@bje2school.cn</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-gold-400/70" />
+                <Phone className="h-4 w-4 text-[#d4af37]/70" />
                 <span>010-XXXXXXXX</span>
               </div>
             </div>
@@ -96,7 +98,7 @@ export function Footer() {
           {/* Link Columns */}
           {footerLinks.map((group) => (
             <div key={group.title}>
-              <h3 className="text-sm font-semibold text-white mb-4 tracking-wide">
+              <h3 className="text-sm font-semibold text-[#e8e6e3] mb-4 tracking-wide">
                 {group.title}
               </h3>
               <ul className="space-y-2.5">
@@ -104,7 +106,7 @@ export function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-slate-400 hover:text-gold-400 transition-colors duration-200"
+                      className="text-sm text-[#525252] hover:text-[#d4af37] transition-colors duration-200"
                     >
                       {link.label}
                     </Link>
@@ -116,11 +118,11 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="py-6 border-t border-indigo-800/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-slate-500">
+        <div className="py-6 border-t border-[#1c1c1c] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-[#404040]">
             &copy; {new Date().getFullYear()} 北京二中经开区学校 · 校园论坛
           </p>
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-[#404040]">
             本固枝盛，学富国强
           </p>
         </div>
