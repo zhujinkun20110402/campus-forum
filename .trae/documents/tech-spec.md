@@ -2,20 +2,20 @@
 
 ## 一、技术栈概览
 
-| 层级 | 技术 | 版本 | 说明 |
-|------|------|------|------|
-| 框架 | Next.js | 16.2.6 | App Router, React Server Components |
-| 语言 | TypeScript | 5.x | 严格模式 |
-| 样式 | Tailwind CSS | 4.x | `@import "tailwindcss"` 语法 |
-| UI组件 | 自研 + shadcn/ui 模式 | - | 基于 CVA + Tailwind |
-| 字体 | next/font/google | - | Noto Serif SC, Noto Sans SC, JetBrains Mono |
-| 图标 | Lucide React | 1.16 | 全站统一 |
-| 动效 | CSS + Canvas + Framer Motion | - | 按场景选择 |
-| 表单 | React Hook Form + Zod | - | 保留现有 |
-| 认证 | Auth.js v5 (next-auth) | 5.0.0-beta | 保留现有 |
-| 数据库 | Prisma + PostgreSQL | 7.8 | 保留现有，不修改 Schema |
+| 层级   | 技术                           | 版本         | 说明                                          |
+| ---- | ---------------------------- | ---------- | ------------------------------------------- |
+| 框架   | Next.js                      | 16.2.6     | App Router, React Server Components         |
+| 语言   | TypeScript                   | 5.x        | 严格模式                                        |
+| 样式   | Tailwind CSS                 | 4.x        | `@import "tailwindcss"` 语法                  |
+| UI组件 | 自研 + shadcn/ui 模式            | -          | 基于 CVA + Tailwind                           |
+| 字体   | next/font/google             | -          | Noto Serif SC, Noto Sans SC, JetBrains Mono |
+| 图标   | Lucide React                 | 1.16       | 全站统一                                        |
+| 动效   | CSS + Canvas + Framer Motion | -          | 按场景选择                                       |
+| 表单   | React Hook Form + Zod        | -          | 保留现有                                        |
+| 认证   | Auth.js v5 (next-auth)       | 5.0.0-beta | 保留现有                                        |
+| 数据库  | Prisma + PostgreSQL          | 7.8        | 保留现有，不修改 Schema                             |
 
----
+***
 
 ## 二、项目文件结构
 
@@ -127,7 +127,7 @@ campus-forum/
 └── package.json
 ```
 
----
+***
 
 ## 三、组件架构
 
@@ -159,21 +159,21 @@ campus-forum/
 
 ### 3.2 Server Component vs Client Component 划分
 
-| 类型 | 组件 | 理由 |
-|------|------|------|
-| **Server** | `page.tsx`（所有页面） | 数据获取、SEO |
-| **Server** | `layout.tsx` | 全局结构 |
-| **Server** | `PostCard`（列表渲染） | 纯展示，无交互 |
-| **Client** | `AcademicParticles` | Canvas动画 |
-| **Client** | `MottoStream` | CSS动画，需hydrate |
-| **Client** | `LikeButton` | 需要useState |
-| **Client** | `FeedLoader` | IntersectionObserver |
-| **Client** | `ThemeToggle` | localStorage |
-| **Client** | `MobileNav` | 状态管理 |
-| **Client** | `CountUp` | requestAnimationFrame |
-| **Client** | `MagneticHover` | onMouseMove |
+| 类型         | 组件                  | 理由                    |
+| ---------- | ------------------- | --------------------- |
+| **Server** | `page.tsx`（所有页面）    | 数据获取、SEO              |
+| **Server** | `layout.tsx`        | 全局结构                  |
+| **Server** | `PostCard`（列表渲染）    | 纯展示，无交互               |
+| **Client** | `AcademicParticles` | Canvas动画              |
+| **Client** | `MottoStream`       | CSS动画，需hydrate        |
+| **Client** | `LikeButton`        | 需要useState            |
+| **Client** | `FeedLoader`        | IntersectionObserver  |
+| **Client** | `ThemeToggle`       | localStorage          |
+| **Client** | `MobileNav`         | 状态管理                  |
+| **Client** | `CountUp`           | requestAnimationFrame |
+| **Client** | `MagneticHover`     | onMouseMove           |
 
----
+***
 
 ## 四、样式架构
 
@@ -217,9 +217,12 @@ campus-forum/
 ### 4.2 暗色模式实现
 
 保留现有方案：
-- `html` 标签添加 `.dark` 或 `.light` 类
-- `localStorage` 持久化主题偏好
-- Head 内联 script 防止闪烁（已存在）
+
+* `html` 标签添加 `.dark` 或 `.light` 类
+
+* `localStorage` 持久化主题偏好
+
+* Head 内联 script 防止闪烁（已存在）
 
 ### 4.3 自定义工具类
 
@@ -259,7 +262,7 @@ campus-forum/
 }
 ```
 
----
+***
 
 ## 五、动效实现方案
 
@@ -328,22 +331,24 @@ interface Particle {
 // 背景：linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)
 ```
 
----
+***
 
 ## 六、状态管理
 
 ### 6.1 全局状态（极少）
 
-| 状态 | 方案 | 说明 |
-|------|------|------|
-| 主题 | React Context + localStorage | 保留现有 |
-| Session | NextAuth.js SessionProvider | 保留现有 |
+| 状态      | 方案                           | 说明   |
+| ------- | ---------------------------- | ---- |
+| 主题      | React Context + localStorage | 保留现有 |
+| Session | NextAuth.js SessionProvider  | 保留现有 |
 
 ### 6.2 本地状态
 
-- 表单状态：React Hook Form
-- UI状态：useState（折叠、弹窗、标签页）
-- 收藏数据：localStorage（帖子ID数组）
+* 表单状态：React Hook Form
+
+* UI状态：useState（折叠、弹窗、标签页）
+
+* 收藏数据：localStorage（帖子ID数组）
 
 ### 6.3 数据获取
 
@@ -356,7 +361,7 @@ interface Particle {
 // - const posts = await prisma.post.findMany({...})
 ```
 
----
+***
 
 ## 七、新增功能技术方案
 
@@ -405,7 +410,7 @@ export function useFavorites() {
 // 渲染为不同字号（频率越高字号越大）
 ```
 
----
+***
 
 ## 八、性能优化策略
 
@@ -432,80 +437,97 @@ const notoSans = Noto_Sans_SC({
 
 ### 8.2 图片优化
 
-- 所有图片使用 Next.js `<Image>` 组件
-- 配置 `remotePatterns` 保留 GitHub 头像
-- 校园图片使用 `priority` + `placeholder="blur"`
+* 所有图片使用 Next.js `<Image>` 组件
+
+* 配置 `remotePatterns` 保留 GitHub 头像
+
+* 校园图片使用 `priority` + `placeholder="blur"`
 
 ### 8.3 动效性能
 
-- 粒子效果使用 `will-change: transform` 谨慎
-- 滚动监听使用 IntersectionObserver（非 scroll 事件）
-- 复杂动画使用 `transform` 和 `opacity`（GPU加速）
-- 移动端减少粒子数、禁用部分动效
+* 粒子效果使用 `will-change: transform` 谨慎
+
+* 滚动监听使用 IntersectionObserver（非 scroll 事件）
+
+* 复杂动画使用 `transform` 和 `opacity`（GPU加速）
+
+* 移动端减少粒子数、禁用部分动效
 
 ### 8.4 代码分割
 
-- 动效组件使用动态导入 `next/dynamic`
-- 管理员页面独立 chunk
-- 富文本编辑器懒加载
+* 动效组件使用动态导入 `next/dynamic`
 
----
+* 管理员页面独立 chunk
+
+* 富文本编辑器懒加载
+
+***
 
 ## 九、开发顺序
 
 ### Phase 1: 基础架构（1-2天）
+
 1. 更新 `globals.css` — 新色彩系统、字体变量、工具类
 2. 更新 `layout.tsx` — 加载新字体、全局结构
 3. 创建 `hooks/` 目录 — 通用 hooks
 4. 重构 `ui/` 基础组件 — 新色彩规范
 
 ### Phase 2: 全局组件（2-3天）
+
 1. 重构 `Header` — 校徽位置、导航、滚动行为
 2. 重构 `Footer` — 校训展示、学校信息
 3. 创建动效组件 — Particles, MottoStream, ScrollReveal, CountUp
 4. 重构 `ThemeProvider` — 适配新色彩
 
 ### Phase 3: 核心页面（3-4天）
+
 1. 重构 `首页` — Hero、校训条、版块网格、校园风采、CTA
 2. 重构 `登录/注册页` — 左右分栏、粒子背景
 3. 重构 `帖子详情页` — 新布局、分享功能、评论回复
 4. 重构 `发帖页` — 步骤指示器、分类卡片选择
 
 ### Phase 4: 功能页面（2-3天）
+
 1. 重构 `表白墙` — 玫瑰主题、粒子动效
 2. 重构 `个人主页` — 封面图、统计、标签页、收藏
 3. 重构 `管理员仪表盘` — 统计卡片、趋势图
 4. 重构 `搜索页` — 新布局、高亮
 
 ### Phase 5: 优化与测试（1-2天）
+
 1. 暗色模式全面检查
 2. 移动端响应式测试
 3. 动效性能优化
 4. 功能回归测试
 
----
+***
 
 ## 十、风险与应对
 
-| 风险 | 影响 | 应对 |
-|------|------|------|
-| Next.js 16.2.6 非标准版本 | 可能有未知bug | 逐步重构，每步验证 |
-| Tailwind v4 语法差异 | 样式不生效 | 严格遵循 `@theme inline` 语法 |
-| 中文字体加载慢 | FOUT/FOIT | `display: 'swap'`，系统字体兜底 |
-| 粒子动效性能差 | 卡顿 | 移动端降级，减少粒子数 |
-| 暗色模式闪烁 | 用户体验差 | 保留现有 head script 方案 |
+| 风险                   | 影响        | 应对                       |
+| -------------------- | --------- | ------------------------ |
+| Next.js 16.2.6 非标准版本 | 可能有未知bug  | 逐步重构，每步验证                |
+| Tailwind v4 语法差异     | 样式不生效     | 严格遵循 `@theme inline` 语法  |
+| 中文字体加载慢              | FOUT/FOIT | `display: 'swap'`，系统字体兜底 |
+| 粒子动效性能差              | 卡顿        | 移动端降级，减少粒子数              |
+| 暗色模式闪烁               | 用户体验差     | 保留现有 head script 方案      |
 
----
+***
 
 ## 十一、关键代码约定
 
 ### 11.1 组件文件命名
-- 页面组件：`page.tsx`
-- 布局组件：`layout.tsx`
-- 共享组件：`kebab-case.tsx`
-- Hooks：`use-kebab-case.ts`
+
+* 页面组件：`page.tsx`
+
+* 布局组件：`layout.tsx`
+
+* 共享组件：`kebab-case.tsx`
+
+* Hooks：`use-kebab-case.ts`
 
 ### 11.2 类型定义
+
 ```typescript
 // 组件 Props 命名
 interface PostCardProps {
@@ -518,6 +540,7 @@ import type { Post, User } from '@/generated/prisma/client'
 ```
 
 ### 11.3 样式约定
+
 ```tsx
 // 优先使用 Tailwind 工具类
 // 复杂样式使用 cn() 合并
@@ -531,6 +554,7 @@ className={cn(
 ```
 
 ### 11.4 颜色使用规范
+
 ```tsx
 // ✅ 正确：使用语义化颜色
 className="bg-indigo-700 text-white hover:bg-indigo-800"
@@ -539,3 +563,4 @@ className="text-gold-400"
 // ❌ 错误：硬编码颜色
 className="bg-[#4338ca]"
 ```
+

@@ -1,5 +1,4 @@
 import Link from "next/link"
-import Image from "next/image"
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
@@ -14,7 +13,8 @@ import { CommentForm } from "@/components/comment/comment-form"
 import { DeleteButton } from "@/components/post/delete-button"
 import { ShareButton } from "@/components/post/share-button"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
-import { MessageSquare, Clock } from "lucide-react"
+import { SafeImage } from "@/components/ui/safe-image"
+import { MessageSquare, Clock, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const categoryStyles: Record<string, string> = {
@@ -73,16 +73,17 @@ export default async function PostPage({
     <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
       {/* Breadcrumb */}
       <ScrollReveal>
-        <div className="flex items-center gap-2 text-sm text-slate-400 dark:text-slate-500 mb-6">
-          <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+        <div className="flex items-center gap-2 text-sm text-stone-400 dark:text-stone-500 mb-6">
+          <Link href="/" className="hover:text-stone-600 dark:hover:text-stone-300 transition-colors inline-flex items-center gap-1">
+            <ArrowLeft className="h-3.5 w-3.5" />
             首页
           </Link>
           <span>/</span>
-          <Link href={`/category/${post.category.slug}`} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+          <Link href={`/category/${post.category.slug}`} className="hover:text-stone-600 dark:hover:text-stone-300 transition-colors">
             {post.category.name}
           </Link>
           <span>/</span>
-          <span className="text-slate-300 dark:text-slate-600 truncate max-w-[200px]">
+          <span className="text-stone-300 dark:text-stone-600 truncate max-w-[200px]">
             {post.title}
           </span>
         </div>
@@ -103,13 +104,13 @@ export default async function PostPage({
                 {post.category.name}
               </Badge>
             </Link>
-            <span className="flex items-center gap-1 text-sm text-slate-400 dark:text-slate-500">
+            <span className="flex items-center gap-1 text-sm text-stone-400 dark:text-stone-500">
               <Clock className="h-3.5 w-3.5" />
               {formatRelativeTime(post.createdAt)}
             </span>
           </div>
 
-          <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 dark:text-slate-100 mb-6 leading-tight">
+          <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-stone-800 dark:text-stone-100 mb-6 leading-tight">
             {post.title}
           </h1>
 
@@ -117,8 +118,8 @@ export default async function PostPage({
           {!isConfession && (
             <div className="flex items-center gap-3">
               {post.author.image ? (
-                <div className="relative h-11 w-11 rounded-full overflow-hidden ring-2 ring-slate-100 dark:ring-indigo-800">
-                  <Image
+                <div className="relative h-11 w-11 rounded-full overflow-hidden ring-2 ring-stone-100 dark:ring-stone-700">
+                  <SafeImage
                     src={post.author.image}
                     alt={post.author.name ?? ""}
                     fill
@@ -126,17 +127,17 @@ export default async function PostPage({
                   />
                 </div>
               ) : (
-                <div className="h-11 w-11 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-800 dark:to-indigo-700 flex items-center justify-center ring-2 ring-slate-100 dark:ring-indigo-800">
-                  <span className="text-sm font-medium text-indigo-700 dark:text-indigo-200">
+                <div className="h-11 w-11 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center ring-2 ring-stone-100 dark:ring-stone-800">
+                  <span className="text-sm font-medium text-stone-600 dark:text-stone-300">
                     {post.author.name?.charAt(0) ?? "?"}
                   </span>
                 </div>
               )}
               <div>
-                <p className="font-medium text-slate-800 dark:text-slate-100">
+                <p className="font-medium text-stone-800 dark:text-stone-100">
                   {post.author.name}
                 </p>
-                <p className="text-xs text-slate-400 dark:text-slate-500">作者</p>
+                <p className="text-xs text-stone-400 dark:text-stone-500">作者</p>
               </div>
             </div>
           )}
@@ -147,10 +148,10 @@ export default async function PostPage({
                 <span className="text-sm text-rose-400">?</span>
               </div>
               <div>
-                <p className="font-medium text-slate-500 dark:text-slate-400">
+                <p className="font-medium text-stone-500 dark:text-stone-400">
                   匿名同学
                 </p>
-                <p className="text-xs text-slate-400 dark:text-slate-500">表白墙</p>
+                <p className="text-xs text-stone-400 dark:text-stone-500">表白墙</p>
               </div>
             </div>
           )}
@@ -159,7 +160,7 @@ export default async function PostPage({
 
       {/* Post Content */}
       <ScrollReveal delay={0.1}>
-        <article className="prose prose-slate dark:prose-invert max-w-none mb-8">
+        <article className="prose prose-stone dark:prose-invert max-w-none mb-8 prose-img:rounded-xl prose-a:text-amber-600">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeHighlight]}
@@ -171,7 +172,7 @@ export default async function PostPage({
 
       {/* Actions Bar */}
       <ScrollReveal delay={0.15}>
-        <div className="flex items-center gap-3 py-5 border-t border-b border-slate-200 dark:border-indigo-800/50 mb-10">
+        <div className="flex items-center gap-3 py-5 border-y border-stone-200 dark:border-stone-800 mb-10">
           <LikeButton
             postId={post.id}
             likeCount={post._count.likes}
@@ -180,7 +181,7 @@ export default async function PostPage({
             )}
           />
 
-          <button className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-indigo-700 bg-white dark:bg-indigo-900/40 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-indigo-800/50 transition-colors">
+          <button className="inline-flex items-center gap-2 rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-2 text-sm text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
             <MessageSquare className="h-4 w-4" />
             <span>{post._count.comments} 条评论</span>
           </button>
@@ -196,9 +197,9 @@ export default async function PostPage({
       {/* Comments */}
       <div className="mb-8">
         <ScrollReveal>
-          <h2 className="font-serif text-xl font-semibold text-slate-800 dark:text-slate-100 mb-6">
+          <h2 className="font-serif text-xl font-semibold text-stone-800 dark:text-stone-100 mb-6">
             讨论区
-            <span className="ml-2 text-sm font-normal text-slate-400 dark:text-slate-500">
+            <span className="ml-2 text-sm font-normal text-stone-400 dark:text-stone-500">
               ({post._count.comments})
             </span>
           </h2>
