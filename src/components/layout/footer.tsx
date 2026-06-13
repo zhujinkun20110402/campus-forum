@@ -53,7 +53,6 @@ export function Footer() {
                   alt="校徽"
                   fill
                   className="object-contain p-2"
-                  fallback="二"
                 />
               </div>
             </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
+import { SafeImage } from "@/components/ui/safe-image"
 import { MessageCircle, Heart, Clock, ArrowUpRight, Bookmark } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatRelativeTime } from "@/lib/utils"
@@ -13,6 +13,7 @@ interface PostCardProps {
     title: string
     content: string
     author: {
+      id: string
       name: string | null
       image: string | null
     }
@@ -76,6 +77,8 @@ function getCategoryStyle(slug: string) {
 }
 
 export function PostCard({ post, hideAuthor = false }: PostCardProps) {
+  const isConfession = post.category.slug === "confession"
+  const shouldHideAuthor = hideAuthor || isConfession
   const truncatedContent =
     post.content.length > 160 ? post.content.slice(0, 160) + "..." : post.content
   const style = getCategoryStyle(post.category.slug)
@@ -84,8 +87,8 @@ export function PostCard({ post, hideAuthor = false }: PostCardProps) {
     <Link href={`/post/${post.id}`} className="group block">
       <article
         className={cn(
-          "relative rounded-2xl border border-slate-200 dark:border-indigo-800/60 bg-white dark:bg-indigo-900/40 p-5 sm:p-6 transition-all duration-400 card-shine",
-          "hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg",
+          "relative rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#141414] p-5 sm:p-6 transition-all duration-400 card-shine",
+          "hover:border-stone-300 dark:hover:border-stone-600 hover:shadow-lg",
           style.glow,
           "hover:-translate-y-1"
         )}
@@ -104,40 +107,44 @@ export function PostCard({ post, hideAuthor = false }: PostCardProps) {
                 {post.category.name}
               </Badge>
             </Link>
-            <span className="flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
+            <span className="flex items-center gap-1 text-xs text-stone-400 dark:text-stone-500">
               <Clock className="h-3 w-3" />
               {formatRelativeTime(post.createdAt)}
             </span>
           </div>
-          <ArrowUpRight className="h-4 w-4 text-slate-300 dark:text-slate-600 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-y-0.5 translate-x-0.5" />
+          <ArrowUpRight className="h-4 w-4 text-stone-300 dark:text-stone-600 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-y-0.5 translate-x-0.5" />
         </div>
 
         {/* Title */}
-        <h3 className="font-serif text-base font-semibold text-slate-800 dark:text-slate-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors mb-2.5 leading-snug">
+        <h3 className="font-serif text-base font-semibold text-stone-800 dark:text-stone-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors mb-2.5 leading-snug">
           {post.title}
         </h3>
 
         {/* Content preview */}
-        <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400 line-clamp-2 mb-5">
+        <p className="text-sm leading-relaxed text-stone-500 dark:text-stone-400 line-clamp-2 mb-5">
           {truncatedContent}
         </p>
 
         {/* Bottom row: Author + Stats */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-indigo-800/50">
-          {hideAuthor ? (
+        <div className="flex items-center justify-between pt-4 border-t border-stone-100 dark:border-stone-800">
+          {shouldHideAuthor ? (
             <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-indigo-800 flex items-center justify-center">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500">?</span>
+              <div className="h-7 w-7 rounded-full bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center">
+                <span className="text-[10px] text-rose-400">?</span>
               </div>
-              <span className="text-xs text-slate-400 dark:text-slate-500">
+              <span className="text-xs text-stone-400 dark:text-stone-500">
                 匿名用户
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <Link
+              href={`/profile/${post.author.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
               {post.author.image ? (
-                <div className="relative h-7 w-7 rounded-full overflow-hidden ring-2 ring-slate-100 dark:ring-indigo-800">
-                  <Image
+                <div className="relative h-7 w-7 rounded-full overflow-hidden ring-2 ring-stone-100 dark:ring-stone-700">
+                  <SafeImage
                     src={post.author.image}
                     alt={post.author.name ?? ""}
                     fill
@@ -145,24 +152,24 @@ export function PostCard({ post, hideAuthor = false }: PostCardProps) {
                   />
                 </div>
               ) : (
-                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-800 dark:to-indigo-700 flex items-center justify-center ring-2 ring-slate-100 dark:ring-indigo-800">
-                  <span className="text-[10px] font-medium text-indigo-700 dark:text-indigo-200">
+                <div className="h-7 w-7 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center ring-2 ring-stone-100 dark:ring-stone-800">
+                  <span className="text-[10px] font-medium text-stone-600 dark:text-stone-300">
                     {post.author.name?.charAt(0) ?? "?"}
                   </span>
                 </div>
               )}
-              <span className="text-xs text-slate-500 dark:text-slate-400">
+              <span className="text-xs text-stone-500 dark:text-stone-400">
                 {post.author.name ?? "匿名用户"}
               </span>
-            </div>
+            </Link>
           )}
 
-          <div className="flex items-center gap-4 text-xs text-slate-400 dark:text-slate-500">
-            <span className="flex items-center gap-1.5 transition-colors group-hover:text-slate-500 dark:group-hover:text-slate-400">
+          <div className="flex items-center gap-4 text-xs text-stone-400 dark:text-stone-500">
+            <span className="flex items-center gap-1.5 transition-colors group-hover:text-stone-500 dark:group-hover:text-stone-400">
               <MessageCircle className="h-3.5 w-3.5" />
               {post._count.comments}
             </span>
-            <span className="flex items-center gap-1.5 transition-colors group-hover:text-slate-500 dark:group-hover:text-slate-400">
+            <span className="flex items-center gap-1.5 transition-colors group-hover:text-stone-500 dark:group-hover:text-stone-400">
               <Heart className="h-3.5 w-3.5" />
               {post._count.likes}
             </span>

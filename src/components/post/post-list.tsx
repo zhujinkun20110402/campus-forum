@@ -6,6 +6,7 @@ interface PostListProps {
     title: string
     content: string
     author: {
+      id: string
       name: string | null
       image: string | null
     }

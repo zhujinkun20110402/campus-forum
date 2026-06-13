@@ -125,7 +125,7 @@ export default async function HomePage() {
       take: 12,
       orderBy: { createdAt: "desc" },
       include: {
-        author: { select: { name: true, image: true } },
+        author: { select: { id: true, name: true, image: true } },
         category: { select: { name: true, slug: true } },
         _count: { select: { comments: true, likes: true } },
       },
@@ -171,7 +171,6 @@ export default async function HomePage() {
                   alt="校徽"
                   fill
                   className="object-contain p-3"
-                  fallback="二"
                 />
               </div>
             </div>

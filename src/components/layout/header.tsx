@@ -59,7 +59,6 @@ export function Header() {
                   alt="校徽"
                   fill
                   className="object-contain p-1.5"
-                  fallback="二"
                 />
               </div>
               <div className="hidden sm:block">

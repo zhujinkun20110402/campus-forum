@@ -294,7 +294,7 @@ export async function getMorePosts(page: number, pageSize = 12) {
     orderBy: { createdAt: "desc" },
     include: {
       author: {
-        select: { name: true, image: true },
+        select: { id: true, name: true, image: true },
       },
       category: {
         select: { name: true, slug: true },

@@ -119,7 +119,7 @@ export default async function CategoryPage({
         orderBy: { createdAt: "desc" },
         include: {
           author: {
-            select: { name: true, image: true },
+            select: { id: true, name: true, image: true },
           },
           category: {
             select: { name: true, slug: true },
@@ -226,7 +226,7 @@ export default async function CategoryPage({
               <PostList
                 posts={category.posts.map((p) => ({
                   ...p,
-                  author: { name: null, image: null },
+                  author: { id: "anonymous", name: null, image: null },
                 }))}
                 hideAuthor
               />

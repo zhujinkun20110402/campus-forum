@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { SafeImage } from "@/components/ui/safe-image"
 import { LoginForm } from "@/app/auth/signin/login-form"
 import { AcademicParticles } from "@/components/effects/academic-particles"
 import { MottoStream } from "@/components/effects/motto-stream"
@@ -20,8 +21,8 @@ export default function SignInPage() {
           {/* Top: Logo */}
           <ScrollReveal>
             <div className="flex items-center gap-3">
-              <div className="relative h-10 w-10 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 overflow-hidden flex items-center justify-center">
-                <span className="text-sm font-bold text-amber-400">二</span>
+              <div className="relative h-10 w-10 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 overflow-hidden">
+                <SafeImage src="/images/school-logo.png" alt="校徽" fill className="object-contain p-1.5" />
               </div>
               <span className="text-sm font-medium text-white/80">
                 北京二中经开区学校
@@ -90,8 +91,8 @@ export default function SignInPage() {
         <div className="relative w-full max-w-sm">
           <ScrollReveal>
             <div className="text-center mb-10">
-              <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 dark:bg-stone-800 mb-5">
-                <span className="text-xl font-bold text-stone-700 dark:text-stone-300">二</span>
+              <div className="relative h-14 w-14 rounded-2xl bg-stone-100 dark:bg-stone-800 overflow-hidden mb-5 mx-auto">
+                <SafeImage src="/images/school-logo.png" alt="校徽" fill className="object-contain p-2" />
               </div>
               <h1 className="font-serif text-2xl font-semibold text-stone-800 dark:text-stone-100">
                 登录

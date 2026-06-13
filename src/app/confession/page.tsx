@@ -122,7 +122,7 @@ export default async function ConfessionPage() {
           <PostList
             posts={posts.map((p) => ({
               ...p,
-              author: { name: null, image: null },
+              author: { id: "anonymous", name: null, image: null },
             }))}
             hideAuthor
           />

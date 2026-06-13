@@ -3,11 +3,11 @@ import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { formatDate, formatRelativeTime } from "@/lib/utils"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { CountUp } from "@/components/effects/count-up"
+import { SafeImage } from "@/components/ui/safe-image"
 import {
   Settings,
   FileText,
@@ -15,9 +15,9 @@ import {
   Heart,
   ArrowUpRight,
   Calendar,
-  Mail,
   BookOpen,
   Clock,
+  User,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -93,60 +93,67 @@ export default async function ProfilePage({
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-indigo-950">
+    <div className="min-h-screen bg-[#faf9f7] dark:bg-[#0a0a0a]">
       {/* Hero Profile Header */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-900 pb-24 pt-32">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.08),_transparent_60%)]" />
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-10 right-20 w-72 h-72 rounded-full bg-indigo-600 blur-[100px]" />
-          <div className="absolute bottom-0 left-10 w-64 h-64 rounded-full bg-gold-500/20 blur-[80px]" />
+      <section className="relative overflow-hidden bg-stone-900 pb-24 pt-32">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.06),_transparent_60%)]" />
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-10 right-20 w-72 h-72 rounded-full bg-stone-700 blur-[100px]" />
+          <div className="absolute bottom-0 left-10 w-64 h-64 rounded-full bg-amber-500/10 blur-[80px]" />
         </div>
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6">
           <ScrollReveal>
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+              {/* Avatar */}
               <div className="relative">
-                <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-3xl bg-gradient-to-br from-gold-300 to-gold-500 p-0.5 shadow-xl shadow-gold-500/20">
-                  <div className="h-full w-full rounded-[22px] bg-indigo-950 overflow-hidden">
-                    <Avatar className="h-full w-full">
-                      <AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} className="object-cover" />
-                      <AvatarFallback className="text-3xl bg-gradient-to-br from-indigo-800 to-indigo-900 text-gold-300 font-serif">
-                        {(user.name ?? user.email ?? "U").slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-3xl bg-amber-500/20 p-0.5 shadow-xl">
+                  <div className="h-full w-full rounded-[22px] bg-stone-800 overflow-hidden">
+                    {user.image ? (
+                      <SafeImage
+                        src={user.image}
+                        alt={user.name ?? ""}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center bg-stone-700">
+                        <span className="text-3xl font-serif text-amber-400/80">
+                          {(user.name ?? "U").charAt(0)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {user.role === "ADMIN" && (
-                  <div className="absolute -bottom-2 -right-2 h-7 w-7 rounded-full bg-gold-400 border-2 border-indigo-950 flex items-center justify-center shadow-lg">
-                    <span className="text-[10px] font-bold text-indigo-950">管</span>
+                  <div className="absolute -bottom-2 -right-2 h-7 w-7 rounded-full bg-amber-500 border-2 border-stone-900 flex items-center justify-center shadow-lg">
+                    <span className="text-[10px] font-bold text-stone-900">管</span>
                   </div>
                 )}
               </div>
 
+              {/* Info */}
               <div className="flex-1 text-center sm:text-left">
-                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white mb-2">
-                  {user.name ?? "未命名用户"}
-                </h1>
-                {isOwnProfile && (
-                  <p className="text-sm text-indigo-300/70 mb-2 flex items-center justify-center sm:justify-start gap-1.5">
-                    <Mail className="h-3.5 w-3.5" />
-                    {user.email}
-                  </p>
-                )}
-                <div className="flex items-center justify-center sm:justify-start gap-3 text-xs text-indigo-300/50">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    加入于 {formatDate(user.createdAt).split(" ")[0]}
-                  </span>
+                <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
+                  <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
+                    {user.name ?? "未命名用户"}
+                  </h1>
                   {user.role === "ADMIN" && (
-                    <Badge className="bg-gold-400/20 text-gold-300 border-gold-400/30 text-[10px]">
+                    <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-[10px]">
                       管理员
                     </Badge>
                   )}
                 </div>
 
+                <div className="flex items-center justify-center sm:justify-start gap-3 text-xs text-stone-400">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    加入于 {formatDate(user.createdAt).split(" ")[0]}
+                  </span>
+                </div>
+
                 {user.bio && (
-                  <p className="mt-4 text-sm text-indigo-200/60 max-w-lg leading-relaxed">
+                  <p className="mt-4 text-sm text-stone-400 max-w-lg leading-relaxed">
                     {user.bio}
                   </p>
                 )}
@@ -157,7 +164,7 @@ export default async function ProfilePage({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-indigo-700/50 bg-indigo-900/30 text-indigo-200 hover:bg-indigo-800/50 hover:text-white rounded-full px-5"
+                    className="border-stone-700 bg-stone-800/50 text-stone-300 hover:bg-stone-700 hover:text-white rounded-full px-5"
                   >
                     <Settings className="mr-1.5 h-3.5 w-3.5" />
                     编辑资料
@@ -175,11 +182,11 @@ export default async function ProfilePage({
                   key={stat.label}
                   className="rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 p-4 text-center"
                 >
-                  <stat.icon className="h-4 w-4 text-gold-400/70 mx-auto mb-2" />
+                  <stat.icon className="h-4 w-4 text-amber-400/70 mx-auto mb-2" />
                   <div className="text-2xl font-mono font-semibold text-white">
                     <CountUp end={stat.value} duration={1500} />
                   </div>
-                  <div className="text-xs text-indigo-300/50 mt-1">{stat.label}</div>
+                  <div className="text-xs text-stone-400 mt-1">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -189,28 +196,30 @@ export default async function ProfilePage({
 
       {/* Content Tabs */}
       <div className="relative -mt-12 mx-auto max-w-5xl px-4 sm:px-6">
-        <div className="bg-white dark:bg-indigo-900/40 rounded-3xl border border-slate-200 dark:border-indigo-800/60 shadow-xl shadow-slate-200/30 dark:shadow-indigo-950/30 overflow-hidden">
+        <div className="bg-white dark:bg-[#141414] rounded-3xl border border-stone-200 dark:border-stone-800 shadow-xl overflow-hidden">
           {/* Posts Section */}
           <div className="p-6 sm:p-8">
             <div className="flex items-center gap-2 mb-6">
-              <FileText className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">发布的帖子</h2>
-              <span className="text-xs text-slate-400 dark:text-slate-500 ml-auto">
+              <FileText className="h-5 w-5 text-stone-600 dark:text-stone-400" />
+              <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">
+                发布的帖子
+              </h2>
+              <span className="text-xs text-stone-400 dark:text-stone-500 ml-auto">
                 共 {posts.length} 条
               </span>
             </div>
 
             {posts.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 dark:border-indigo-700/50 py-16 text-center">
-                <BookOpen className="mx-auto h-10 w-10 text-slate-300 dark:text-indigo-700" />
-                <p className="mt-3 text-sm text-slate-400 dark:text-slate-500">暂无帖子</p>
+              <div className="rounded-2xl border border-dashed border-stone-300 dark:border-stone-700 py-16 text-center">
+                <BookOpen className="mx-auto h-10 w-10 text-stone-300 dark:text-stone-700" />
+                <p className="mt-3 text-sm text-stone-400 dark:text-stone-500">暂无帖子</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {posts.map((post, index) => (
                   <ScrollReveal key={post.id} delay={index * 0.05}>
                     <Link href={`/post/${post.id}`}>
-                      <article className="group rounded-2xl border border-slate-200 dark:border-indigo-800/40 bg-slate-50/50 dark:bg-indigo-950/30 p-5 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md transition-all duration-300 card-shine">
+                      <article className="group rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/30 p-5 hover:border-stone-300 dark:hover:border-stone-600 hover:shadow-md transition-all duration-300 card-shine">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2.5 mb-2.5">
@@ -218,25 +227,25 @@ export default async function ProfilePage({
                                 variant="outline"
                                 className={cn(
                                   "text-[11px] font-normal cursor-pointer",
-                                  categoryStyles[post.category.slug] ?? "border-slate-200 bg-slate-50 text-slate-600 dark:border-indigo-700 dark:bg-indigo-900/30 dark:text-slate-300"
+                                  categoryStyles[post.category.slug] ?? "border-stone-200 bg-stone-50 text-stone-600 dark:border-stone-700 dark:bg-stone-900/30 dark:text-stone-300"
                                 )}
                               >
                                 {post.category.name}
                               </Badge>
-                              <span className="flex items-center gap-1 text-[11px] text-slate-400 dark:text-slate-500">
+                              <span className="flex items-center gap-1 text-[11px] text-stone-400 dark:text-stone-500">
                                 <Clock className="h-3 w-3" />
                                 {formatRelativeTime(post.createdAt)}
                               </span>
                             </div>
-                            <h3 className="font-medium text-slate-800 dark:text-slate-100 truncate group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors">
+                            <h3 className="font-medium text-stone-800 dark:text-stone-100 truncate group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                               {post.title}
                             </h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 line-clamp-1">
-                              {post.content.slice(0, 120).replace(/[#*`]/g, "")}...
+                            <p className="text-sm text-stone-500 dark:text-stone-400 mt-1.5 line-clamp-1">
+                              {post.content.slice(0, 120).replace(/[#*`>]/g, "")}...
                             </p>
                           </div>
-                          <div className="flex flex-col items-end gap-2 shrink-0 text-xs text-slate-400 dark:text-slate-500">
-                            <ArrowUpRight className="h-4 w-4 text-slate-300 dark:text-indigo-700 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                          <div className="flex flex-col items-end gap-2 shrink-0 text-xs text-stone-400 dark:text-stone-500">
+                            <ArrowUpRight className="h-4 w-4 text-stone-300 dark:text-stone-700 opacity-0 group-hover:opacity-100 transition-all duration-300" />
                             <div className="flex items-center gap-3 mt-auto">
                               <span className="flex items-center gap-1">
                                 <MessageSquare className="h-3 w-3" />
@@ -258,39 +267,41 @@ export default async function ProfilePage({
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-indigo-800/50 to-transparent" />
+          <div className="h-px bg-gradient-to-r from-transparent via-stone-200 dark:via-stone-800 to-transparent" />
 
           {/* Comments Section */}
           <div className="p-6 sm:p-8">
             <div className="flex items-center gap-2 mb-6">
-              <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">发表的评论</h2>
-              <span className="text-xs text-slate-400 dark:text-slate-500 ml-auto">
+              <MessageSquare className="h-5 w-5 text-stone-600 dark:text-stone-400" />
+              <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">
+                发表的评论
+              </h2>
+              <span className="text-xs text-stone-400 dark:text-stone-500 ml-auto">
                 共 {comments.length} 条
               </span>
             </div>
 
             {comments.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 dark:border-indigo-700/50 py-16 text-center">
-                <MessageSquare className="mx-auto h-10 w-10 text-slate-300 dark:text-indigo-700" />
-                <p className="mt-3 text-sm text-slate-400 dark:text-slate-500">暂无评论</p>
+              <div className="rounded-2xl border border-dashed border-stone-300 dark:border-stone-700 py-16 text-center">
+                <MessageSquare className="mx-auto h-10 w-10 text-stone-300 dark:text-stone-700" />
+                <p className="mt-3 text-sm text-stone-400 dark:text-stone-500">暂无评论</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {comments.map((comment, index) => (
                   <ScrollReveal key={comment.id} delay={index * 0.05}>
                     <Link href={`/post/${comment.post.id}`}>
-                      <article className="group rounded-2xl border border-slate-200 dark:border-indigo-800/40 bg-slate-50/50 dark:bg-indigo-950/30 p-5 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-md transition-all duration-300">
+                      <article className="group rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/30 p-5 hover:border-stone-300 dark:hover:border-stone-600 hover:shadow-md transition-all duration-300">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs text-slate-400 dark:text-slate-500">评论了</span>
-                          <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400 truncate max-w-[300px]">
+                          <span className="text-xs text-stone-400 dark:text-stone-500">评论了</span>
+                          <span className="text-sm font-medium text-amber-600 dark:text-amber-400 truncate max-w-[300px]">
                             {comment.post.title}
                           </span>
                         </div>
-                        <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
+                        <p className="text-sm text-stone-600 dark:text-stone-300 line-clamp-2 leading-relaxed">
                           {comment.content}
                         </p>
-                        <div className="flex items-center gap-2 mt-3 text-[11px] text-slate-400 dark:text-slate-500">
+                        <div className="flex items-center gap-2 mt-3 text-[11px] text-stone-400 dark:text-stone-500">
                           <Clock className="h-3 w-3" />
                           {formatRelativeTime(comment.createdAt)}
                         </div>
