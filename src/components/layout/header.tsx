@@ -27,6 +27,7 @@ const navLinks = [
   { href: "/confession", label: "表白墙" },
   { href: "/category/study", label: "学习" },
   { href: "/category/activity", label: "活动" },
+  { href: "/album", label: "相册" },
 ]
 
 export function Header() {
