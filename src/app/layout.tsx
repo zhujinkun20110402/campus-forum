@@ -4,6 +4,7 @@ import "./globals.css"
 import { Providers } from "@/components/layout/providers"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
+import { NavigationProgress } from "@/components/layout/navigation-progress"
 
 const notoSerif = Noto_Serif_SC({
   variable: "--font-noto-serif-sc",
@@ -63,6 +64,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-[#faf9f7] dark:bg-[#0a0a0a] text-[#1c1917] dark:text-[#e8e6e3]">
         <Providers>
+          <NavigationProgress />
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
