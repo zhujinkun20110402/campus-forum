@@ -53,7 +53,6 @@ export async function getPhotos(): Promise<WallPhoto[]> {
       `${CHEVERETO_URL}/api/1/images?album_id=${CHEVERETO_ALBUM}&format=json&per_page=100`,
       {
         headers: { "X-API-Key": CHEVERETO_KEY },
-        cache: "no-store",
       }
     )
 
@@ -79,7 +78,6 @@ export async function getPhotos(): Promise<WallPhoto[]> {
   try {
     const res = await fetch(`${CHEVERETO_URL}/album/${CHEVERETO_ALBUM}`, {
       headers: { "User-Agent": "Mozilla/5.0" },
-      cache: "no-store",
     })
     const html = await res.text()
 
@@ -106,7 +104,6 @@ export async function getPhotos(): Promise<WallPhoto[]> {
           const fullUrl = pageUrl.startsWith("http") ? pageUrl : `${CHEVERETO_URL}${pageUrl}`
           const imgRes = await fetch(fullUrl, {
             headers: { "User-Agent": "Mozilla/5.0" },
-            cache: "no-store",
           })
           const imgHtml = await imgRes.text()
 

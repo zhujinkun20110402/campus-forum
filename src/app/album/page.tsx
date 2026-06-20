@@ -5,6 +5,8 @@ import { PhotowallAdmin } from "@/components/album/photowall-admin"
 import { PhotowallGrid } from "@/components/album/photowall-grid"
 import { Images, Camera } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 export default async function PhotowallPage() {
   const [photos, session] = await Promise.all([getPhotos(), auth()])
   const isAdmin = session?.user?.role === "ADMIN"
