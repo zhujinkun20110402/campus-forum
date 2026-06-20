@@ -31,6 +31,10 @@ export const metadata: Metadata = {
   title: "北京二中经开区学校 · 校园论坛",
   description:
     "北京二中经开区学校校园论坛，本固枝盛，学富国强。为师生提供学习交流、失物招领、校园公告、表白墙的平台",
+  icons: {
+    icon: "/images/school-logo.png",
+    apple: "/images/school-logo.png",
+  },
 }
 
 export default function RootLayout({
