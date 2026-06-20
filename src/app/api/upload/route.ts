@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth"
 const CHEVERETO_URL = process.env.CHEVERETO_API_URL || "https://www.picgo.net"
 const CHEVERETO_KEY = process.env.CHEVERETO_API_KEY || "chv_kkQXd_0398dadc9d770f43361d0d656a9d662c674ff9d4dd7ad7b7e7d55d2c566348ef_3599f5ac754e2bc39582c0898781e2436dedcd2fd08d1bad16f32b84b65202ab"
 const CHEVERETO_ALBUM = process.env.CHEVERETO_ALBUM_ID || "otxRh"
+const CHEVERETO_PHOTOWALL_ALBUM = process.env.CHEVERETO_PHOTOWALL_ALBUM_ID || "oGZTj"
 
 export async function POST(request: NextRequest) {
   const session = await auth()
@@ -14,14 +15,17 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const file = formData.get("source") as File | null
+    const target = formData.get("target") as string | null
 
     if (!file) {
       return NextResponse.json({ error: "未提供文件" }, { status: 400 })
     }
 
+    const albumId = target === "photowall" ? CHEVERETO_PHOTOWALL_ALBUM : CHEVERETO_ALBUM
+
     const uploadData = new FormData()
     uploadData.append("source", file)
-    uploadData.append("album_id", CHEVERETO_ALBUM)
+    uploadData.append("album_id", albumId)
     uploadData.append("format", "json")
 
     const res = await fetch(`${CHEVERETO_URL}/api/1/upload`, {

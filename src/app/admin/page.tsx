@@ -6,8 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { CountUp } from "@/components/effects/count-up"
 import { BanUserButton } from "@/components/admin/ban-user-button"
-import { AlbumManage } from "@/components/admin/album-manage"
-import { getAllAlbums } from "@/lib/album-store"
+import { getPhotos } from "@/lib/album-store"
 import {
   Users,
   FileText,
@@ -52,7 +51,7 @@ export default async function AdminPage() {
     totalPosts,
     totalComments,
     totalLikes,
-    albums,
+    photos,
     categoryStats,
   ] = await Promise.all([
     prisma.user.findMany({
@@ -91,7 +90,7 @@ export default async function AdminPage() {
     prisma.post.count(),
     prisma.comment.count(),
     prisma.like.count(),
-    getAllAlbums(),
+    getPhotos(),
     prisma.category.findMany({
       include: { _count: { select: { posts: true } } },
       orderBy: { posts: { _count: "desc" } },
@@ -232,14 +231,8 @@ export default async function AdminPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-stone-400">相册数</span>
-                  <span className="text-sm text-white font-mono">{albums.length}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-stone-400">照片总数</span>
-                  <span className="text-sm text-white font-mono">
-                    {albums.reduce((sum, a) => sum + a.photos.length, 0)}
-                  </span>
+                  <span className="text-xs text-stone-400">照片墙</span>
+                  <span className="text-sm text-white font-mono">{photos.length} 张</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-stone-400">版本</span>
@@ -250,21 +243,61 @@ export default async function AdminPage() {
           </ScrollReveal>
         </div>
 
-        {/* Album Management */}
+        {/* Photo Wall Preview */}
         <ScrollReveal delay={0.1}>
           <div className="rounded-3xl bg-white dark:bg-[#141414] border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-stone-100 dark:border-stone-800">
               <div className="flex items-center gap-2">
                 <Images className="h-5 w-5 text-amber-500" />
-                <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">相册管理</h2>
+                <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">照片墙</h2>
                 <span className="text-xs text-stone-400 dark:text-stone-500 ml-auto">
-                  共 {albums.length} 个相册
+                  {photos.length} 张照片
                 </span>
+                <a
+                  href="/album"
+                  className="ml-3 text-xs text-amber-600 dark:text-amber-400 hover:underline"
+                >
+                  前往管理 →
+                </a>
               </div>
             </div>
-            <div className="p-6">
-              <AlbumManage albums={albums} />
-            </div>
+            {photos.length > 0 ? (
+              <div className="p-6">
+                <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
+                  {photos.slice(0, 16).map((photo) => (
+                    <div
+                      key={photo.url}
+                      className="relative aspect-square rounded-lg overflow-hidden group"
+                    >
+                      <img
+                        src={photo.url}
+                        alt={photo.caption ?? ""}
+                        className="h-full w-full object-cover"
+                      />
+                      {photo.caption && (
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-end p-1.5 transition-opacity">
+                          <p className="text-[9px] text-white/80 line-clamp-2 leading-tight">
+                            {photo.caption}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {photos.length > 16 && (
+                  <p className="text-center text-xs text-stone-400 dark:text-stone-500 mt-4">
+                    还有 {photos.length - 16} 张照片，前往照片墙查看全部
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="p-12 text-center">
+                <Images className="mx-auto h-10 w-10 text-stone-300 dark:text-stone-700" />
+                <p className="mt-3 text-sm text-stone-400 dark:text-stone-500">
+                  照片墙暂无照片，前往添加
+                </p>
+              </div>
+            )}
           </div>
         </ScrollReveal>
 

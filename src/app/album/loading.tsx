@@ -1,47 +1,27 @@
-export default function AlbumListLoading() {
+export default function PhotowallLoading() {
   return (
-    <div className="min-h-screen animate-page-enter">
+    <div className="min-h-screen bg-[#faf9f7] dark:bg-[#0a0a0a] animate-page-enter">
       {/* Hero skeleton */}
-      <div className="relative h-72 flex items-center justify-center overflow-hidden bg-stone-100 dark:bg-stone-900">
-        <div className="text-center">
-          <div className="skeleton h-16 w-16 rounded-2xl mx-auto mb-4" />
-          <div className="skeleton h-9 w-40 rounded-lg mx-auto mb-2" />
-          <div className="skeleton h-4 w-56 rounded mx-auto mb-6" />
-          <div className="skeleton h-10 w-28 rounded-full mx-auto" />
+      <div className="relative overflow-hidden bg-stone-900 pt-32 pb-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 text-center">
+          <div className="skeleton h-14 w-14 rounded-2xl mx-auto mb-6" />
+          <div className="skeleton h-10 w-40 rounded-lg mx-auto mb-4" />
+          <div className="skeleton h-4 w-64 rounded mx-auto" />
         </div>
       </div>
 
-      {/* Masonry grid skeleton */}
-      <div className="mx-auto max-w-5xl px-4 py-10">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="skeleton h-8 w-8 rounded-lg" />
-          <div className="space-y-2">
-            <div className="skeleton h-4 w-24 rounded" />
-            <div className="skeleton h-3 w-16 rounded" />
-          </div>
-        </div>
-
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-5">
-          {Array.from({ length: 6 }).map((_, i) => {
-            const heights = ["h-48", "h-64", "h-56", "h-72", "h-52", "h-60"]
-            return (
-              <div
-                key={i}
-                className="break-inside-avoid mb-5 rounded-2xl overflow-hidden border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#141414]"
-              >
-                <div className={`skeleton w-full ${heights[i % heights.length]}`} />
-                <div className="p-4">
-                  <div className="skeleton h-4 w-3/4 rounded mb-3" />
-                  <div className="skeleton h-3 w-full rounded mb-1.5" />
-                  <div className="skeleton h-3 w-5/6 rounded mb-4" />
-                  <div className="flex items-center justify-between">
-                    <div className="skeleton h-3 w-16 rounded" />
-                    <div className="skeleton h-3 w-12 rounded" />
-                  </div>
-                </div>
-              </div>
-            )
-          })}
+      {/* Grid skeleton */}
+      <div className="relative -mt-10 mx-auto max-w-7xl px-4 sm:px-6 pb-24">
+        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="skeleton rounded-2xl"
+              style={{
+                aspectRatio: i % 3 === 0 ? "3/4" : i % 3 === 1 ? "1/1" : "4/3",
+              }}
+            />
+          ))}
         </div>
       </div>
     </div>

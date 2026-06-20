@@ -75,7 +75,7 @@ export function Footer() {
               </span>
             </div>
             <p className="text-sm text-[#525252] leading-relaxed mb-6 max-w-sm">
-              为师生搭建学习交流、失物招领、校园公告、匿名表白的线上社区平台，
+              为师生搭建自由的线上社区平台，
               连接每一个校园故事，共建温暖校园。
             </p>
             <div className="space-y-2 text-sm text-[#525252]">
@@ -85,11 +85,11 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-[#d4af37]/70" />
-                <span>contact@bje2school.cn</span>
+                <span>EZJKXSH@outlook.com</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-[#d4af37]/70" />
-                <span>010-XXXXXXXX</span>
+                <span>010-6780-2277</span>
               </div>
             </div>
           </div>
