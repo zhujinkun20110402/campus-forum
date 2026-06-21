@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 
 interface Photo {
   url: string
+  thumb: string
   caption?: string
   uploadedAt: string
   uploadedBy: string
@@ -88,7 +89,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
             >
               <div className={cn("w-full", aspectRatios[index % aspectRatios.length])}>
                 <img
-                  src={photo.url}
+                  src={photo.thumb || photo.url}
                   alt={photo.caption ?? "校园照片"}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                   loading="lazy"

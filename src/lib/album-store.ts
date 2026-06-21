@@ -1,8 +1,6 @@
-import { promises as fs } from "fs"
-import path from "path"
-
 export interface WallPhoto {
   url: string
+  thumb: string
   caption?: string
   uploadedAt: string
   uploadedBy: string
@@ -12,120 +10,58 @@ const CHEVERETO_URL = process.env.CHEVERETO_API_URL || "https://www.picgo.net"
 const CHEVERETO_KEY = process.env.CHEVERETO_API_KEY || ""
 const CHEVERETO_ALBUM = process.env.CHEVERETO_PHOTOWALL_ALBUM_ID || "oGZTj"
 
-// 本地文件仅存储 caption 覆盖
-const DATA_DIR = path.join(process.cwd(), "data")
-const CAPTIONS_FILE = path.join(DATA_DIR, "photowall-captions.json")
-
-async function ensureCaptionsFile() {
-  try {
-    await fs.access(CAPTIONS_FILE)
-  } catch {
-    await fs.mkdir(DATA_DIR, { recursive: true })
-    await fs.writeFile(CAPTIONS_FILE, "{}", "utf-8")
-  }
-}
-
-async function readCaptions(): Promise<Record<string, string>> {
-  await ensureCaptionsFile()
-  try {
-    const raw = await fs.readFile(CAPTIONS_FILE, "utf-8")
-    return JSON.parse(raw)
-  } catch {
-    return {}
-  }
-}
-
-async function writeCaptions(captions: Record<string, string>) {
-  await ensureCaptionsFile()
-  await fs.writeFile(CAPTIONS_FILE, JSON.stringify(captions, null, 2), "utf-8")
-}
-
 /**
- * 从图床获取相册中的所有照片
- * 先尝试 API，失败则抓取相册页面 HTML 解析
+ * 从图床相册页面 HTML 中解析所有照片
+ * 直接提取 data-thumb 属性，无需逐个抓取图片页面
  */
 export async function getPhotos(): Promise<WallPhoto[]> {
-  const captions = await readCaptions()
-
-  try {
-    // 尝试 Chevereto API 获取图片列表
-    const res = await fetch(
-      `${CHEVERETO_URL}/api/1/images?album_id=${CHEVERETO_ALBUM}&format=json&per_page=100`,
-      {
-        headers: { "X-API-Key": CHEVERETO_KEY },
-      }
-    )
-
-    if (res.ok) {
-      const json = await res.json()
-      if (json.status_code === 200 && Array.isArray(json.images)) {
-        return json.images.map((img: Record<string, unknown>) => {
-          const imgUrl = (img.url as string) || ((img.image as Record<string, unknown>)?.url as string) || ""
-          return {
-            url: imgUrl,
-            caption: captions[imgUrl] ?? (img.title as string) ?? "",
-            uploadedAt: (img.date_gmt as string) || new Date().toISOString(),
-            uploadedBy: "管理员",
-          }
-        })
-      }
-    }
-  } catch {
-    // API 不可用，回退到 HTML 抓取
-  }
-
-  // 回退：抓取相册页面 HTML，解析图片链接
   try {
     const res = await fetch(`${CHEVERETO_URL}/album/${CHEVERETO_ALBUM}`, {
-      headers: { "User-Agent": "Mozilla/5.0" },
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      },
     })
-    const html = await res.text()
 
-    // 提取所有图片查看页链接
-    const imagePagePattern = /href="([^"]*\/image\/[^"]+)"/g
-    const imagePages: string[] = []
-    let match: RegExpExecArray | null
-    while ((match = imagePagePattern.exec(html)) !== null) {
-      const url = match[1]
-      if (!imagePages.includes(url)) {
-        imagePages.push(url)
-      }
+    if (!res.ok) {
+      console.error("Album page fetch failed:", res.status)
+      return []
     }
 
-    // 限制并发，最多取前 50 张
-    const pages = imagePages.slice(0, 50)
+    const html = await res.text()
+
+    // 提取 data-thumb 属性中的缩略图 URL
+    // 模式: data-thumb="https://origin.picgo.net/2026/06/20/filename.th.jpg"
+    const thumbPattern =
+      /data-thumb="(https?:\/\/origin\.[^"]+\.(?:th\.)?(?:jpg|jpeg|png|gif|webp))"/gi
+
     const photos: WallPhoto[] = []
+    const seen = new Set<string>()
+    let match: RegExpExecArray | null
 
-    // 并发获取每张图片的直接 URL（每批 5 个）
-    for (let i = 0; i < pages.length; i += 5) {
-      const batch = pages.slice(i, i + 5)
-      const results = await Promise.allSettled(
-        batch.map(async (pageUrl) => {
-          const fullUrl = pageUrl.startsWith("http") ? pageUrl : `${CHEVERETO_URL}${pageUrl}`
-          const imgRes = await fetch(fullUrl, {
-            headers: { "User-Agent": "Mozilla/5.0" },
-          })
-          const imgHtml = await imgRes.text()
+    while ((match = thumbPattern.exec(html)) !== null) {
+      const thumbUrl = match[1]
 
-          // 提取直接图片 URL（origin.picgo.net 域名）
-          const urlMatch = imgHtml.match(/https?:\/\/origin\.[^\s"'<>]+\.(?:jpg|jpeg|png|gif|webp)/i)
-          if (urlMatch) {
-            return {
-              url: urlMatch[0],
-              caption: captions[urlMatch[0]] ?? "",
-              uploadedAt: new Date().toISOString(),
-              uploadedBy: "管理员",
-            }
-          }
-          return null
-        })
-      )
+      // 从缩略图 URL 构造完整图 URL：去掉 .th
+      // https://origin.picgo.net/.../filename.th.jpg -> https://origin.picgo.net/.../filename.jpg
+      const fullUrl = thumbUrl.replace(/\.(th)\.(jpg|jpeg|png|gif|webp)/i, ".$2")
 
-      for (const result of results) {
-        if (result.status === "fulfilled" && result.value) {
-          photos.push(result.value)
-        }
-      }
+      if (seen.has(fullUrl)) continue
+      seen.add(fullUrl)
+
+      // 尝试从 data-object 提取标题
+      // 在 data-thumb 附近查找 data-object 中的 display_title
+      const nearbyHtml = html.substring(match.index, match.index + 500)
+      const titleMatch = nearbyHtml.match(/"display_title":"([^"]*)"/)
+      const title = titleMatch ? titleMatch[1] : ""
+
+      photos.push({
+        url: fullUrl,
+        thumb: thumbUrl,
+        caption: title || "",
+        uploadedAt: new Date().toISOString(),
+        uploadedBy: "管理员",
+      })
     }
 
     return photos
@@ -135,29 +71,82 @@ export async function getPhotos(): Promise<WallPhoto[]> {
   }
 }
 
-export async function addPhoto(photo: WallPhoto): Promise<WallPhoto[]> {
-  // 照片已通过上传 API 直接传到图床相册
-  // 这里仅保存 caption
-  if (photo.caption) {
-    const captions = await readCaptions()
-    captions[photo.url] = photo.caption
-    await writeCaptions(captions)
-  }
-  return await getPhotos()
-}
-
+/**
+ * 删除照片 — 通过 Chevereto API 删除
+ * 需要图片的 delete_id，从 data-object 中提取
+ */
 export async function removePhoto(url: string): Promise<WallPhoto[]> {
-  // 从本地 caption 记录中移除
-  const captions = await readCaptions()
-  delete captions[url]
-  await writeCaptions(captions)
-  // 注意：不会从图床删除照片，需要管理员去图床后台删除
-  return await getPhotos()
-}
+  try {
+    // 先获取相册页面，找到该图片的 delete_id
+    const res = await fetch(`${CHEVERETO_URL}/album/${CHEVERETO_ALBUM}`, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      },
+    })
+    const html = await res.text()
 
-export async function updatePhotoCaption(url: string, caption: string): Promise<WallPhoto[]> {
-  const captions = await readCaptions()
-  captions[url] = caption
-  await writeCaptions(captions)
-  return await getPhotos()
+    // 在 HTML 中查找包含该 URL 的 data-object，提取 delete_id
+    // data-object 是 URL 编码的 JSON
+    const encodedUrl = url.replace(/\//g, "\\u002F")
+
+    // 查找所有 data-object 并解析
+    const objectPattern = /data-object='([^']+)'/g
+    let objMatch: RegExpExecArray | null
+    let deleteId: string | null = null
+    let imageId: string | null = null
+
+    while ((objMatch = objectPattern.exec(html)) !== null) {
+      const raw = objMatch[1]
+      // URL 解码
+      const decoded = decodeURIComponent(raw)
+      if (decoded.includes(url) || decoded.includes(encodedUrl)) {
+        // 提取 id_encoded 和 delete_id
+        const idMatch = decoded.match(/"id_encoded":"([^"]+)"/)
+        const delMatch = decoded.match(/"delete_id":"([^"]+)"/)
+        if (idMatch) imageId = idMatch[1]
+        if (delMatch) deleteId = delMatch[1]
+        break
+      }
+    }
+
+    // 尝试通过 API 删除
+    if (imageId) {
+      try {
+        const delRes = await fetch(`${CHEVERETO_URL}/api/1/images/${imageId}`, {
+          method: "DELETE",
+          headers: {
+            "X-API-Key": CHEVERETO_KEY,
+          },
+        })
+        if (delRes.ok) {
+          // 删除成功，重新获取照片列表
+          return await getPhotos()
+        }
+      } catch {
+        // API 删除失败，忽略
+      }
+    }
+
+    // 如果 API 删除失败，尝试通过 delete_id 页面删除
+    if (deleteId) {
+      try {
+        await fetch(`${CHEVERETO_URL}/${deleteId}`, {
+          method: "GET",
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          },
+        })
+      } catch {
+        // 忽略
+      }
+    }
+
+    // 无论如何重新获取列表
+    return await getPhotos()
+  } catch (error) {
+    console.error("Remove photo error:", error)
+    return await getPhotos()
+  }
 }

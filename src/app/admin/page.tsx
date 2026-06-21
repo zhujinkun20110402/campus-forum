@@ -272,7 +272,7 @@ export default async function AdminPage() {
                       className="relative aspect-square rounded-lg overflow-hidden group"
                     >
                       <img
-                        src={photo.url}
+                        src={photo.thumb || photo.url}
                         alt={photo.caption ?? ""}
                         className="h-full w-full object-cover"
                       />
