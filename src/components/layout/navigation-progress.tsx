@@ -5,13 +5,10 @@ import { usePathname } from "next/navigation"
 
 export function NavigationProgress() {
   const pathname = usePathname()
-  const [isLoading, setIsLoading] = useState(false)
-  const [progress, setProgress] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [progress, setProgress] = useState(15)
 
   useEffect(() => {
-    setIsLoading(true)
-    setProgress(15)
-
     const timer1 = setTimeout(() => setProgress(40), 100)
     const timer2 = setTimeout(() => setProgress(70), 300)
     const timer3 = setTimeout(() => {

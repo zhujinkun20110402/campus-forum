@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { X, ChevronLeft, ChevronRight, Trash2, Loader2 } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Trash2, Loader2, ImageIcon } from "lucide-react"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { cn } from "@/lib/utils"
 
@@ -32,14 +32,25 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [deletingUrl, setDeletingUrl] = useState<string | null>(null)
   const [localPhotos, setLocalPhotos] = useState(photos)
+  const [lightboxLoading, setLightboxLoading] = useState(true)
+  const [lightboxError, setLightboxError] = useState(false)
 
   const closeLightbox = useCallback(() => setLightboxIndex(null), [])
+  const openLightbox = useCallback((index: number) => {
+    setLightboxLoading(true)
+    setLightboxError(false)
+    setLightboxIndex(index)
+  }, [])
   const prevPhoto = useCallback(() => {
+    setLightboxLoading(true)
+    setLightboxError(false)
     setLightboxIndex((prev) =>
       prev === null ? prev : (prev - 1 + localPhotos.length) % localPhotos.length
     )
   }, [localPhotos.length])
   const nextPhoto = useCallback(() => {
+    setLightboxLoading(true)
+    setLightboxError(false)
     setLightboxIndex((prev) =>
       prev === null ? prev : (prev + 1) % localPhotos.length
     )
@@ -88,7 +99,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
                 "group relative overflow-hidden rounded-xl sm:rounded-2xl bg-stone-200 dark:bg-stone-800 cursor-pointer",
                 aspectRatios[index % aspectRatios.length]
               )}
-              onClick={() => setLightboxIndex(index)}
+              onClick={() => openLightbox(index)}
             >
               <img
                 src={photo.thumb || photo.url}
@@ -169,11 +180,33 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
             className="relative max-w-[95vw] sm:max-w-[90vw] max-h-[90vh] sm:max-h-[85vh] flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <img
-              src={localPhotos[lightboxIndex].url}
-              alt={localPhotos[lightboxIndex].caption ?? "校园照片"}
-              className="max-w-full max-h-[75vh] sm:max-h-[80vh] object-contain rounded-lg shadow-2xl"
-            />
+            <div className="relative min-h-[200px] min-w-[200px] flex items-center justify-center">
+              {lightboxLoading && !lightboxError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                  <Loader2 className="h-10 w-10 text-white/60 animate-spin mb-3" />
+                  <p className="text-xs text-white/40">图片加载中...</p>
+                </div>
+              )}
+              {lightboxError && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                  <ImageIcon className="h-10 w-10 text-white/30 mb-3" />
+                  <p className="text-xs text-white/40">图片加载失败</p>
+                </div>
+              )}
+              <img
+                src={localPhotos[lightboxIndex].url}
+                alt={localPhotos[lightboxIndex].caption ?? "校园照片"}
+                className={cn(
+                  "max-w-full max-h-[75vh] sm:max-h-[80vh] object-contain rounded-lg shadow-2xl transition-opacity duration-300",
+                  lightboxLoading || lightboxError ? "opacity-0" : "opacity-100"
+                )}
+                onLoad={() => setLightboxLoading(false)}
+                onError={() => {
+                  setLightboxLoading(false)
+                  setLightboxError(true)
+                }}
+              />
+            </div>
             {localPhotos[lightboxIndex].caption && (
               <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-white/70 text-center max-w-xs sm:max-w-lg leading-relaxed px-4">
                 {localPhotos[lightboxIndex].caption}

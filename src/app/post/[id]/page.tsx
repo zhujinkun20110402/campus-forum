@@ -187,7 +187,7 @@ export default async function PostPage({
             <span className="sm:hidden">{post._count.comments}</span>
           </button>
 
-          <ShareButton postId={post.id} />
+          <ShareButton postId={post.id} title={post.title} />
 
           {(isAuthor || isAdmin) && (
             <DeleteButton postId={post.id} />

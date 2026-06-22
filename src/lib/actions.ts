@@ -7,6 +7,16 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { postSchema, commentSchema, registerSchema, confessionSchema, profileSchema } from "@/lib/validations"
 
+async function checkBanned(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  })
+  if (user?.role === "BANNED") {
+    throw new Error("账号已被封禁")
+  }
+}
+
 export async function registerUser(
   _prevState: unknown,
   formData: FormData
@@ -59,6 +69,8 @@ export async function createPost(_prevState: unknown, formData: FormData) {
     redirect("/auth/signin")
   }
 
+  await checkBanned(session.user.id)
+
   const validated = postSchema.safeParse({
     title: formData.get("title"),
     content: formData.get("content"),
@@ -108,6 +120,8 @@ export async function createConfession(_prevState: unknown, formData: FormData) 
     redirect("/auth/signin")
   }
 
+  await checkBanned(session.user.id)
+
   const validated = confessionSchema.safeParse({
     content: formData.get("content"),
   })
@@ -127,7 +141,7 @@ export async function createConfession(_prevState: unknown, formData: FormData) 
     return { message: "表白墙分类不存在" }
   }
 
-  const post = await prisma.post.create({
+  await prisma.post.create({
     data: {
       title: "匿名表白",
       content: validated.data.content,
@@ -145,6 +159,8 @@ export async function createComment(postId: string, _prevState: unknown, formDat
   if (!session?.user?.id) {
     redirect("/auth/signin")
   }
+
+  await checkBanned(session.user.id)
 
   const validated = commentSchema.safeParse({
     content: formData.get("content"),
@@ -174,6 +190,8 @@ export async function toggleLike(postId: string) {
   if (!session?.user?.id) {
     redirect("/auth/signin")
   }
+
+  await checkBanned(session.user.id)
 
   const userId = session.user.id
 
@@ -243,6 +261,20 @@ export async function deleteComment(commentId: string, postId: string) {
 }
 
 export async function banUser(userId: string) {
+  const session = await auth()
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    throw new Error("没有权限")
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { role: "BANNED" },
+  })
+
+  revalidatePath("/admin")
+}
+
+export async function unbanUser(userId: string) {
   const session = await auth()
   if (!session?.user?.id || session.user.role !== "ADMIN") {
     throw new Error("没有权限")

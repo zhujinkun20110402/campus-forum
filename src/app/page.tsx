@@ -357,12 +357,12 @@ export default async function HomePage() {
       </section>
 
       {/* ===== LATEST POSTS ===== */}
-      <section className="mx-auto max-w-7xl px-4 pb-8">
+      <section className="mx-auto max-w-2xl px-4 pb-8">
         <ScrollReveal>
-          <div className="flex items-end justify-between mb-10">
+          <div className="flex items-end justify-between mb-8">
             <div>
               <p className="text-[10px] text-[#a8a29e] dark:text-[#525252] tracking-[0.25em] uppercase mb-2">
-                Latest
+                Feed
               </p>
               <h2 className="font-serif text-2xl sm:text-3xl text-[#1c1917] dark:text-[#e8e6e3]">
                 校园新鲜事

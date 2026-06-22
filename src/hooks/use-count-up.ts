@@ -18,7 +18,6 @@ export function useCountUp(
 
   useEffect(() => {
     if (!enabled) {
-      setCount(start)
       return
     }
 

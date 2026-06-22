@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { PhotowallAdmin } from "@/components/album/photowall-admin"
 import { PhotowallGrid } from "@/components/album/photowall-grid"
+import { PhotowallUploader } from "@/components/album/photowall-uploader"
 import { Images, Camera } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -10,6 +11,7 @@ export const dynamic = "force-dynamic"
 export default async function PhotowallPage() {
   const [photos, session] = await Promise.all([getPhotos(), auth()])
   const isAdmin = session?.user?.role === "ADMIN"
+  const isLoggedIn = !!session?.user?.id
 
   return (
     <div className="min-h-screen bg-[#faf9f7] dark:bg-[#0a0a0a]">
@@ -71,6 +73,9 @@ export default async function PhotowallPage() {
         ) : (
           <PhotowallGrid photos={photos} isAdmin={isAdmin} />
         )}
+
+        {/* Upload Panel */}
+        {isLoggedIn && !isAdmin && <PhotowallUploader />}
 
         {/* Admin Panel */}
         {isAdmin && <PhotowallAdmin />}

@@ -357,10 +357,12 @@ export default async function AdminPage() {
                           className={
                             user.role === "ADMIN"
                               ? "border-amber-400/40 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 text-[11px]"
+                              : user.role === "BANNED"
+                              ? "border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 text-[11px]"
                               : "border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 text-[11px]"
                           }
                         >
-                          {user.role === "ADMIN" ? "管理员" : "学生"}
+                          {user.role === "ADMIN" ? "管理员" : user.role === "BANNED" ? "已封禁" : "学生"}
                         </Badge>
                       </td>
                       <td className="px-6 py-4 text-stone-500 dark:text-stone-400 hidden md:table-cell">
@@ -377,7 +379,11 @@ export default async function AdminPage() {
                       </td>
                       <td className="px-6 py-4">
                         {user.role !== "ADMIN" && (
-                          <BanUserButton userId={user.id} userName={user.name ?? user.email ?? "未知用户"} />
+                          <BanUserButton
+                            userId={user.id}
+                            userName={user.name ?? user.email ?? "未知用户"}
+                            isBanned={user.role === "BANNED"}
+                          />
                         )}
                       </td>
                     </tr>

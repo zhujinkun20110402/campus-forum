@@ -1,22 +1,17 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 
 export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((prev: T) => T)) => void] {
-  const [storedValue, setStoredValue] = useState<T>(initialValue)
-  const [isInitialized, setIsInitialized] = useState(false)
-
-  useEffect(() => {
+  const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       const item = window.localStorage.getItem(key)
-      if (item) {
-        setStoredValue(JSON.parse(item))
-      }
+      return item ? (JSON.parse(item) as T) : initialValue
     } catch (error) {
       console.warn(`Error reading localStorage key "${key}":`, error)
+      return initialValue
     }
-    setIsInitialized(true)
-  }, [key])
+  })
 
   const setValue = useCallback(
     (value: T | ((prev: T) => T)) => {

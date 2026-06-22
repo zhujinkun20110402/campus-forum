@@ -58,7 +58,7 @@ export function Footer() {
             </div>
             <MottoStream size="md" className="mb-4" />
             <p className="text-sm text-[#525252] max-w-md mx-auto leading-relaxed">
-              北京二中经开区学校秉承"本固枝盛，学富国强"的校训，
+              北京二中经开区学校秉承&ldquo;本固枝盛，学富国强&rdquo;的校训，
               致力于培养德智体美劳全面发展的社会主义建设者和接班人。
             </p>
           </div>
