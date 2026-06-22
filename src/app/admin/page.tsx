@@ -192,7 +192,7 @@ export default async function AdminPage() {
               <div className="space-y-3">
                 {categoryStats.map((cat) => (
                   <div key={cat.id} className="flex items-center gap-3">
-                    <span className="text-sm text-stone-600 dark:text-stone-400 w-20 shrink-0 truncate">
+                    <span className="text-sm text-stone-600 dark:text-stone-400 w-14 sm:w-20 shrink-0 truncate">
                       {cat.name}
                     </span>
                     <div className="flex-1 h-6 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
@@ -201,7 +201,7 @@ export default async function AdminPage() {
                         style={{ width: `${(cat._count.posts / maxCategoryCount) * 100}%` }}
                       />
                     </div>
-                    <span className="text-xs font-mono text-stone-500 dark:text-stone-400 w-8 text-right">
+                    <span className="text-[10px] sm:text-xs font-mono text-stone-500 dark:text-stone-400 w-6 sm:w-8 shrink-0 text-right">
                       {cat._count.posts}
                     </span>
                   </div>

@@ -16,10 +16,10 @@ export function ShareButton({ postId }: ShareButtonProps) {
   return (
     <button
       onClick={handleShare}
-      className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-indigo-700 bg-white dark:bg-indigo-900/40 px-4 py-2 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-indigo-800/50 transition-colors"
+      className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2.5 py-1.5 sm:px-4 sm:py-2 text-sm text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
     >
       <Share2 className="h-4 w-4" />
-      <span>分享</span>
+      <span className="hidden sm:inline">分享</span>
     </button>
   )
 }

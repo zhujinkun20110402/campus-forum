@@ -172,7 +172,7 @@ export default async function PostPage({
 
       {/* Actions Bar */}
       <ScrollReveal delay={0.15}>
-        <div className="flex items-center gap-3 py-5 border-y border-stone-200 dark:border-stone-800 mb-10">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 py-5 border-y border-stone-200 dark:border-stone-800 mb-10">
           <LikeButton
             postId={post.id}
             likeCount={post._count.likes}
@@ -181,9 +181,10 @@ export default async function PostPage({
             )}
           />
 
-          <button className="inline-flex items-center gap-2 rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-2 text-sm text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
+          <button className="inline-flex items-center gap-2 rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-1.5 sm:px-4 sm:py-2 text-sm text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
             <MessageSquare className="h-4 w-4" />
-            <span>{post._count.comments} 条评论</span>
+            <span className="hidden sm:inline">{post._count.comments} 条评论</span>
+            <span className="sm:hidden">{post._count.comments}</span>
           </button>
 
           <ShareButton postId={post.id} />

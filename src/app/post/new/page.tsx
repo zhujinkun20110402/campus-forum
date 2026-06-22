@@ -39,12 +39,12 @@ export default async function NewPostPage({
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-indigo-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-stone-950">
       {/* Header */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-900 pt-28 pb-12">
+      <section className="relative overflow-hidden bg-gradient-to-br from-stone-900 via-stone-950 to-stone-900 pt-28 pb-12">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.06),_transparent_60%)]" />
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 right-20 w-64 h-64 rounded-full bg-indigo-600 blur-[100px]" />
+          <div className="absolute top-10 right-20 w-64 h-64 rounded-full bg-amber-600 blur-[100px]" />
         </div>
 
         <div className="relative mx-auto max-w-3xl px-4 sm:px-6">
@@ -57,7 +57,7 @@ export default async function NewPostPage({
                 <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
                   {isLostFound ? "发布寻物启事" : "发布新帖子"}
                 </h1>
-                <p className="text-sm text-indigo-300/50">
+                <p className="text-sm text-stone-300/50">
                   分享你的故事，连接校园的每一个角落
                 </p>
               </div>
@@ -72,7 +72,7 @@ export default async function NewPostPage({
           {/* Main Form */}
           <div className="lg:col-span-2">
             <ScrollReveal>
-              <div className="rounded-3xl bg-white dark:bg-indigo-900/40 border border-slate-200 dark:border-indigo-800/60 shadow-xl shadow-slate-200/20 dark:shadow-indigo-950/30 p-6 sm:p-8">
+              <div className="rounded-3xl bg-white dark:bg-[#141414] border border-slate-200 dark:border-stone-800 shadow-xl shadow-slate-200/20 dark:shadow-stone-950/30 p-6 sm:p-8">
                 <PostForm categories={categories} />
               </div>
             </ScrollReveal>
@@ -81,7 +81,7 @@ export default async function NewPostPage({
           {/* Sidebar Tips */}
           <div className="hidden lg:block">
             <ScrollReveal delay={0.1}>
-              <div className="rounded-3xl bg-white dark:bg-indigo-900/40 border border-slate-200 dark:border-indigo-800/60 shadow-sm p-6 sticky top-24">
+              <div className="rounded-3xl bg-white dark:bg-[#141414] border border-slate-200 dark:border-stone-800 shadow-sm p-6 sticky top-24">
                 <div className="flex items-center gap-2 mb-5">
                   <Lightbulb className="h-5 w-5 text-gold-500" />
                   <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
@@ -91,8 +91,8 @@ export default async function NewPostPage({
                 <div className="space-y-4">
                   {tips.map((tip, index) => (
                     <div key={index} className="flex gap-3">
-                      <div className="h-5 w-5 rounded-full bg-indigo-50 dark:bg-indigo-800/40 flex items-center justify-center shrink-0 mt-0.5">
-                        <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                      <div className="h-5 w-5 rounded-full bg-stone-50 dark:bg-stone-800/40 flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">
                           {index + 1}
                         </span>
                       </div>
@@ -103,7 +103,7 @@ export default async function NewPostPage({
                   ))}
                 </div>
 
-                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-indigo-800/40">
+                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-stone-800/40">
                   <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
                     <Sparkles className="h-3.5 w-3.5 text-gold-400" />
                     <span>让每一次分享都有价值</span>

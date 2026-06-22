@@ -90,11 +90,11 @@ const categoryConfig: Record<string, {
     name: "难题讨论",
     description: "学科难题、竞赛题目、知识探讨",
     icon: MessageCircle,
-    gradient: "from-indigo-900 via-indigo-950 to-slate-900",
-    accentColor: "bg-indigo-500",
-    textColor: "text-indigo-400",
-    bgColor: "bg-indigo-50 dark:bg-indigo-950/20",
-    particleColor: "rgba(99, 102, 241, ",
+    gradient: "from-stone-900 via-stone-950 to-slate-900",
+    accentColor: "bg-amber-500",
+    textColor: "text-amber-400",
+    bgColor: "bg-stone-50 dark:bg-stone-950/20",
+    particleColor: "rgba(245, 158, 11, ",
   },
 }
 
@@ -141,7 +141,7 @@ export default async function CategoryPage({
   const totalLikes = category.posts.reduce((sum, p) => sum + p._count.likes, 0)
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-indigo-950">
+    <div className="min-h-screen bg-[#faf9f7] dark:bg-[#0a0a0a]">
       {/* Category Header */}
       <section className={cn(
         "relative overflow-hidden bg-gradient-to-br pt-28 pb-16",
@@ -156,16 +156,16 @@ export default async function CategoryPage({
           <ScrollReveal>
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
               <div className={cn(
-                "h-16 w-16 rounded-2xl flex items-center justify-center shadow-lg",
+                "h-16 w-16 shrink-0 rounded-2xl flex items-center justify-center shadow-lg",
                 config.bgColor
               )}>
                 <Icon className={cn("h-8 w-8", config.textColor)} />
               </div>
-              <div className="text-center sm:text-left">
-                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white mb-2">
+              <div className="text-center sm:text-left min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white mb-2 break-words">
                   {config.name}
                 </h1>
-                <p className="text-sm text-white/50 max-w-md">
+                <p className="text-sm text-white/50 max-w-md break-words">
                   {config.description}
                 </p>
               </div>
@@ -174,21 +174,21 @@ export default async function CategoryPage({
 
           {/* Stats */}
           <ScrollReveal delay={0.1}>
-            <div className="mt-8 flex items-center justify-center sm:justify-start gap-6">
+            <div className="mt-8 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6">
               <div className="flex items-center gap-2 text-sm text-white/60">
-                <FileText className="h-4 w-4" />
+                <FileText className="h-4 w-4 shrink-0" />
                 <span>
                   <CountUp end={category.posts.length} duration={1500} className="text-white font-mono" /> 帖子
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-white/60">
-                <MessageCircle className="h-4 w-4" />
+                <MessageCircle className="h-4 w-4 shrink-0" />
                 <span>
                   <CountUp end={totalComments} duration={1500} className="text-white font-mono" /> 评论
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm text-white/60">
-                <Heart className="h-4 w-4" />
+                <Heart className="h-4 w-4 shrink-0" />
                 <span>
                   <CountUp end={totalLikes} duration={1500} className="text-white font-mono" /> 点赞
                 </span>
@@ -201,24 +201,24 @@ export default async function CategoryPage({
       {/* Posts List */}
       <div className="relative -mt-8 mx-auto max-w-3xl px-4 sm:px-6 pb-20">
         <ScrollReveal>
-          <div className="rounded-3xl bg-white dark:bg-indigo-900/40 border border-slate-200 dark:border-indigo-800/60 shadow-xl shadow-slate-200/20 dark:shadow-indigo-950/30 p-6 sm:p-8">
-            <div className="flex items-center gap-2 mb-6">
-              <Icon className={cn("h-5 w-5", config.textColor)} />
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
+          <div className="rounded-3xl bg-white dark:bg-[#141414] border border-stone-200 dark:border-stone-800 shadow-xl shadow-stone-200/20 dark:shadow-black/20 p-6 sm:p-8">
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              <Icon className={cn("h-5 w-5 shrink-0", config.textColor)} />
+              <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100 break-words">
                 {config.name}帖子
               </h2>
-              <span className="text-xs text-slate-400 dark:text-slate-500 ml-auto">
+              <span className="text-xs text-stone-400 dark:text-stone-500 ml-auto">
                 共 {category.posts.length} 条
               </span>
             </div>
 
             {category.posts.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-300 dark:border-indigo-700/50 py-20 text-center">
-                <BookOpen className="mx-auto h-12 w-12 text-slate-300 dark:text-indigo-700 mb-4" />
-                <p className="text-slate-500 dark:text-slate-400 text-lg font-medium mb-1">
+              <div className="rounded-2xl border border-dashed border-stone-300 dark:border-stone-700 py-20 text-center">
+                <BookOpen className="mx-auto h-12 w-12 text-stone-300 dark:text-stone-700 mb-4" />
+                <p className="text-stone-500 dark:text-stone-400 text-lg font-medium mb-1">
                   该分类下还没有帖子
                 </p>
-                <p className="text-sm text-slate-400 dark:text-slate-500">
+                <p className="text-sm text-stone-400 dark:text-stone-500">
                   来做第一个发帖的人吧
                 </p>
               </div>

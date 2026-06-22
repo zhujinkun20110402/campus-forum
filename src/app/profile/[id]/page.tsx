@@ -271,12 +271,12 @@ export default async function ProfilePage({
 
           {/* Comments Section */}
           <div className="p-6 sm:p-8">
-            <div className="flex items-center gap-2 mb-6">
-              <MessageSquare className="h-5 w-5 text-stone-600 dark:text-stone-400" />
-              <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">
+            <div className="flex items-center gap-2 mb-6 min-w-0">
+              <MessageSquare className="h-5 w-5 text-stone-600 dark:text-stone-400 shrink-0" />
+              <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100 truncate">
                 发表的评论
               </h2>
-              <span className="text-xs text-stone-400 dark:text-stone-500 ml-auto">
+              <span className="text-xs text-stone-400 dark:text-stone-500 ml-auto shrink-0">
                 共 {comments.length} 条
               </span>
             </div>
@@ -292,9 +292,9 @@ export default async function ProfilePage({
                   <ScrollReveal key={comment.id} delay={index * 0.05}>
                     <Link href={`/post/${comment.post.id}`}>
                       <article className="group rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/30 p-5 hover:border-stone-300 dark:hover:border-stone-600 hover:shadow-md transition-all duration-300">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs text-stone-400 dark:text-stone-500">评论了</span>
-                          <span className="text-sm font-medium text-amber-600 dark:text-amber-400 truncate max-w-[300px]">
+                        <div className="flex items-center gap-2 mb-2 min-w-0">
+                          <span className="text-xs text-stone-400 dark:text-stone-500 shrink-0">评论了</span>
+                          <span className="text-sm font-medium text-amber-600 dark:text-amber-400 flex-1 min-w-0 truncate">
                             {comment.post.title}
                           </span>
                         </div>

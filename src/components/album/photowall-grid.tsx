@@ -79,37 +79,38 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
 
   return (
     <>
-      {/* Masonry Grid */}
-      <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
+      {/* Responsive Masonry Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {localPhotos.map((photo, index) => (
           <ScrollReveal key={photo.url} delay={Math.min(index * 0.04, 0.4)}>
             <div
-              className="group relative break-inside-avoid overflow-hidden rounded-2xl bg-stone-200 dark:bg-stone-800 cursor-pointer"
+              className={cn(
+                "group relative overflow-hidden rounded-xl sm:rounded-2xl bg-stone-200 dark:bg-stone-800 cursor-pointer",
+                aspectRatios[index % aspectRatios.length]
+              )}
               onClick={() => setLightboxIndex(index)}
             >
-              <div className={cn("w-full", aspectRatios[index % aspectRatios.length])}>
-                <img
-                  src={photo.thumb || photo.url}
-                  alt={photo.caption ?? "校园照片"}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
+              <img
+                src={photo.thumb || photo.url}
+                alt={photo.caption ?? "校园照片"}
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                loading="lazy"
+              />
 
               {/* Hover Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
 
               {/* Caption */}
               {photo.caption && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-400">
-                  <p className="text-sm text-white/90 leading-snug line-clamp-2">
+                <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-400">
+                  <p className="text-xs sm:text-sm text-white/90 leading-snug line-clamp-2">
                     {photo.caption}
                   </p>
                 </div>
               )}
 
               {/* Index badge */}
-              <div className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-black/30 backdrop-blur-sm text-[10px] text-white/70 font-mono opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-2 left-2 sm:top-3 sm:left-3 px-1.5 py-0.5 sm:px-2 rounded-full bg-black/30 backdrop-blur-sm text-[9px] sm:text-[10px] text-white/70 font-mono opacity-0 group-hover:opacity-100 transition-opacity">
                 {String(index + 1).padStart(2, "0")}
               </div>
 
@@ -121,13 +122,13 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
                     handleDelete(photo.url)
                   }}
                   disabled={deletingUrl === photo.url}
-                  className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/80 hover:bg-red-500/80 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300"
+                  className="absolute top-2 right-2 sm:top-3 sm:right-3 h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/80 hover:bg-red-500/80 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300"
                   title="删除照片"
                 >
                   {deletingUrl === photo.url ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
                   ) : (
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                   )}
                 </button>
               )}
@@ -145,9 +146,9 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
           {/* Close */}
           <button
             onClick={closeLightbox}
-            className="absolute top-6 right-6 h-10 w-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
 
           {/* Prev */}
@@ -157,28 +158,28 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
                 e.stopPropagation()
                 prevPhoto()
               }}
-              className="absolute left-4 sm:left-8 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
+              className="absolute left-2 sm:left-4 md:left-8 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
             >
-              <ChevronLeft className="h-6 w-6" />
+              <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           )}
 
           {/* Image */}
           <div
-            className="relative max-w-[90vw] max-h-[85vh] flex flex-col items-center"
+            className="relative max-w-[95vw] sm:max-w-[90vw] max-h-[90vh] sm:max-h-[85vh] flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
             <img
               src={localPhotos[lightboxIndex].url}
               alt={localPhotos[lightboxIndex].caption ?? "校园照片"}
-              className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+              className="max-w-full max-h-[75vh] sm:max-h-[80vh] object-contain rounded-lg shadow-2xl"
             />
             {localPhotos[lightboxIndex].caption && (
-              <p className="mt-4 text-sm text-white/70 text-center max-w-lg leading-relaxed">
+              <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-white/70 text-center max-w-xs sm:max-w-lg leading-relaxed px-4">
                 {localPhotos[lightboxIndex].caption}
               </p>
             )}
-            <p className="mt-2 text-[10px] text-white/30 font-mono">
+            <p className="mt-1.5 sm:mt-2 text-[9px] sm:text-[10px] text-white/30 font-mono">
               {lightboxIndex + 1} / {localPhotos.length}
             </p>
           </div>
@@ -190,9 +191,9 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
                 e.stopPropagation()
                 nextPhoto()
               }}
-              className="absolute right-4 sm:right-8 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
+              className="absolute right-2 sm:right-4 md:right-8 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
             >
-              <ChevronRight className="h-6 w-6" />
+              <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           )}
         </div>

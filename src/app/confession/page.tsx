@@ -31,12 +31,12 @@ export default async function ConfessionPage() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-rose-50/90 via-slate-50 to-white dark:from-rose-950/20 dark:via-indigo-950 dark:to-indigo-950">
+      <section className="relative overflow-hidden bg-gradient-to-br from-rose-50/90 via-slate-50 to-white dark:from-rose-950/20 dark:via-stone-950 dark:to-stone-950">
         <AcademicParticles />
 
         {/* Subtle background decoration */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(225,29,72,0.08),_transparent_60%)]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-50/80 dark:to-indigo-950/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-50/80 dark:to-stone-950/80" />
 
         <div className="relative mx-auto max-w-3xl px-4 py-20 sm:py-28">
           <div className="text-center">
@@ -84,8 +84,8 @@ export default async function ConfessionPage() {
               <ConfessionForm />
             </div>
           ) : (
-            <div className="mb-10 rounded-2xl border border-dashed border-slate-300 dark:border-indigo-700 py-10 text-center bg-white/70 dark:bg-indigo-900/30 backdrop-blur-sm">
-              <MessageCircle className="mx-auto h-8 w-8 text-slate-300 dark:text-indigo-700" />
+            <div className="mb-10 rounded-2xl border border-dashed border-slate-300 dark:border-stone-700 py-10 text-center bg-white/70 dark:bg-[#141414] backdrop-blur-sm">
+              <MessageCircle className="mx-auto h-8 w-8 text-slate-300 dark:text-stone-700" />
               <p className="mt-3 text-sm text-slate-400 dark:text-slate-500">
                 登录后即可匿名表白
               </p>
@@ -111,8 +111,8 @@ export default async function ConfessionPage() {
 
         {posts.length === 0 ? (
           <ScrollReveal delay={0.2}>
-            <div className="rounded-2xl border border-dashed border-slate-300 dark:border-indigo-700 py-20 text-center bg-slate-50/50 dark:bg-indigo-900/20">
-              <Heart className="mx-auto h-12 w-12 text-slate-200 dark:text-indigo-800" />
+            <div className="rounded-2xl border border-dashed border-slate-300 dark:border-stone-700 py-20 text-center bg-slate-50/50 dark:bg-[#141414]">
+              <Heart className="mx-auto h-12 w-12 text-slate-200 dark:text-stone-800" />
               <p className="mt-4 text-slate-400 dark:text-slate-500 text-lg font-serif">
                 还没有表白，来做第一个勇敢的人吧
               </p>
