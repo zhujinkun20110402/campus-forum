@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { ProfileForm } from "@/components/profile/profile-form"
 import { UserAvatar } from "@/components/user/user-avatar"
+import { LevelBadge } from "@/components/reputation/level-badge"
+import { ReputationBar } from "@/components/reputation/reputation-bar"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { Shield, Sparkles, Crown } from "lucide-react"
 
@@ -20,6 +22,7 @@ export default async function ProfileSettingsPage() {
       image: true,
       bio: true,
       role: true,
+      raputation: true,
     },
   })
 
@@ -50,7 +53,7 @@ export default async function ProfileSettingsPage() {
                 size="xl"
               />
               <div className="text-center sm:text-left">
-                <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-1 flex-wrap">
                   <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
                     账号设置
                   </h1>
@@ -60,6 +63,7 @@ export default async function ProfileSettingsPage() {
                       管理员
                     </span>
                   )}
+                  <LevelBadge raputation={user.raputation} role={user.role} size="sm" />
                 </div>
                 <p className="text-sm text-indigo-300/50">
                   管理你的个人资料和头像
@@ -72,6 +76,12 @@ export default async function ProfileSettingsPage() {
 
       {/* Form */}
       <div className="relative -mt-6 mx-auto max-w-2xl px-4 sm:px-6 pb-20">
+        <ScrollReveal>
+          <div className="mb-6">
+            <ReputationBar raputation={user.raputation} role={user.role} />
+          </div>
+        </ScrollReveal>
+
         <ScrollReveal>
           <div className="rounded-3xl bg-white dark:bg-indigo-900/40 border border-slate-200 dark:border-indigo-800/60 shadow-xl shadow-slate-200/20 dark:shadow-indigo-950/30 p-6 sm:p-8">
             <ProfileForm user={profileUser} />

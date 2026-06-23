@@ -2,6 +2,7 @@
 
 import { Trash2 } from "lucide-react"
 import { UserAvatar } from "@/components/user/user-avatar"
+import { LevelBadge } from "@/components/reputation/level-badge"
 import { formatRelativeTime } from "@/lib/utils"
 import { deleteComment } from "@/lib/actions"
 
@@ -15,6 +16,7 @@ interface CommentListProps {
       name: string | null
       image: string | null
       role?: string | null
+      raputation?: number | null
     }
   }[]
   currentUserId?: string
@@ -44,9 +46,14 @@ export function CommentList({ comments, currentUserId, isAdmin, postId }: Commen
                 size="sm"
               />
               <div>
-                <span className="text-sm font-medium text-gray-900">
-                  {comment.author.name ?? "匿名用户"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-900">
+                    {comment.author.name ?? "匿名用户"}
+                  </span>
+                  {comment.author.raputation != null && (
+                    <LevelBadge raputation={comment.author.raputation} role={comment.author.role} size="xs" showTitle={false} />
+                  )}
+                </div>
                 <span className="ml-2 text-xs text-gray-400">
                   {formatRelativeTime(comment.createdAt)}
                 </span>

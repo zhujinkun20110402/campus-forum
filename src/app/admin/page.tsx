@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { CountUp } from "@/components/effects/count-up"
 import { BanUserButton } from "@/components/admin/ban-user-button"
+import { ReputationAdjustButton } from "@/components/admin/reputation-adjust-button"
+import { LevelBadge } from "@/components/reputation/level-badge"
 import { getPhotos } from "@/lib/album-store"
 import {
   Users,
@@ -18,6 +20,7 @@ import {
   Activity,
   Server,
   CheckCircle2,
+  Award,
 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -130,6 +133,12 @@ export default async function AdminPage() {
 
   const maxCategoryCount = Math.max(...categoryStats.map((c) => c._count.posts), 1)
 
+  // 声望排行榜（排除管理员）
+  const reputationLeaderboard = [...users]
+    .filter((u) => u.role !== "ADMIN")
+    .sort((a, b) => b.raputation - a.raputation)
+    .slice(0, 5)
+
   return (
     <div className="min-h-screen bg-[#faf9f7] dark:bg-[#0a0a0a]">
       {/* Admin Header */}
@@ -175,6 +184,66 @@ export default async function AdminPage() {
                 <div className="text-xs text-stone-500 dark:text-stone-400 mt-1">{stat.label}</div>
               </div>
             ))}
+          </div>
+        </ScrollReveal>
+
+        {/* Reputation Leaderboard */}
+        <ScrollReveal delay={0.05}>
+          <div className="rounded-3xl bg-white dark:bg-[#141414] border border-stone-200 dark:border-stone-800 shadow-sm p-6">
+            <div className="flex items-center gap-2 mb-5">
+              <div className="h-8 w-8 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
+                <Award className="h-4 w-4 text-amber-500" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">声望排行榜</h2>
+                <p className="text-[11px] text-stone-400 dark:text-stone-500">社区贡献度 Top 5</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {reputationLeaderboard.map((user, index) => (
+                <div
+                  key={user.id}
+                  className="flex items-center gap-3 rounded-xl bg-stone-50/50 dark:bg-stone-900/30 p-3"
+                >
+                  <span className={`shrink-0 h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                    index === 0
+                      ? "bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400"
+                      : index === 1
+                      ? "bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300"
+                      : index === 2
+                      ? "bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400"
+                      : "bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400"
+                  }`}>
+                    {index + 1}
+                  </span>
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} />
+                    <AvatarFallback className="text-xs bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300">
+                      {(user.name ?? user.email ?? "U").slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium text-stone-800 dark:text-stone-100 truncate block">
+                      {user.name ?? "未命名"}
+                    </span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <LevelBadge raputation={user.raputation} role={user.role} size="xs" showTitle={false} />
+                      <span className="text-[11px] text-stone-400 dark:text-stone-500">
+                        {user._count.posts} 帖 · {user._count.comments} 评
+                      </span>
+                    </div>
+                  </div>
+                  <span className="font-mono text-sm font-semibold text-amber-600 dark:text-amber-400 shrink-0">
+                    {user.raputation}
+                  </span>
+                </div>
+              ))}
+              {reputationLeaderboard.length === 0 && (
+                <div className="text-center py-8 text-sm text-stone-400 dark:text-stone-500">
+                  暂无用户数据
+                </div>
+              )}
+            </div>
           </div>
         </ScrollReveal>
 
@@ -320,8 +389,9 @@ export default async function AdminPage() {
                     <th className="text-left px-6 py-4 font-medium text-stone-600 dark:text-stone-300">用户</th>
                     <th className="text-left px-6 py-4 font-medium text-stone-600 dark:text-stone-300 hidden sm:table-cell">邮箱</th>
                     <th className="text-left px-6 py-4 font-medium text-stone-600 dark:text-stone-300">角色</th>
-                    <th className="text-left px-6 py-4 font-medium text-stone-600 dark:text-stone-300 hidden md:table-cell">注册时间</th>
-                    <th className="text-left px-6 py-4 font-medium text-stone-600 dark:text-stone-300 hidden lg:table-cell">活跃</th>
+                    <th className="text-left px-6 py-4 font-medium text-stone-600 dark:text-stone-300 hidden md:table-cell">声望</th>
+                    <th className="text-left px-6 py-4 font-medium text-stone-600 dark:text-stone-300 hidden lg:table-cell">注册时间</th>
+                    <th className="text-left px-6 py-4 font-medium text-stone-600 dark:text-stone-300 hidden xl:table-cell">活跃</th>
                     <th className="text-left px-6 py-4 font-medium text-stone-600 dark:text-stone-300">操作</th>
                   </tr>
                 </thead>
@@ -363,13 +433,27 @@ export default async function AdminPage() {
                           {user.role === "ADMIN" ? "管理员" : user.role === "BANNED" ? "已封禁" : "学生"}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 text-stone-500 dark:text-stone-400 hidden md:table-cell">
+                      <td className="px-6 py-4 hidden md:table-cell">
+                        <div className="flex items-center gap-2">
+                          <LevelBadge raputation={user.raputation} role={user.role} size="xs" showTitle={false} />
+                          <span className="font-mono text-xs text-stone-600 dark:text-stone-300">
+                            {user.role === "ADMIN" ? "9999" : user.raputation}
+                          </span>
+                          {user.role !== "ADMIN" && (
+                            <div className="flex items-center gap-1 ml-1">
+                              <ReputationAdjustButton userId={user.id} delta={10} />
+                              <ReputationAdjustButton userId={user.id} delta={-10} />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-stone-500 dark:text-stone-400 hidden lg:table-cell">
                         <span className="flex items-center gap-1.5">
                           <Clock className="h-3 w-3" />
                           {formatDate(user.createdAt).split(" ")[0]}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-stone-500 dark:text-stone-400 hidden lg:table-cell">
+                      <td className="px-6 py-4 text-stone-500 dark:text-stone-400 hidden xl:table-cell">
                         <div className="flex items-center gap-3 text-xs">
                           <span>{user._count.posts} 帖</span>
                           <span>{user._count.comments} 评</span>

@@ -16,6 +16,7 @@ import { PinButton } from "@/components/post/pin-button"
 import { isPostPinned } from "@/lib/pinned-posts"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { UserAvatar } from "@/components/user/user-avatar"
+import { LevelBadge } from "@/components/reputation/level-badge"
 import { MessageSquare, Clock, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -40,7 +41,7 @@ export default async function PostPage({
       where: { id },
       include: {
         author: {
-          select: { id: true, name: true, image: true, role: true },
+          select: { id: true, name: true, image: true, role: true, raputation: true },
         },
         category: {
           select: { name: true, slug: true },
@@ -49,7 +50,7 @@ export default async function PostPage({
           orderBy: { createdAt: "asc" },
           include: {
             author: {
-              select: { id: true, name: true, image: true, role: true },
+              select: { id: true, name: true, image: true, role: true, raputation: true },
             },
           },
         },
@@ -127,9 +128,12 @@ export default async function PostPage({
                 size="lg"
               />
               <div>
-                <p className="font-medium text-stone-800 dark:text-stone-100">
-                  {post.author.name}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-stone-800 dark:text-stone-100">
+                    {post.author.name}
+                  </p>
+                  <LevelBadge raputation={post.author.raputation} role={post.author.role} size="xs" showTitle={false} />
+                </div>
                 <p className="text-xs text-stone-400 dark:text-stone-500">作者</p>
               </div>
             </div>

@@ -81,15 +81,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const imageUrl = json.image?.url || json.image?.display_url || json.image?.url_viewer
+    const fullImageUrl = json.image?.url || json.image?.display_url || json.image?.url_viewer
+    const thumbUrl = json.image?.thumb?.url
 
-    if (!imageUrl) {
+    if (!fullImageUrl) {
       return NextResponse.json({ error: "未获取到图片地址" }, { status: 500 })
     }
+
+    // 头像优先返回缩略图 URL（加载更快），其他场景返回原图
+    const imageUrl = isAvatar && thumbUrl ? thumbUrl : fullImageUrl
 
     return NextResponse.json({
       success: true,
       url: imageUrl,
+      thumb: thumbUrl,
       name: json.image?.original_filename || file.name,
       pending: isPhotowall && !isAdmin,
     })

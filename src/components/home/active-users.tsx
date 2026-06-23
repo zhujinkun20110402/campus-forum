@@ -3,12 +3,14 @@
 import Link from "next/link"
 import { Users } from "lucide-react"
 import { UserAvatar } from "@/components/user/user-avatar"
+import { LevelBadge } from "@/components/reputation/level-badge"
 
 interface ActiveUser {
   id: string
   name: string | null
   image: string | null
   role?: string | null
+  raputation?: number | null
 }
 
 interface ActiveUsersProps {
@@ -47,6 +49,9 @@ export function ActiveUsers({ users }: ActiveUsersProps) {
             <span className="text-[11px] text-stone-500 dark:text-stone-400 truncate w-full group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
               {user.name ?? "匿名用户"}
             </span>
+            {user.raputation != null && (
+              <LevelBadge raputation={user.raputation} role={user.role} size="xs" showTitle={false} />
+            )}
           </Link>
         ))}
       </div>

@@ -9,7 +9,7 @@ interface PostType {
   id: string
   title: string
   content: string
-  author: { id: string; name: string | null; image: string | null }
+  author: { id: string; name: string | null; image: string | null; role?: string | null; raputation?: number | null }
   category: { name: string; slug: string }
   _count: { comments: number; likes: number }
   createdAt: Date | string

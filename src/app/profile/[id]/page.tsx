@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { CountUp } from "@/components/effects/count-up"
 import { SafeImage } from "@/components/ui/safe-image"
+import { ReputationBar } from "@/components/reputation/reputation-bar"
+import { LevelBadge } from "@/components/reputation/level-badge"
+import { UserBadges } from "@/components/reputation/user-badges"
+import { getPinnedPostIds } from "@/lib/pinned-posts"
 import {
   Settings,
   FileText,
@@ -18,7 +22,6 @@ import {
   BookOpen,
   Clock,
   Crown,
-  Award,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -40,22 +43,38 @@ export default async function ProfilePage({
   const session = await auth()
   const isOwnProfile = session?.user?.id === id
 
-  const user = await prisma.user.findUnique({
-    where: { id },
-    include: {
-      _count: {
-        select: {
-          posts: true,
-          comments: true,
-          likes: true,
+  const [user, pinnedIds] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            posts: true,
+            comments: true,
+            likes: true,
+          },
         },
       },
-    },
-  })
+    }),
+    getPinnedPostIds(),
+  ])
 
   if (!user) {
     notFound()
   }
+
+  // 获取用户帖子的点赞总数
+  const likeReceivedCount = await prisma.like.count({
+    where: { post: { authorId: id } },
+  })
+
+  // 检查用户是否有帖子被置顶
+  const userPostIds = await prisma.post.findMany({
+    where: { authorId: id },
+    select: { id: true },
+  })
+  const userPostIdSet = new Set(userPostIds.map((p) => p.id))
+  const hasPinnedPost = pinnedIds.some((pid) => userPostIdSet.has(pid))
 
   const posts = await prisma.post.findMany({
     where: { authorId: id },
@@ -90,13 +109,17 @@ export default async function ProfilePage({
   const stats = [
     { label: "帖子", value: user._count.posts, icon: FileText },
     { label: "评论", value: user._count.comments, icon: MessageSquare },
-    { label: "获赞", value: user._count.likes, icon: Heart },
+    { label: "获赞", value: likeReceivedCount, icon: Heart },
   ]
 
-  const reputation = user._count.posts * 10 + user._count.comments * 3 + user._count.likes * 5
-  const level = Math.floor(reputation / 50) + 1
-  const nextLevel = level * 50
-  const progress = Math.min(100, Math.round((reputation % 50) / 50 * 100))
+  const raputation = user.raputation
+  const badgeStats = {
+    postCount: user._count.posts,
+    commentCount: user._count.comments,
+    likeReceivedCount,
+    hasPinnedPost,
+    role: user.role,
+  }
 
   return (
     <div className="min-h-screen bg-[#faf9f7] dark:bg-[#0a0a0a]">
@@ -140,7 +163,7 @@ export default async function ProfilePage({
 
               {/* Info */}
               <div className="flex-1 text-center sm:text-left">
-                <div className="flex items-center justify-center sm:justify-start gap-3 mb-2">
+                <div className="flex items-center justify-center sm:justify-start gap-3 mb-2 flex-wrap">
                   <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
                     {user.name ?? "未命名用户"}
                   </h1>
@@ -149,6 +172,7 @@ export default async function ProfilePage({
                       管理员
                     </Badge>
                   )}
+                  <LevelBadge raputation={raputation} role={user.role} size="sm" />
                 </div>
 
                 <div className="flex items-center justify-center sm:justify-start gap-3 text-xs text-stone-400">
@@ -196,20 +220,11 @@ export default async function ProfilePage({
                 </div>
               ))}
               <div className="rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 backdrop-blur-sm border border-amber-500/20 p-4 text-center col-span-2 sm:col-span-1">
-                <Award className="h-4 w-4 text-amber-400 mx-auto mb-2" />
+                <Crown className="h-4 w-4 text-amber-400 mx-auto mb-2" />
                 <div className="text-2xl font-mono font-semibold text-white">
-                  Lv.{level}
+                  {user.role === "ADMIN" ? "MAX" : raputation}
                 </div>
-                <div className="text-xs text-stone-400 mt-1">社区等级</div>
-                <div className="mt-2 h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-amber-400 rounded-full transition-all"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <p className="text-[10px] text-stone-500 mt-1">
-                  {reputation} / {nextLevel} 声望
-                </p>
+                <div className="text-xs text-stone-400 mt-1">声望值</div>
               </div>
             </div>
           </ScrollReveal>
@@ -218,6 +233,16 @@ export default async function ProfilePage({
 
       {/* Content Tabs */}
       <div className="relative -mt-12 mx-auto max-w-5xl px-4 sm:px-6">
+        {/* Reputation & Badges */}
+        <ScrollReveal>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <ReputationBar raputation={raputation} role={user.role} />
+            <div className="rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#141414] p-5">
+              <UserBadges stats={badgeStats} />
+            </div>
+          </div>
+        </ScrollReveal>
+
         <div className="bg-white dark:bg-[#141414] rounded-3xl border border-stone-200 dark:border-stone-800 shadow-xl overflow-hidden">
           {/* Posts Section */}
           <div className="p-6 sm:p-8">

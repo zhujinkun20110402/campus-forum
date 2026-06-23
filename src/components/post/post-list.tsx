@@ -9,6 +9,8 @@ interface PostListProps {
       id: string
       name: string | null
       image: string | null
+      role?: string | null
+      raputation?: number | null
     }
     category: {
       name: string

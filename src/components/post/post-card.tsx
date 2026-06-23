@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { UserAvatar } from "@/components/user/user-avatar"
+import { LevelBadge } from "@/components/reputation/level-badge"
 import { MessageCircle, Heart, Clock, MoreHorizontal } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatRelativeTime } from "@/lib/utils"
@@ -17,6 +18,7 @@ interface PostCardProps {
       name: string | null
       image: string | null
       role?: string | null
+      raputation?: number | null
     }
     category: {
       name: string
@@ -100,10 +102,13 @@ export function PostCard({ post, hideAuthor = false }: PostCardProps) {
           )}
 
           <div className="flex-1 min-w-0 pt-0.5">
-            <div className="flex items-center gap-2 mb-0.5">
+            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
               <span className="font-semibold text-[15px] text-stone-800 dark:text-stone-100 truncate">
                 {shouldHideAuthor ? "匿名同学" : (post.author.name ?? "匿名用户")}
               </span>
+              {!shouldHideAuthor && post.author.raputation != null && (
+                <LevelBadge raputation={post.author.raputation} role={post.author.role} size="xs" showTitle={false} />
+              )}
               <Link
                 href={`/category/${post.category.slug}`}
                 onClick={(e) => e.stopPropagation()}

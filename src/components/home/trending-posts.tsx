@@ -3,12 +3,13 @@
 import Link from "next/link"
 import { TrendingUp, MessageCircle, Heart } from "lucide-react"
 import { UserAvatar } from "@/components/user/user-avatar"
+import { LevelBadge } from "@/components/reputation/level-badge"
 import { formatRelativeTime } from "@/lib/utils"
 
 interface TrendingPost {
   id: string
   title: string
-  author: { id: string; name: string | null; image: string | null; role?: string | null }
+  author: { id: string; name: string | null; image: string | null; role?: string | null; raputation?: number | null }
   category: { name: string; slug: string }
   _count: { comments: number; likes: number }
   createdAt: Date | string
@@ -51,6 +52,9 @@ export function TrendingPosts({ posts }: TrendingPostsProps) {
                 <span className="flex items-center gap-1">
                   <UserAvatar name={post.author.name} image={post.author.image} role={post.author.role} size="sm" />
                   <span className="truncate max-w-[80px]">{post.author.name ?? "匿名"}</span>
+                  {post.author.raputation != null && (
+                    <LevelBadge raputation={post.author.raputation} role={post.author.role} size="xs" showTitle={false} />
+                  )}
                 </span>
                 <span className="flex items-center gap-1">
                   <Heart className="h-3 w-3" />

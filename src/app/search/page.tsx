@@ -14,7 +14,7 @@ export default async function SearchPage({
     id: string
     title: string
     content: string
-    author: { id: string; name: string | null; image: string | null }
+    author: { id: string; name: string | null; image: string | null; role: string; raputation: number }
     category: { name: string; slug: string }
     _count: { comments: number; likes: number }
     createdAt: Date | string
@@ -32,7 +32,7 @@ export default async function SearchPage({
       orderBy: { createdAt: "desc" },
       include: {
         author: {
-          select: { id: true, name: true, image: true, role: true },
+          select: { id: true, name: true, image: true, role: true, raputation: true },
         },
         category: {
           select: { name: true, slug: true },

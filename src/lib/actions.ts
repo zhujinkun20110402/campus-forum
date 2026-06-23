@@ -7,6 +7,11 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { postSchema, commentSchema, registerSchema, confessionSchema, profileSchema } from "@/lib/validations"
 import { pinPost, unpinPost, getPinnedPostIds } from "@/lib/pinned-posts"
+import {
+  REP_POINTS,
+  adjustRaputation,
+  hasPostedToday,
+} from "@/lib/reputation"
 
 async function checkBanned(userId: string) {
   const user = await prisma.user.findUnique({
@@ -99,6 +104,9 @@ export async function createPost(_prevState: unknown, formData: FormData) {
     return { message: "只有管理员可以发布公告" }
   }
 
+  // 检查是否今日首次发帖（在创建帖子之前检查）
+  const isFirstPostToday = !(await hasPostedToday(session.user.id))
+
   const post = await prisma.post.create({
     data: {
       title,
@@ -107,6 +115,10 @@ export async function createPost(_prevState: unknown, formData: FormData) {
       categoryId,
     },
   })
+
+  // 声望奖励：发帖 +5，每日首次发帖额外 +3
+  const repDelta = REP_POINTS.POST_CREATED + (isFirstPostToday ? REP_POINTS.DAILY_FIRST_POST : 0)
+  await adjustRaputation(session.user.id, repDelta)
 
   revalidatePath("/")
   if (category.slug === "confession") {
@@ -142,6 +154,8 @@ export async function createConfession(_prevState: unknown, formData: FormData) 
     return { message: "表白墙分类不存在" }
   }
 
+  const isFirstPostToday = !(await hasPostedToday(session.user.id))
+
   await prisma.post.create({
     data: {
       title: "匿名表白",
@@ -150,6 +164,10 @@ export async function createConfession(_prevState: unknown, formData: FormData) 
       categoryId: confessionCategory.id,
     },
   })
+
+  // 声望奖励：发帖 +5，每日首次发帖额外 +3
+  const repDelta = REP_POINTS.POST_CREATED + (isFirstPostToday ? REP_POINTS.DAILY_FIRST_POST : 0)
+  await adjustRaputation(session.user.id, repDelta)
 
   revalidatePath("/confession")
   redirect("/confession")
@@ -182,6 +200,9 @@ export async function createComment(postId: string, _prevState: unknown, formDat
     },
   })
 
+  // 声望奖励：评论 +2
+  await adjustRaputation(session.user.id, REP_POINTS.COMMENT_CREATED)
+
   revalidatePath(`/post/${postId}`)
   return { success: true }
 }
@@ -205,14 +226,28 @@ export async function toggleLike(postId: string) {
     },
   })
 
+  // 获取帖子作者 ID（用于声望调整）
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { authorId: true },
+  })
+
   if (existingLike) {
     await prisma.like.delete({
       where: { id: existingLike.id },
     })
+    // 取消点赞：扣除帖子作者的声望
+    if (post && post.authorId !== userId) {
+      await adjustRaputation(post.authorId, -REP_POINTS.POST_LIKED)
+    }
   } else {
     await prisma.like.create({
       data: { postId, userId },
     })
+    // 点赞：给帖子作者增加声望（不给自己点赞加分）
+    if (post && post.authorId !== userId) {
+      await adjustRaputation(post.authorId, REP_POINTS.POST_LIKED)
+    }
   }
 
   revalidatePath(`/post/${postId}`)
@@ -236,6 +271,10 @@ export async function deletePost(postId: string) {
   }
 
   await prisma.post.delete({ where: { id: postId } })
+
+  // 声望扣除：删帖 -5
+  await adjustRaputation(post.authorId, REP_POINTS.POST_DELETED)
+
   revalidatePath("/")
   revalidatePath("/confession")
   redirect("/")
@@ -258,6 +297,10 @@ export async function deleteComment(commentId: string, postId: string) {
   }
 
   await prisma.comment.delete({ where: { id: commentId } })
+
+  // 声望扣除：删评论 -2
+  await adjustRaputation(comment.authorId, REP_POINTS.COMMENT_DELETED)
+
   revalidatePath(`/post/${postId}`)
 }
 
@@ -272,6 +315,9 @@ export async function banUser(userId: string) {
     data: { role: "BANNED" },
   })
 
+  // 声望扣除：被封禁 -50
+  await adjustRaputation(userId, REP_POINTS.BANNED)
+
   revalidatePath("/admin")
 }
 
@@ -285,6 +331,9 @@ export async function unbanUser(userId: string) {
     where: { id: userId },
     data: { role: "USER" },
   })
+
+  // 声望恢复：解封 +50
+  await adjustRaputation(userId, REP_POINTS.UNBANNED_RESTORE)
 
   revalidatePath("/admin")
 }
@@ -327,7 +376,7 @@ export async function getMorePosts(page: number, pageSize = 12) {
     orderBy: { createdAt: "desc" },
     include: {
       author: {
-        select: { id: true, name: true, image: true, role: true },
+        select: { id: true, name: true, image: true, role: true, raputation: true },
       },
       category: {
         select: { name: true, slug: true },
@@ -352,7 +401,7 @@ export async function getTrendingPosts() {
     ],
     take: 5,
     include: {
-      author: { select: { id: true, name: true, image: true, role: true } },
+      author: { select: { id: true, name: true, image: true, role: true, raputation: true } },
       category: { select: { name: true, slug: true } },
       _count: { select: { comments: true, likes: true } },
     },
@@ -367,7 +416,7 @@ export async function getPinnedPosts() {
     where: { id: { in: pinnedIds } },
     include: {
       author: {
-        select: { id: true, name: true, image: true, role: true },
+        select: { id: true, name: true, image: true, role: true, raputation: true },
       },
       category: {
         select: { name: true, slug: true },
@@ -389,13 +438,42 @@ export async function togglePinPost(postId: string, pinned: boolean) {
     throw new Error("没有权限")
   }
 
+  // 获取帖子作者 ID（用于声望调整）
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { authorId: true },
+  })
+
+  if (!post) {
+    throw new Error("帖子不存在")
+  }
+
   if (pinned) {
     await unpinPost(postId)
+    // 取消置顶：扣除声望
+    await adjustRaputation(post.authorId, -REP_POINTS.POST_PINNED)
   } else {
     await pinPost(postId)
+    // 置顶：奖励声望
+    await adjustRaputation(post.authorId, REP_POINTS.POST_PINNED)
   }
 
   revalidatePath("/")
   revalidatePath("/search")
   revalidatePath(`/post/${postId}`)
+}
+
+/**
+ * 管理员手动调整用户声望
+ */
+export async function adjustUserRaputation(userId: string, delta: number) {
+  const session = await auth()
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    throw new Error("没有权限")
+  }
+
+  await adjustRaputation(userId, delta)
+
+  revalidatePath("/admin")
+  revalidatePath(`/profile/${userId}`)
 }
