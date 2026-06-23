@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
-import { X, ChevronLeft, ChevronRight, Trash2, Loader2, ImageIcon } from "lucide-react"
+import { useState, useEffect, useCallback, useRef } from "react"
+import { X, ChevronLeft, ChevronRight, Trash2, Loader2, ImageIcon, ArrowDown, ArrowUp } from "lucide-react"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { cn } from "@/lib/utils"
 
@@ -34,6 +34,13 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
   const [localPhotos, setLocalPhotos] = useState(photos)
   const [lightboxLoading, setLightboxLoading] = useState(true)
   const [lightboxError, setLightboxError] = useState(false)
+
+  // 上次浏览位置
+  const [restoredY, setRestoredY] = useState<number | null>(null)
+  const [showRestoreToast, setShowRestoreToast] = useState(false)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const SCROLL_KEY = "photowall-scroll-y"
+  const MIN_RESTORE_OFFSET = 120 // 至少滚动 120px 才提示恢复
 
   const closeLightbox = useCallback(() => setLightboxIndex(null), [])
   const openLightbox = useCallback((index: number) => {
@@ -70,6 +77,61 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
       document.body.style.overflow = ""
     }
   }, [lightboxIndex, closeLightbox, prevPhoto, nextPhoto])
+
+  // 恢复上次浏览位置
+  useEffect(() => {
+    const raw = localStorage.getItem(SCROLL_KEY)
+    if (!raw) return
+
+    const savedY = parseInt(raw, 10)
+    if (Number.isNaN(savedY) || savedY <= MIN_RESTORE_OFFSET) return
+
+    // 等待照片渲染和动画完成后再恢复
+    const restoreTimer = setTimeout(() => {
+      window.scrollTo({ top: savedY, behavior: "smooth" })
+      setRestoredY(savedY)
+      setShowRestoreToast(true)
+      const hideTimer = setTimeout(() => setShowRestoreToast(false), 3000)
+      return () => clearTimeout(hideTimer)
+    }, 600)
+
+    return () => clearTimeout(restoreTimer)
+  }, [])
+
+  // 滚动时保存位置（防抖）
+  useEffect(() => {
+    const handleScroll = () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+      saveTimerRef.current = setTimeout(() => {
+        const y = Math.round(window.scrollY)
+        if (y > MIN_RESTORE_OFFSET) {
+          localStorage.setItem(SCROLL_KEY, y.toString())
+        } else {
+          localStorage.removeItem(SCROLL_KEY)
+        }
+      }, 200)
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    }
+  }, [])
+
+  // 返回上次位置
+  const handleReturnToSaved = useCallback(() => {
+    if (restoredY && restoredY > 0) {
+      window.scrollTo({ top: restoredY, behavior: "smooth" })
+    }
+  }, [restoredY])
+
+  // 清除记录并返回顶部
+  const handleClearAndGoTop = useCallback(() => {
+    localStorage.removeItem(SCROLL_KEY)
+    setRestoredY(null)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }, [])
 
   async function handleDelete(url: string) {
     if (!confirm("确定要删除这张照片吗？")) return
@@ -229,6 +291,43 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
               <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           )}
+        </div>
+      )}
+
+      {/* Restore position toast */}
+      <div
+        className={cn(
+          "fixed bottom-6 left-1/2 -translate-x-1/2 z-[150] flex items-center gap-3 rounded-full border bg-white/90 dark:bg-stone-900/90 backdrop-blur-md px-4 py-2.5 shadow-lg transition-all duration-500",
+          showRestoreToast
+            ? "translate-y-0 opacity-100"
+            : "translate-y-4 opacity-0 pointer-events-none"
+        )}
+      >
+        <ArrowDown className="h-3.5 w-3.5 text-amber-500" />
+        <span className="text-xs text-stone-700 dark:text-stone-200">
+          已恢复上次浏览位置
+        </span>
+      </div>
+
+      {/* Floating action: return to saved position / back to top */}
+      {restoredY !== null && (
+        <div className="fixed bottom-6 right-4 sm:right-6 z-[150] flex flex-col gap-2">
+          <button
+            onClick={handleReturnToSaved}
+            className="group flex items-center justify-center gap-2 rounded-full bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 px-4 py-2.5 text-xs font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+            title="回到上次位置"
+          >
+            <ArrowDown className="h-3.5 w-3.5 transition-transform group-hover:translate-y-0.5" />
+            上次位置
+          </button>
+          <button
+            onClick={handleClearAndGoTop}
+            className="group flex items-center justify-center gap-2 rounded-full bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 border border-stone-200 dark:border-stone-700 px-4 py-2 text-[11px] shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+            title="返回顶部并清除记录"
+          >
+            <ArrowUp className="h-3 w-3 transition-transform group-hover:-translate-y-0.5" />
+            返回顶部
+          </button>
         </div>
       )}
     </>
