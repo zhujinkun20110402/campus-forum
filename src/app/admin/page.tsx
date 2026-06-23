@@ -14,8 +14,6 @@ import {
   Shield,
   Clock,
   TrendingUp,
-  AlertCircle,
-  ArrowUpRight,
   Images,
   Activity,
   Server,

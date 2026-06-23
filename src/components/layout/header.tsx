@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { SafeImage } from "@/components/ui/safe-image"
+import { UserAvatar } from "@/components/user/user-avatar"
 import { useState } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { useScrollDirection } from "@/hooks/use-scroll-direction"
@@ -120,9 +121,12 @@ export function Header() {
                       className="h-9 gap-1.5 text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-[#1c1c1c]"
                       onClick={() => setDropdownOpen(!dropdownOpen)}
                     >
-                      <div className="h-7 w-7 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center text-xs font-medium text-stone-600 dark:text-stone-300">
-                        {(user.name ?? "?").charAt(0)}
-                      </div>
+                      <UserAvatar
+                        name={user.name}
+                        image={user.image}
+                        role={user.role}
+                        size="sm"
+                      />
                       <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", dropdownOpen && "rotate-180")} />
                     </Button>
 

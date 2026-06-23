@@ -5,7 +5,8 @@ const CHEVERETO_URL = process.env.CHEVERETO_API_URL || "https://www.picgo.net"
 const CHEVERETO_KEY = process.env.CHEVERETO_API_KEY || ""
 const CHEVERETO_ALBUM = process.env.CHEVERETO_ALBUM_ID || "otxRh"
 const CHEVERETO_PHOTOWALL_ALBUM = process.env.CHEVERETO_PHOTOWALL_ALBUM_ID || "oGZTj"
-const CHEVERETO_PENDING_ALBUM = process.env.CHEVERETO_PENDING_ALBUM_ID || ""
+const CHEVERETO_PENDING_ALBUM = process.env.CHEVERETO_PENDING_ALBUM_ID || "oQSUd"
+const CHEVERETO_AVATAR_ALBUM = process.env.CHEVERETO_AVATAR_ALBUM_ID || "oQXob"
 
 export async function POST(request: NextRequest) {
   const session = await auth()
@@ -25,6 +26,7 @@ export async function POST(request: NextRequest) {
 
     const isAdmin = session.user.role === "ADMIN"
     const isPhotowall = target === "photowall"
+    const isAvatar = target === "avatar"
 
     // 照片墙：非管理员上传到待审核相册，管理员直接上传到公开相册
     let albumId: string
@@ -36,6 +38,8 @@ export async function POST(request: NextRequest) {
       } else {
         return NextResponse.json({ error: "未配置待审核相册，暂时无法上传" }, { status: 500 })
       }
+    } else if (isAvatar) {
+      albumId = CHEVERETO_AVATAR_ALBUM
     } else {
       albumId = CHEVERETO_ALBUM
     }
@@ -53,6 +57,11 @@ export async function POST(request: NextRequest) {
         const uploaderName = session.user.name || session.user.email || "未知用户"
         uploadData.append("title", `${caption} -- uploader:${uploaderName}`)
       }
+    }
+
+    // 头像：使用用户 ID 作为 title 方便后续查找/管理
+    if (isAvatar) {
+      uploadData.append("title", `avatar:${session.user.id}`)
     }
 
     const res = await fetch(`${CHEVERETO_URL}/api/1/upload`, {

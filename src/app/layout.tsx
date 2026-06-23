@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { Noto_Serif_SC, Noto_Sans_SC, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/components/layout/providers"
-import { Header } from "@/components/layout/header"
+import { HeaderWrapper } from "@/components/layout/header-wrapper"
 import { Footer } from "@/components/layout/footer"
 import { NavigationProgress } from "@/components/layout/navigation-progress"
 
@@ -69,7 +69,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#faf9f7] dark:bg-[#0a0a0a] text-[#1c1917] dark:text-[#e8e6e3]">
         <Providers>
           <NavigationProgress />
-          <Header />
+          <HeaderWrapper />
           <main className="flex-1">{children}</main>
           <Footer />
         </Providers>

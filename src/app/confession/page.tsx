@@ -4,7 +4,6 @@ import { PostList } from "@/components/post/post-list"
 import { ConfessionForm } from "@/components/confession/confession-form"
 import { AcademicParticles } from "@/components/effects/academic-particles"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
-import { MottoStream } from "@/components/effects/motto-stream"
 import { Heart, MessageCircle, Sparkles } from "lucide-react"
 
 export default async function ConfessionPage() {

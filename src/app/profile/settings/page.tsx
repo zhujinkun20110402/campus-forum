@@ -2,8 +2,9 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { ProfileForm } from "@/components/profile/profile-form"
+import { UserAvatar } from "@/components/user/user-avatar"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
-import { Settings, Shield, Sparkles } from "lucide-react"
+import { Shield, Sparkles, Crown } from "lucide-react"
 
 export default async function ProfileSettingsPage() {
   const session = await auth()
@@ -18,6 +19,7 @@ export default async function ProfileSettingsPage() {
       email: true,
       image: true,
       bio: true,
+      role: true,
     },
   })
 
@@ -30,6 +32,7 @@ export default async function ProfileSettingsPage() {
     email: user.email ?? "",
     image: user.image,
     bio: user.bio,
+    role: user.role,
   }
 
   return (
@@ -39,14 +42,25 @@ export default async function ProfileSettingsPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.06),_transparent_60%)]" />
         <div className="relative mx-auto max-w-2xl px-4 sm:px-6">
           <ScrollReveal>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-gold-400 to-gold-500 flex items-center justify-center shadow-lg shadow-gold-500/20">
-                <Settings className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
-                  账号设置
-                </h1>
+            <div className="flex flex-col sm:flex-row items-center gap-5">
+              <UserAvatar
+                name={user.name}
+                image={user.image}
+                role={user.role}
+                size="xl"
+              />
+              <div className="text-center sm:text-left">
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                  <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
+                    账号设置
+                  </h1>
+                  {user.role === "ADMIN" && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs border border-amber-500/30">
+                      <Crown className="h-3 w-3" />
+                      管理员
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-indigo-300/50">
                   管理你的个人资料和头像
                 </p>

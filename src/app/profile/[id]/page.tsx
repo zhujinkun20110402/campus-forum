@@ -17,7 +17,8 @@ import {
   Calendar,
   BookOpen,
   Clock,
-  User,
+  Crown,
+  Award,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -92,6 +93,11 @@ export default async function ProfilePage({
     { label: "获赞", value: user._count.likes, icon: Heart },
   ]
 
+  const reputation = user._count.posts * 10 + user._count.comments * 3 + user._count.likes * 5
+  const level = Math.floor(reputation / 50) + 1
+  const nextLevel = level * 50
+  const progress = Math.min(100, Math.round((reputation % 50) / 50 * 100))
+
   return (
     <div className="min-h-screen bg-[#faf9f7] dark:bg-[#0a0a0a]">
       {/* Hero Profile Header */}
@@ -126,8 +132,8 @@ export default async function ProfilePage({
                   </div>
                 </div>
                 {user.role === "ADMIN" && (
-                  <div className="absolute -bottom-2 -right-2 h-7 w-7 rounded-full bg-amber-500 border-2 border-stone-900 flex items-center justify-center shadow-lg">
-                    <span className="text-[10px] font-bold text-stone-900">管</span>
+                  <div className="absolute -bottom-2 -right-2 h-7 w-7 rounded-full bg-amber-400 border-2 border-stone-900 flex items-center justify-center shadow-lg">
+                    <Crown className="h-3.5 w-3.5 text-stone-900" />
                   </div>
                 )}
               </div>
@@ -176,7 +182,7 @@ export default async function ProfilePage({
 
           {/* Stats Bar */}
           <ScrollReveal delay={0.1}>
-            <div className="mt-10 grid grid-cols-3 gap-4 max-w-md mx-auto sm:mx-0">
+            <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-lg mx-auto sm:mx-0">
               {stats.map((stat) => (
                 <div
                   key={stat.label}
@@ -189,6 +195,22 @@ export default async function ProfilePage({
                   <div className="text-xs text-stone-400 mt-1">{stat.label}</div>
                 </div>
               ))}
+              <div className="rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 backdrop-blur-sm border border-amber-500/20 p-4 text-center col-span-2 sm:col-span-1">
+                <Award className="h-4 w-4 text-amber-400 mx-auto mb-2" />
+                <div className="text-2xl font-mono font-semibold text-white">
+                  Lv.{level}
+                </div>
+                <div className="text-xs text-stone-400 mt-1">社区等级</div>
+                <div className="mt-2 h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-amber-400 rounded-full transition-all"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-stone-500 mt-1">
+                  {reputation} / {nextLevel} 声望
+                </p>
+              </div>
             </div>
           </ScrollReveal>
         </div>

@@ -119,7 +119,7 @@ export default async function CategoryPage({
         orderBy: { createdAt: "desc" },
         include: {
           author: {
-            select: { id: true, name: true, image: true },
+            select: { id: true, name: true, image: true, role: true },
           },
           category: {
             select: { name: true, slug: true },

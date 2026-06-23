@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { SafeImage } from "@/components/ui/safe-image"
+import { UserAvatar } from "@/components/user/user-avatar"
 import { MessageCircle, Heart, Clock, MoreHorizontal } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { formatRelativeTime } from "@/lib/utils"
@@ -16,6 +16,7 @@ interface PostCardProps {
       id: string
       name: string | null
       image: string | null
+      role?: string | null
     }
     category: {
       name: string
@@ -88,22 +89,13 @@ export function PostCard({ post, hideAuthor = false }: PostCardProps) {
             <Link
               href={`/profile/${post.author.id}`}
               onClick={(e) => e.stopPropagation()}
-              className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden ring-2 ring-stone-100 dark:ring-stone-800 hover:ring-amber-200 dark:hover:ring-amber-800/50 transition-all"
+              className="shrink-0"
             >
-              {post.author.image ? (
-                <SafeImage
-                  src={post.author.image}
-                  alt={post.author.name ?? ""}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="h-full w-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center">
-                  <span className="text-sm font-medium text-stone-600 dark:text-stone-300">
-                    {post.author.name?.charAt(0) ?? "?"}
-                  </span>
-                </div>
-              )}
+              <UserAvatar
+                name={post.author.name}
+                image={post.author.image}
+                role={post.author.role}
+              />
             </Link>
           )}
 

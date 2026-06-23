@@ -9,7 +9,7 @@ export interface WallPhoto {
 const CHEVERETO_URL = process.env.CHEVERETO_API_URL || "https://www.picgo.net"
 const CHEVERETO_KEY = process.env.CHEVERETO_API_KEY || ""
 const CHEVERETO_ALBUM = process.env.CHEVERETO_PHOTOWALL_ALBUM_ID || "oGZTj"
-const CHEVERETO_PENDING_ALBUM = process.env.CHEVERETO_PENDING_ALBUM_ID || ""
+const CHEVERETO_PENDING_ALBUM = process.env.CHEVERETO_PENDING_ALBUM_ID || "oQSUd"
 
 interface ParsedPhoto {
   fullUrl: string

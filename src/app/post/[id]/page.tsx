@@ -12,8 +12,10 @@ import { CommentList } from "@/components/comment/comment-list"
 import { CommentForm } from "@/components/comment/comment-form"
 import { DeleteButton } from "@/components/post/delete-button"
 import { ShareButton } from "@/components/post/share-button"
+import { PinButton } from "@/components/post/pin-button"
+import { isPostPinned } from "@/lib/pinned-posts"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
-import { SafeImage } from "@/components/ui/safe-image"
+import { UserAvatar } from "@/components/user/user-avatar"
 import { MessageSquare, Clock, ArrowLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -33,12 +35,12 @@ export default async function PostPage({
 }) {
   const { id } = await params
 
-  const [post, session] = await Promise.all([
+  const [post, session, pinned] = await Promise.all([
     prisma.post.findUnique({
       where: { id },
       include: {
         author: {
-          select: { id: true, name: true, image: true },
+          select: { id: true, name: true, image: true, role: true },
         },
         category: {
           select: { name: true, slug: true },
@@ -47,7 +49,7 @@ export default async function PostPage({
           orderBy: { createdAt: "asc" },
           include: {
             author: {
-              select: { id: true, name: true, image: true },
+              select: { id: true, name: true, image: true, role: true },
             },
           },
         },
@@ -58,6 +60,7 @@ export default async function PostPage({
       },
     }),
     auth(),
+    isPostPinned(id),
   ])
 
   if (!post) {
@@ -117,22 +120,12 @@ export default async function PostPage({
           {/* Author */}
           {!isConfession && (
             <div className="flex items-center gap-3">
-              {post.author.image ? (
-                <div className="relative h-11 w-11 rounded-full overflow-hidden ring-2 ring-stone-100 dark:ring-stone-700">
-                  <SafeImage
-                    src={post.author.image}
-                    alt={post.author.name ?? ""}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="h-11 w-11 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center ring-2 ring-stone-100 dark:ring-stone-800">
-                  <span className="text-sm font-medium text-stone-600 dark:text-stone-300">
-                    {post.author.name?.charAt(0) ?? "?"}
-                  </span>
-                </div>
-              )}
+              <UserAvatar
+                name={post.author.name}
+                image={post.author.image}
+                role={post.author.role}
+                size="lg"
+              />
               <div>
                 <p className="font-medium text-stone-800 dark:text-stone-100">
                   {post.author.name}
@@ -188,6 +181,8 @@ export default async function PostPage({
           </button>
 
           <ShareButton postId={post.id} title={post.title} />
+
+          {isAdmin && <PinButton postId={post.id} initialPinned={pinned} />}
 
           {(isAuthor || isAdmin) && (
             <DeleteButton postId={post.id} />

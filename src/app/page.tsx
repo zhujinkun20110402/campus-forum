@@ -3,6 +3,10 @@ import { SafeImage } from "@/components/ui/safe-image"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { FeedLoader } from "@/components/home/feed-loader"
+import { PinnedPosts } from "@/components/home/pinned-posts"
+import { TrendingPosts } from "@/components/home/trending-posts"
+import { ActiveUsers } from "@/components/home/active-users"
+import { getPinnedPosts, getTrendingPosts } from "@/lib/actions"
 import { AcademicParticles } from "@/components/effects/academic-particles"
 import { MottoStream } from "@/components/effects/motto-stream"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
@@ -120,15 +124,22 @@ const noiseSvg = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='ht
 export default async function HomePage() {
   const session = await auth()
 
-  const [posts, stats, categoryCounts] = await Promise.all([
+  const [pinnedPosts, posts, trendingPosts, activeUsers, stats, categoryCounts] = await Promise.all([
+    getPinnedPosts(),
     prisma.post.findMany({
       take: 12,
       orderBy: { createdAt: "desc" },
       include: {
-        author: { select: { id: true, name: true, image: true } },
+        author: { select: { id: true, name: true, image: true, role: true } },
         category: { select: { name: true, slug: true } },
         _count: { select: { comments: true, likes: true } },
       },
+    }),
+    getTrendingPosts(),
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 6,
+      select: { id: true, name: true, image: true, role: true },
     }),
     prisma.$transaction([
       prisma.post.count(),
@@ -144,6 +155,8 @@ export default async function HomePage() {
 
   const [totalPosts, totalUsers, totalComments] = stats
   const countMap = new Map(categoryCounts.map((c) => [c.slug, c._count.posts]))
+  const pinnedIds = new Set(pinnedPosts.map((p) => p.id))
+  const regularPosts = posts.filter((p) => !pinnedIds.has(p.id))
 
   return (
     <div className="min-h-screen">
@@ -387,7 +400,13 @@ export default async function HomePage() {
           </div>
         </ScrollReveal>
 
-        {posts.length === 0 ? (
+        {pinnedPosts.length > 0 && (
+          <div className="mb-8">
+            <PinnedPosts posts={pinnedPosts} />
+          </div>
+        )}
+
+        {regularPosts.length === 0 ? (
           <ScrollReveal>
             <div className="rounded-2xl border border-dashed border-[#e7e5e4] dark:border-[#262626] py-20 text-center bg-[#faf9f7] dark:bg-[#0f0f0f]">
               <Users className="mx-auto h-10 w-10 text-[#e7e5e4] dark:text-[#262626]" />
@@ -413,8 +432,20 @@ export default async function HomePage() {
             </div>
           </ScrollReveal>
         ) : (
-          <FeedLoader initialPosts={posts} />
+          <FeedLoader initialPosts={regularPosts} />
         )}
+      </section>
+
+      {/* ===== COMMUNITY HUB ===== */}
+      <section className="mx-auto max-w-5xl px-4 pb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <ScrollReveal>
+            <TrendingPosts posts={trendingPosts} />
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <ActiveUsers users={activeUsers} />
+          </ScrollReveal>
+        </div>
       </section>
 
       {/* ===== CAMPUS GALLERY ===== */}

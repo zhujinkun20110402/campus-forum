@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { postSchema, commentSchema, registerSchema, confessionSchema, profileSchema } from "@/lib/validations"
+import { pinPost, unpinPost, getPinnedPostIds } from "@/lib/pinned-posts"
 
 async function checkBanned(userId: string) {
   const user = await prisma.user.findUnique({
@@ -326,7 +327,7 @@ export async function getMorePosts(page: number, pageSize = 12) {
     orderBy: { createdAt: "desc" },
     include: {
       author: {
-        select: { id: true, name: true, image: true },
+        select: { id: true, name: true, image: true, role: true },
       },
       category: {
         select: { name: true, slug: true },
@@ -338,4 +339,63 @@ export async function getMorePosts(page: number, pageSize = 12) {
   })
 
   return posts
+}
+
+export async function getTrendingPosts() {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+
+  return prisma.post.findMany({
+    where: { createdAt: { gte: sevenDaysAgo } },
+    orderBy: [
+      { likes: { _count: "desc" } },
+      { comments: { _count: "desc" } },
+    ],
+    take: 5,
+    include: {
+      author: { select: { id: true, name: true, image: true, role: true } },
+      category: { select: { name: true, slug: true } },
+      _count: { select: { comments: true, likes: true } },
+    },
+  })
+}
+
+export async function getPinnedPosts() {
+  const pinnedIds = await getPinnedPostIds()
+  if (pinnedIds.length === 0) return []
+
+  const posts = await prisma.post.findMany({
+    where: { id: { in: pinnedIds } },
+    include: {
+      author: {
+        select: { id: true, name: true, image: true, role: true },
+      },
+      category: {
+        select: { name: true, slug: true },
+      },
+      _count: {
+        select: { comments: true, likes: true },
+      },
+    },
+  })
+
+  // 按置顶顺序排序
+  const orderMap = new Map(pinnedIds.map((id, index) => [id, index]))
+  return posts.sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0))
+}
+
+export async function togglePinPost(postId: string, pinned: boolean) {
+  const session = await auth()
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    throw new Error("没有权限")
+  }
+
+  if (pinned) {
+    await unpinPost(postId)
+  } else {
+    await pinPost(postId)
+  }
+
+  revalidatePath("/")
+  revalidatePath("/search")
+  revalidatePath(`/post/${postId}`)
 }

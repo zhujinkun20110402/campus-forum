@@ -2,11 +2,12 @@
 
 import { useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
+import { useSession } from "next-auth/react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { AvatarUploader } from "@/components/profile/avatar-uploader"
 import { AvatarSelector } from "@/components/profile/avatar-selector"
 import { updateProfile } from "@/lib/actions"
 import { profileSchema, type ProfileInput } from "@/lib/validations"
@@ -17,10 +18,12 @@ interface ProfileFormProps {
     email: string
     image: string | null
     bio: string | null
+    role?: string | null
   }
 }
 
 export function ProfileForm({ user }: ProfileFormProps) {
+  const { update } = useSession()
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState("")
   const [avatarUrl, setAvatarUrl] = useState(user.image ?? "")
@@ -48,6 +51,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
       const result = await updateProfile(null, formData)
       if (result && "success" in result) {
         setMessage(result.message ?? "")
+        await update({
+          name: data.name,
+          image: avatarUrl,
+        })
       } else if (result && "errors" in result) {
         setError("root", { message: result.message })
       }
@@ -56,19 +63,16 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <div className="flex flex-col items-center gap-4">
-        <Avatar className="h-24 w-24 ring-4 ring-blue-100 dark:ring-blue-900">
-          <AvatarImage src={avatarUrl || undefined} />
-          <AvatarFallback className="text-2xl bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
-            {(user.name ?? user.email).slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          当前头像预览
-        </p>
-      </div>
+      <div className="rounded-2xl border border-stone-100 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/30 p-6">
+        <AvatarUploader value={avatarUrl} onChange={setAvatarUrl} />
 
-      <AvatarSelector value={avatarUrl} onChange={setAvatarUrl} />
+        <div className="mt-6 pt-6 border-t border-stone-100 dark:border-stone-800">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 text-center">
+            或选择预设头像
+          </p>
+          <AvatarSelector value={avatarUrl} onChange={setAvatarUrl} />
+        </div>
+      </div>
 
       <div className="space-y-2">
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
