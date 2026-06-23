@@ -11,7 +11,7 @@ import {
   REP_POINTS,
   adjustRaputation,
   hasPostedToday,
-} from "@/lib/reputation"
+} from "@/lib/reputation.server"
 
 async function checkBanned(userId: string) {
   const user = await prisma.user.findUnique({
