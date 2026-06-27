@@ -20,23 +20,10 @@ interface ParsedPhoto {
 }
 
 /**
- * 从指定相册页面 HTML 中解析所有照片
+ * 从指定相册页面 HTML 中解析照片
+ * 只解析单页 HTML，返回该页的照片
  */
-async function parseAlbumPhotos(albumId: string): Promise<ParsedPhoto[]> {
-  const res = await fetch(`${CHEVERETO_URL}/album/${albumId}`, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    },
-  })
-
-  if (!res.ok) {
-    console.error("Album page fetch failed:", res.status)
-    return []
-  }
-
-  const html = await res.text()
-
+async function parseAlbumPage(html: string): Promise<ParsedPhoto[]> {
   const thumbPattern =
     /data-thumb="(https?:\/\/origin\.[^"]+\.(?:th\.)?(?:jpg|jpeg|png|gif|webp))"/gi
 
@@ -88,6 +75,56 @@ async function parseAlbumPhotos(albumId: string): Promise<ParsedPhoto[]> {
   }
 
   return photos
+}
+
+/**
+ * 从指定相册分页抓取所有照片
+ * Chevereto 每页显示 24 张，需要遍历所有分页
+ */
+async function parseAlbumPhotos(albumId: string): Promise<ParsedPhoto[]> {
+  const allPhotos: ParsedPhoto[] = []
+  const seenUrls = new Set<string>()
+  const MAX_PAGES = 200 // 安全上限
+
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const url = page === 1
+      ? `${CHEVERETO_URL}/album/${albumId}`
+      : `${CHEVERETO_URL}/album/${albumId}/page/${page}`
+
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      },
+    })
+
+    if (!res.ok) {
+      console.error(`Album page ${page} fetch failed:`, res.status)
+      break
+    }
+
+    const html = await res.text()
+    const pagePhotos = await parseAlbumPage(html)
+
+    // 如果本页没有新照片，说明已经到最后一页
+    let newCount = 0
+    for (const photo of pagePhotos) {
+      if (!seenUrls.has(photo.fullUrl)) {
+        seenUrls.add(photo.fullUrl)
+        allPhotos.push(photo)
+        newCount++
+      }
+    }
+
+    if (newCount === 0) {
+      break
+    }
+
+    // 页间短暂等待
+    await new Promise((r) => setTimeout(r, 200))
+  }
+
+  return allPhotos
 }
 
 /**
