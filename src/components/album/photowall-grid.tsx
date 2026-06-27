@@ -18,16 +18,6 @@ interface PhotowallGridProps {
   isAdmin: boolean
 }
 
-// 艺术感错落布局：轮换不同宽高比
-const aspectRatios = [
-  "aspect-[3/4]",   // 竖图
-  "aspect-square",  // 方图
-  "aspect-[4/3]",   // 横图
-  "aspect-[3/4]",   // 竖图
-  "aspect-[4/5]",   // 偏竖
-  "aspect-[4/3]",   // 横图
-]
-
 export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [deletingUrl, setDeletingUrl] = useState<string | null>(null)
@@ -189,21 +179,22 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
 
   return (
     <>
-      {/* Responsive Masonry Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Masonry / Waterfall layout */}
+      <div className="columns-2 sm:columns-3 lg:columns-4 gap-2 sm:gap-3">
         {localPhotos.slice(0, visibleCount).map((photo, index) => (
-          <ScrollReveal key={photo.url} delay={Math.min((index % PAGE_SIZE) * 0.04, 0.4)}>
+          <ScrollReveal
+            key={photo.url}
+            delay={Math.min((index % PAGE_SIZE) * 0.04, 0.4)}
+            className="break-inside-avoid mb-2 sm:mb-3"
+          >
             <div
-              className={cn(
-                "group relative overflow-hidden rounded-xl sm:rounded-2xl bg-stone-200 dark:bg-stone-800 cursor-pointer",
-                aspectRatios[index % aspectRatios.length]
-              )}
+              className="group relative overflow-hidden rounded-lg sm:rounded-xl bg-stone-200 dark:bg-stone-800 cursor-pointer"
               onClick={() => openLightbox(index)}
             >
               <img
                 src={photo.thumb || photo.url}
                 alt={photo.caption ?? "校园照片"}
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
                 loading="lazy"
               />
 
@@ -212,15 +203,15 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
 
               {/* Caption */}
               {photo.caption && (
-                <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-400">
-                  <p className="text-xs sm:text-sm text-white/90 leading-snug line-clamp-2">
+                <div className="absolute bottom-0 left-0 right-0 p-2.5 sm:p-3.5 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-400">
+                  <p className="text-[11px] sm:text-sm text-white/90 leading-snug line-clamp-2">
                     {photo.caption}
                   </p>
                 </div>
               )}
 
               {/* Index badge */}
-              <div className="absolute top-2 left-2 sm:top-3 sm:left-3 px-1.5 py-0.5 sm:px-2 rounded-full bg-black/30 backdrop-blur-sm text-[9px] sm:text-[10px] text-white/70 font-mono opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 px-1.5 py-0.5 rounded-full bg-black/30 backdrop-blur-sm text-[9px] sm:text-[10px] text-white/70 font-mono opacity-0 group-hover:opacity-100 transition-opacity">
                 {String(index + 1).padStart(2, "0")}
               </div>
 
@@ -232,7 +223,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
                     handleDelete(photo.url)
                   }}
                   disabled={deletingUrl === photo.url}
-                  className="absolute top-2 right-2 sm:top-3 sm:right-3 h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/80 hover:bg-red-500/80 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300"
+                  className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 h-6 w-6 sm:h-8 sm:w-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/80 hover:bg-red-500/80 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300"
                   title="删除照片"
                 >
                   {deletingUrl === photo.url ? (
