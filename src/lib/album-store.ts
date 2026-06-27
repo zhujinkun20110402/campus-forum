@@ -78,20 +78,45 @@ async function parseAlbumPage(html: string): Promise<ParsedPhoto[]> {
 }
 
 /**
+ * 从 HTML 中提取下一页的 URL（含 peek 参数）
+ * Chevereto 分页使用 peek 令牌，不能简单拼接 page=N
+ */
+function extractNextPageUrl(html: string): string | null {
+  // 策略1: 查找 rel="next" 的链接
+  const patterns = [
+    /<a[^>]+href="([^"]+)"[^>]*rel="next"/i,
+    /<a[^>]+rel="next"[^>]*href="([^"]+)"/i,
+    /<a[^>]+data-pagination="next"[^>]*href="([^"]+)"/i,
+    /<a[^>]+href="([^"]+)"[^>]*data-pagination="next"/i,
+    /<a[^>]+class="[^"]*pagination-next[^"]*"[^>]*href="([^"]+)"/i,
+    /<a[^>]+href="([^"]+)"[^>]*class="[^"]*pagination-next[^"]*"/i,
+  ]
+  for (const p of patterns) {
+    const m = html.match(p)
+    if (m && m[1] && !m[1].includes("javascript:")) {
+      // 确保 URL 是完整的
+      const url = m[1]
+      if (url.startsWith("http")) return url
+      return `${CHEVERETO_URL}${url}`
+    }
+  }
+  return null
+}
+
+/**
  * 从指定相册分页抓取所有照片
- * Chevereto 每页显示 24 张，需要遍历所有分页
+ * Chevereto 每页显示 24 张，分页需要 peek 令牌
  */
 async function parseAlbumPhotos(albumId: string): Promise<ParsedPhoto[]> {
   const allPhotos: ParsedPhoto[] = []
   const seenUrls = new Set<string>()
   const MAX_PAGES = 200 // 安全上限
 
-  for (let page = 1; page <= MAX_PAGES; page++) {
-    const url = page === 1
-      ? `${CHEVERETO_URL}/album/${albumId}`
-      : `${CHEVERETO_URL}/album/${albumId}/page/${page}`
+  // 第一页 URL
+  let pageUrl: string | null = `${CHEVERETO_URL}/album/${albumId}`
 
-    const res = await fetch(url, {
+  for (let page = 1; page <= MAX_PAGES && pageUrl; page++) {
+    const res = await fetch(pageUrl, {
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -120,8 +145,11 @@ async function parseAlbumPhotos(albumId: string): Promise<ParsedPhoto[]> {
       break
     }
 
+    // 从 HTML 中提取下一页 URL（含 peek 参数）
+    pageUrl = extractNextPageUrl(html)
+
     // 页间短暂等待
-    await new Promise((r) => setTimeout(r, 200))
+    await new Promise((r) => setTimeout(r, 300))
   }
 
   return allPhotos
