@@ -448,3 +448,15 @@ body {
 .dot-pulse {
   animation: dot-pulse 1.4s ease-in-out infinite;
 }
+
+/* 照片墙渐入 */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
