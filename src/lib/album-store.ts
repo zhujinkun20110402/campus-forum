@@ -157,20 +157,37 @@ async function parseAlbumPhotos(albumId: string): Promise<ParsedPhoto[]> {
 
 /**
  * 从图床相册页面 HTML 中解析所有已审核照片
+ * 带 5 分钟内存缓存，避免每次请求都抓取 40+ 页
  */
+let photosCache: WallPhoto[] | null = null
+let photosCacheTime = 0
+const PHOTOS_CACHE_TTL = 5 * 60 * 1000 // 5 分钟
+
 export async function getPhotos(): Promise<WallPhoto[]> {
+  const now = Date.now()
+
+  // 缓存有效，直接返回
+  if (photosCache && now - photosCacheTime < PHOTOS_CACHE_TTL) {
+    return photosCache
+  }
+
   try {
     const parsed = await parseAlbumPhotos(CHEVERETO_ALBUM)
-    return parsed.map((p) => ({
+    const result = parsed.map((p) => ({
       url: p.fullUrl,
       thumb: p.thumbUrl,
       caption: p.title || undefined,
       uploadedAt: new Date().toISOString(),
       uploadedBy: "管理员",
     }))
+
+    photosCache = result
+    photosCacheTime = now
+    return result
   } catch (error) {
     console.error("Fetch photos error:", error)
-    return []
+    // 出错时返回过期缓存（比空列表好）
+    return photosCache ?? []
   }
 }
 

@@ -35,6 +35,12 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
   const [lightboxLoading, setLightboxLoading] = useState(true)
   const [lightboxError, setLightboxError] = useState(false)
 
+  // 分批渲染
+  const PAGE_SIZE = 24
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
   // 上次浏览位置
   const [restoredY, setRestoredY] = useState<number | null>(null)
   const [showRestoreToast, setShowRestoreToast] = useState(false)
@@ -86,6 +92,14 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
     const savedY = parseInt(raw, 10)
     if (Number.isNaN(savedY) || savedY <= MIN_RESTORE_OFFSET) return
 
+    // 根据保存的滚动位置预估需要的照片数量
+    // 每张照片约 320px 高，每行 4 列，所以每行约 1280px
+    // 预估需要的照片数 = (savedY / 320) * 列数，留足余量
+    const estimatedCount = Math.ceil((savedY / 300) * 4) + PAGE_SIZE
+    if (estimatedCount > visibleCount) {
+      setVisibleCount(Math.min(estimatedCount, localPhotos.length))
+    }
+
     // 等待照片渲染和动画完成后再恢复
     const restoreTimer = setTimeout(() => {
       window.scrollTo({ top: savedY, behavior: "smooth" })
@@ -97,6 +111,29 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
 
     return () => clearTimeout(restoreTimer)
   }, [])
+
+  // 无限滚动：观察哨兵元素
+  useEffect(() => {
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && visibleCount < localPhotos.length) {
+          setLoadingMore(true)
+          // 小延迟，让加载动画可见
+          setTimeout(() => {
+            setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, localPhotos.length))
+            setLoadingMore(false)
+          }, 300)
+        }
+      },
+      { rootMargin: "300px" }
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [visibleCount, localPhotos.length])
 
   // 滚动时保存位置（防抖）
   useEffect(() => {
@@ -154,8 +191,8 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
     <>
       {/* Responsive Masonry Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-        {localPhotos.map((photo, index) => (
-          <ScrollReveal key={photo.url} delay={Math.min(index * 0.04, 0.4)}>
+        {localPhotos.slice(0, visibleCount).map((photo, index) => (
+          <ScrollReveal key={photo.url} delay={Math.min((index % PAGE_SIZE) * 0.04, 0.4)}>
             <div
               className={cn(
                 "group relative overflow-hidden rounded-xl sm:rounded-2xl bg-stone-200 dark:bg-stone-800 cursor-pointer",
@@ -209,6 +246,22 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
           </ScrollReveal>
         ))}
       </div>
+
+      {/* Infinite scroll sentinel & loading indicator */}
+      {visibleCount < localPhotos.length && (
+        <div ref={sentinelRef} className="flex flex-col items-center justify-center py-12">
+          {loadingMore ? (
+            <>
+              <Loader2 className="h-6 w-6 text-stone-400 animate-spin mb-2" />
+              <p className="text-xs text-stone-400 dark:text-stone-500">加载更多...</p>
+            </>
+          ) : (
+            <p className="text-xs text-stone-400 dark:text-stone-500">
+              已加载 {visibleCount} / {localPhotos.length} 张
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Lightbox */}
       {lightboxIndex !== null && localPhotos[lightboxIndex] && (
