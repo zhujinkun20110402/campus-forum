@@ -72,6 +72,7 @@ model Post {
   content    String    @db.Text
   authorId   String
   categoryId String
+  pinned     Boolean   @default(false)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 

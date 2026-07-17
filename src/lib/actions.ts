@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { postSchema, commentSchema, registerSchema, confessionSchema, profileSchema } from "@/lib/validations"
-import { pinPost, unpinPost, getPinnedPostIds } from "@/lib/pinned-posts"
+import { pinPost, unpinPost } from "@/lib/pinned-posts"
 import {
   REP_POINTS,
   adjustRaputation,
@@ -409,11 +409,9 @@ export async function getTrendingPosts() {
 }
 
 export async function getPinnedPosts() {
-  const pinnedIds = await getPinnedPostIds()
-  if (pinnedIds.length === 0) return []
-
   const posts = await prisma.post.findMany({
-    where: { id: { in: pinnedIds } },
+    where: { pinned: true },
+    orderBy: { updatedAt: "desc" },
     include: {
       author: {
         select: { id: true, name: true, image: true, role: true, raputation: true },
@@ -426,10 +424,7 @@ export async function getPinnedPosts() {
       },
     },
   })
-
-  // 按置顶顺序排序
-  const orderMap = new Map(pinnedIds.map((id, index) => [id, index]))
-  return posts.sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0))
+  return posts
 }
 
 export async function togglePinPost(postId: string, pinned: boolean) {

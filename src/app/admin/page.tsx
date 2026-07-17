@@ -8,7 +8,7 @@ import { CountUp } from "@/components/effects/count-up"
 import { BanUserButton } from "@/components/admin/ban-user-button"
 import { ReputationAdjustButton } from "@/components/admin/reputation-adjust-button"
 import { LevelBadge } from "@/components/reputation/level-badge"
-import { getPhotos } from "@/lib/album-store"
+import { getPhotosPreview } from "@/lib/album-store"
 import { EditorialHero } from "@/components/ui/editorial"
 import { SafeImage } from "@/components/ui/safe-image"
 import {
@@ -95,7 +95,7 @@ export default async function AdminPage() {
     prisma.post.count(),
     prisma.comment.count(),
     prisma.like.count(),
-    getPhotos(),
+    getPhotosPreview(16),
     prisma.category.findMany({
       include: { _count: { select: { posts: true } } },
       orderBy: { posts: { _count: "desc" } },
@@ -297,7 +297,7 @@ export default async function AdminPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-stone-400">照片墙</span>
-                  <span className="text-sm text-white font-mono">{photos.length} 张</span>
+                  <a href="/album" className="text-sm text-amber-400 hover:underline">查看 →</a>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-stone-400">版本</span>
@@ -316,7 +316,7 @@ export default async function AdminPage() {
                 <Images className="h-5 w-5 text-amber-500" />
                 <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">照片墙</h2>
                 <span className="text-xs text-stone-400 dark:text-stone-500 ml-auto">
-                  {photos.length} 张照片
+                  最近 {photos.length} 张
                 </span>
                 <a
                   href="/album"
@@ -351,9 +351,9 @@ export default async function AdminPage() {
                     </div>
                   ))}
                 </div>
-                {photos.length > 16 && (
+                {photos.length === 16 && (
                   <p className="text-center text-xs text-stone-400 dark:text-stone-500 mt-4">
-                    还有 {photos.length - 16} 张照片，前往照片墙查看全部
+                    前往照片墙查看全部
                   </p>
                 )}
               </div>

@@ -1,52 +1,48 @@
-import { promises as fs } from "fs"
-import path from "path"
+/**
+ * 帖子置顶功能 — 使用数据库存储
+ * Post.pinned 字段控制置顶状态
+ */
+import { prisma } from "@/lib/prisma"
 
-const DATA_FILE = path.join(process.cwd(), "data", "pinned-posts.json")
-
-interface PinnedPostsData {
-  postIds: string[]
-  updatedAt: string
-}
-
-async function readData(): Promise<PinnedPostsData> {
-  try {
-    const content = await fs.readFile(DATA_FILE, "utf-8")
-    const parsed = JSON.parse(content) as PinnedPostsData
-    return {
-      postIds: Array.isArray(parsed.postIds) ? parsed.postIds : [],
-      updatedAt: parsed.updatedAt || new Date().toISOString(),
-    }
-  } catch {
-    return { postIds: [], updatedAt: new Date().toISOString() }
-  }
-}
-
-async function writeData(data: PinnedPostsData) {
-  await fs.mkdir(path.dirname(DATA_FILE), { recursive: true })
-  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2))
-}
-
+/**
+ * 获取所有置顶帖子的 ID（按 createdAt 降序，最新置顶的排前面）
+ */
 export async function getPinnedPostIds(): Promise<string[]> {
-  const data = await readData()
-  return data.postIds
+  const pinnedPosts = await prisma.post.findMany({
+    where: { pinned: true },
+    select: { id: true, updatedAt: true },
+    orderBy: { updatedAt: "desc" },
+  })
+  return pinnedPosts.map((p) => p.id)
 }
 
-export async function pinPost(postId: string): Promise<string[]> {
-  const data = await readData()
-  const ids = data.postIds.filter((id) => id !== postId)
-  ids.unshift(postId)
-  await writeData({ postIds: ids, updatedAt: new Date().toISOString() })
-  return ids
+/**
+ * 置顶帖子
+ */
+export async function pinPost(postId: string): Promise<void> {
+  await prisma.post.update({
+    where: { id: postId },
+    data: { pinned: true },
+  })
 }
 
-export async function unpinPost(postId: string): Promise<string[]> {
-  const data = await readData()
-  const ids = data.postIds.filter((id) => id !== postId)
-  await writeData({ postIds: ids, updatedAt: new Date().toISOString() })
-  return ids
+/**
+ * 取消置顶
+ */
+export async function unpinPost(postId: string): Promise<void> {
+  await prisma.post.update({
+    where: { id: postId },
+    data: { pinned: false },
+  })
 }
 
+/**
+ * 检查帖子是否已置顶
+ */
 export async function isPostPinned(postId: string): Promise<boolean> {
-  const ids = await getPinnedPostIds()
-  return ids.includes(postId)
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { pinned: true },
+  })
+  return post?.pinned ?? false
 }

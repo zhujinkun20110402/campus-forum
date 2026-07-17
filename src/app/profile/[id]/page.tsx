@@ -19,7 +19,6 @@ import { UserBadges } from "@/components/reputation/user-badges"
 import { EditorialHeading, EditorialPanel } from "@/components/ui/editorial"
 import { SafeImage } from "@/components/ui/safe-image"
 import { auth } from "@/lib/auth"
-import { getPinnedPostIds } from "@/lib/pinned-posts"
 import { prisma } from "@/lib/prisma"
 import { cn, formatDate, formatRelativeTime } from "@/lib/utils"
 
@@ -37,20 +36,17 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const session = await auth()
   const isOwnProfile = session?.user?.id === id
 
-  const [user, pinnedIds] = await Promise.all([
+  const [user] = await Promise.all([
     prisma.user.findUnique({
       where: { id },
       include: { _count: { select: { posts: true, comments: true, likes: true } } },
     }),
-    getPinnedPostIds(),
   ])
 
   if (!user) notFound()
 
   const likeReceivedCount = await prisma.like.count({ where: { post: { authorId: id } } })
-  const userPostIds = await prisma.post.findMany({ where: { authorId: id }, select: { id: true } })
-  const userPostIdSet = new Set(userPostIds.map((post) => post.id))
-  const hasPinnedPost = pinnedIds.some((postId) => userPostIdSet.has(postId))
+  const hasPinnedPost = await prisma.post.count({ where: { authorId: id, pinned: true } }) > 0
 
   const [posts, comments] = await Promise.all([
     prisma.post.findMany({

@@ -93,7 +93,7 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col gap-3 border-t border-white/20 pt-6 font-mono text-[9px] font-bold tracking-[0.12em] text-white/25 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} BDA NO.2 HIGH SCHOOL CAMPUS FORUM</p>
+          <p>&copy; {new Date().getFullYear()} BEIJING NO.2 SCHOOL BDA CAMPUS FORUM</p>
           <p>MADE FOR EVERY CAMPUS STORY</p>
         </div>
       </div>

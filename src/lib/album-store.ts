@@ -192,6 +192,47 @@ export async function getPhotos(): Promise<WallPhoto[]> {
 }
 
 /**
+ * 轻量预览：只抓取第一页（~24 张），用于管理员面板等不需要全部照片的场景
+ * 带 2 分钟独立缓存
+ */
+let previewCache: WallPhoto[] | null = null
+let previewCacheTime = 0
+const PREVIEW_CACHE_TTL = 2 * 60 * 1000
+
+export async function getPhotosPreview(limit = 16): Promise<WallPhoto[]> {
+  const now = Date.now()
+
+  if (previewCache && now - previewCacheTime < PREVIEW_CACHE_TTL) {
+    return previewCache.slice(0, limit)
+  }
+
+  try {
+    // 只抓取第一页
+    const res = await fetch(`${CHEVERETO_URL}/album/${CHEVERETO_ALBUM}`, {
+      headers: { "User-Agent": "Mozilla/5.0" },
+    })
+    if (!res.ok) return previewCache ?? []
+
+    const html = await res.text()
+    const pagePhotos = await parseAlbumPage(html)
+    const result = pagePhotos.map((p) => ({
+      url: p.fullUrl,
+      thumb: p.thumbUrl,
+      caption: p.title || undefined,
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: "管理员",
+    }))
+
+    previewCache = result
+    previewCacheTime = now
+    return result.slice(0, limit)
+  } catch (error) {
+    console.error("Fetch photos preview error:", error)
+    return previewCache ?? []
+  }
+}
+
+/**
  * 获取待审核照片（普通用户上传）
  * 上传时会把用户名追加在 title 中
  */

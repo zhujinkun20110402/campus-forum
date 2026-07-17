@@ -15,7 +15,6 @@ import { LevelBadge } from "@/components/reputation/level-badge"
 import { EditorialHeading, EditorialPanel } from "@/components/ui/editorial"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { auth } from "@/lib/auth"
-import { isPostPinned } from "@/lib/pinned-posts"
 import { prisma } from "@/lib/prisma"
 import { cn, formatRelativeTime } from "@/lib/utils"
 
@@ -30,7 +29,7 @@ const categoryStyles: Record<string, string> = {
 
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [post, session, pinned] = await Promise.all([
+  const [post, session] = await Promise.all([
     prisma.post.findUnique({
       where: { id },
       include: {
@@ -45,7 +44,6 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
       },
     }),
     auth(),
-    isPostPinned(id),
   ])
 
   if (!post) notFound()
@@ -54,6 +52,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
   const isAuthor = currentUser?.id === post.author.id
   const isAdmin = currentUser?.role === "ADMIN"
   const isConfession = post.category.slug === "confession"
+  const pinned = post.pinned
 
   return (
     <div className="min-h-screen bg-[#ece6da] dark:bg-[#10100e]">
