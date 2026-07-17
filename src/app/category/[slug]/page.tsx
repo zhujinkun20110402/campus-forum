@@ -1,115 +1,41 @@
 import { notFound } from "next/navigation"
-import { prisma } from "@/lib/prisma"
-import { PostList } from "@/components/post/post-list"
-import { ScrollReveal } from "@/components/effects/scroll-reveal"
-import { CountUp } from "@/components/effects/count-up"
 import {
   BookOpen,
-  Megaphone,
-  Search,
-  Heart,
-  GraduationCap,
-  PartyPopper,
-  ShoppingBag,
-  MessageCircle,
   FileText,
+  GraduationCap,
+  Heart,
+  Megaphone,
+  MessageCircle,
+  PartyPopper,
+  Search,
+  ShoppingBag,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import type { LucideIcon } from "lucide-react"
+import { CountUp } from "@/components/effects/count-up"
+import { PostList } from "@/components/post/post-list"
+import { EditorialHeading, EditorialHero, EditorialPanel } from "@/components/ui/editorial"
+import { prisma } from "@/lib/prisma"
 
 const categoryConfig: Record<string, {
   name: string
   description: string
-  icon: React.ComponentType<{ className?: string }>
-  gradient: string
-  accentColor: string
-  textColor: string
-  bgColor: string
-  particleColor: string
+  english: string
+  icon: LucideIcon
+  accentClass: string
 }> = {
-  announcement: {
-    name: "校园公告",
-    description: "学校重要通知、活动安排、政策发布",
-    icon: Megaphone,
-    gradient: "from-amber-900 via-amber-950 to-slate-900",
-    accentColor: "bg-amber-500",
-    textColor: "text-amber-400",
-    bgColor: "bg-amber-50 dark:bg-amber-950/20",
-    particleColor: "rgba(245, 158, 11, ",
-  },
-  lostfound: {
-    name: "失物招领",
-    description: "丢失物品寻找、拾到物品归还",
-    icon: Search,
-    gradient: "from-emerald-900 via-emerald-950 to-slate-900",
-    accentColor: "bg-emerald-500",
-    textColor: "text-emerald-400",
-    bgColor: "bg-emerald-50 dark:bg-emerald-950/20",
-    particleColor: "rgba(16, 185, 129, ",
-  },
-  study: {
-    name: "学习交流",
-    description: "学习资料分享、难题讨论、经验交流",
-    icon: GraduationCap,
-    gradient: "from-sky-900 via-sky-950 to-slate-900",
-    accentColor: "bg-sky-500",
-    textColor: "text-sky-400",
-    bgColor: "bg-sky-50 dark:bg-sky-950/20",
-    particleColor: "rgba(14, 165, 233, ",
-  },
-  confession: {
-    name: "表白墙",
-    description: "匿名表白、心意传递、情感交流",
-    icon: Heart,
-    gradient: "from-rose-900 via-rose-950 to-slate-900",
-    accentColor: "bg-rose-500",
-    textColor: "text-rose-400",
-    bgColor: "bg-rose-50 dark:bg-rose-950/20",
-    particleColor: "rgba(244, 63, 94, ",
-  },
-  activity: {
-    name: "校园活动",
-    description: "社团活动、比赛通知、聚会邀约",
-    icon: PartyPopper,
-    gradient: "from-violet-900 via-violet-950 to-slate-900",
-    accentColor: "bg-violet-500",
-    textColor: "text-violet-400",
-    bgColor: "bg-violet-50 dark:bg-violet-950/20",
-    particleColor: "rgba(139, 92, 246, ",
-  },
-  secondhand: {
-    name: "二手交易",
-    description: "闲置物品转让、书籍交换、好物推荐",
-    icon: ShoppingBag,
-    gradient: "from-orange-900 via-orange-950 to-slate-900",
-    accentColor: "bg-orange-500",
-    textColor: "text-orange-400",
-    bgColor: "bg-orange-50 dark:bg-orange-950/20",
-    particleColor: "rgba(249, 115, 22, ",
-  },
-  "problem-discussion": {
-    name: "难题讨论",
-    description: "学科难题、竞赛题目、知识探讨",
-    icon: MessageCircle,
-    gradient: "from-stone-900 via-stone-950 to-slate-900",
-    accentColor: "bg-amber-500",
-    textColor: "text-amber-400",
-    bgColor: "bg-stone-50 dark:bg-stone-950/20",
-    particleColor: "rgba(245, 158, 11, ",
-  },
+  announcement: { name: "校园公告", description: "学校重要通知、活动安排与学生会动态。", english: "NOTICE BOARD", icon: Megaphone, accentClass: "bg-[#ff6b43]" },
+  lostfound: { name: "失物招领", description: "丢失物品寻找、拾到物品归还，让线索更快流动。", english: "LOST & FOUND", icon: Search, accentClass: "bg-[#d9ef61]" },
+  study: { name: "学习交流", description: "学习资料、难题讨论与真实有效的经验分享。", english: "STUDY ROOM", icon: GraduationCap, accentClass: "bg-[#f3c84b]" },
+  confession: { name: "表白墙", description: "匿名写下心声，也温柔对待每一份真诚。", english: "ANONYMOUS VOICE", icon: Heart, accentClass: "bg-[#ffb4aa]" },
+  activity: { name: "校园活动", description: "社团活动、比赛通知、招募与校园邀约。", english: "CAMPUS EVENTS", icon: PartyPopper, accentClass: "bg-[#b9ddbd]" },
+  secondhand: { name: "二手交易", description: "闲置物品流转、书籍交换与好物推荐。", english: "CAMPUS MARKET", icon: ShoppingBag, accentClass: "bg-[#f2d0b2]" },
+  "problem-discussion": { name: "难题讨论", description: "学科难题、竞赛题目与知识探讨。", english: "PROBLEM LAB", icon: MessageCircle, accentClass: "bg-[#e5ded1]" },
 }
 
-export default async function CategoryPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-
   const config = categoryConfig[slug]
-
-  if (!config) {
-    notFound()
-  }
+  if (!config) notFound()
 
   const category = await prisma.category.findUnique({
     where: { slug },
@@ -118,124 +44,65 @@ export default async function CategoryPage({
         take: 20,
         orderBy: { createdAt: "desc" },
         include: {
-          author: {
-            select: { id: true, name: true, image: true, role: true },
-          },
-          category: {
-            select: { name: true, slug: true },
-          },
-          _count: {
-            select: { comments: true, likes: true },
-          },
+          author: { select: { id: true, name: true, image: true, role: true, raputation: true } },
+          category: { select: { name: true, slug: true } },
+          _count: { select: { comments: true, likes: true } },
         },
       },
     },
   })
 
-  if (!category) {
-    notFound()
-  }
+  if (!category) notFound()
 
-  const Icon = config.icon
-  const totalComments = category.posts.reduce((sum, p) => sum + p._count.comments, 0)
-  const totalLikes = category.posts.reduce((sum, p) => sum + p._count.likes, 0)
+  const totalComments = category.posts.reduce((sum, post) => sum + post._count.comments, 0)
+  const totalLikes = category.posts.reduce((sum, post) => sum + post._count.likes, 0)
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] dark:bg-[#0a0a0a]">
-      {/* Category Header */}
-      <section className={cn(
-        "relative overflow-hidden bg-gradient-to-br pt-28 pb-16",
-        config.gradient
-      )}>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.05),_transparent_60%)]" />
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 right-20 w-64 h-64 rounded-full bg-white/10 blur-[100px]" />
+    <div className="min-h-screen bg-[#ece6da] dark:bg-[#10100e]">
+      <EditorialHero
+        index="07"
+        eyebrow={config.english}
+        title={config.name}
+        description={config.description}
+        icon={config.icon}
+        accentClass={config.accentClass}
+      >
+        <div className="inline-grid grid-cols-3 border-2 border-[#191914] bg-[#fffaf0] dark:border-[#f5f0e5] dark:bg-[#191914]">
+          {[
+            [FileText, category.posts.length, "帖子"],
+            [MessageCircle, totalComments, "评论"],
+            [Heart, totalLikes, "点赞"],
+          ].map(([Icon, value, label], index) => {
+            const StatIcon = Icon as React.ComponentType<{ className?: string }>
+            return (
+              <div key={String(label)} className={index > 0 ? "border-l border-[#191914]/25 px-4 py-3 text-center dark:border-white/25 sm:px-6" : "px-4 py-3 text-center sm:px-6"}>
+                <StatIcon className="mx-auto h-3.5 w-3.5 text-[#e4532f]" />
+                <p className="mt-1 font-mono text-lg font-bold"><CountUp end={Number(value)} duration={1200} /></p>
+                <p className="text-[10px] text-[#777268] dark:text-[#989389]">{label as string}</p>
+              </div>
+            )
+          })}
         </div>
+      </EditorialHero>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6">
-          <ScrollReveal>
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-              <div className={cn(
-                "h-16 w-16 shrink-0 rounded-2xl flex items-center justify-center shadow-lg",
-                config.bgColor
-              )}>
-                <Icon className={cn("h-8 w-8", config.textColor)} />
-              </div>
-              <div className="text-center sm:text-left min-w-0">
-                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white mb-2 break-words">
-                  {config.name}
-                </h1>
-                <p className="text-sm text-white/50 max-w-md break-words">
-                  {config.description}
-                </p>
-              </div>
-            </div>
-          </ScrollReveal>
-
-          {/* Stats */}
-          <ScrollReveal delay={0.1}>
-            <div className="mt-8 flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6">
-              <div className="flex items-center gap-2 text-sm text-white/60">
-                <FileText className="h-4 w-4 shrink-0" />
-                <span>
-                  <CountUp end={category.posts.length} duration={1500} className="text-white font-mono" /> 帖子
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-white/60">
-                <MessageCircle className="h-4 w-4 shrink-0" />
-                <span>
-                  <CountUp end={totalComments} duration={1500} className="text-white font-mono" /> 评论
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-white/60">
-                <Heart className="h-4 w-4 shrink-0" />
-                <span>
-                  <CountUp end={totalLikes} duration={1500} className="text-white font-mono" /> 点赞
-                </span>
-              </div>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* Posts List */}
-      <div className="relative -mt-8 mx-auto max-w-3xl px-4 sm:px-6 pb-20">
-        <ScrollReveal>
-          <div className="rounded-3xl bg-white dark:bg-[#141414] border border-stone-200 dark:border-stone-800 shadow-xl shadow-stone-200/20 dark:shadow-black/20 p-6 sm:p-8">
-            <div className="flex flex-wrap items-center gap-2 mb-6">
-              <Icon className={cn("h-5 w-5 shrink-0", config.textColor)} />
-              <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100 break-words">
-                {config.name}帖子
-              </h2>
-              <span className="text-xs text-stone-400 dark:text-stone-500 ml-auto">
-                共 {category.posts.length} 条
-              </span>
-            </div>
-
+      <main className="campus-dot-grid px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <EditorialHeading index="01" eyebrow="LATEST POSTS" title={`${config.name}里的新消息`} meta={`共 ${category.posts.length} 条`} />
+          <div className="mt-7">
             {category.posts.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-stone-300 dark:border-stone-700 py-20 text-center">
-                <BookOpen className="mx-auto h-12 w-12 text-stone-300 dark:text-stone-700 mb-4" />
-                <p className="text-stone-500 dark:text-stone-400 text-lg font-medium mb-1">
-                  该分类下还没有帖子
-                </p>
-                <p className="text-sm text-stone-400 dark:text-stone-500">
-                  来做第一个发帖的人吧
-                </p>
-              </div>
+              <EditorialPanel className="py-20 text-center">
+                <BookOpen className="mx-auto h-11 w-11 text-[#e4532f]" />
+                <p className="mt-4 font-serif text-2xl font-bold">这里还没有帖子</p>
+                <p className="mt-2 text-sm text-[#777268] dark:text-[#989389]">来成为第一个发起讨论的人。</p>
+              </EditorialPanel>
             ) : slug === "confession" ? (
-              <PostList
-                posts={category.posts.map((p) => ({
-                  ...p,
-                  author: { id: "anonymous", name: null, image: null },
-                }))}
-                hideAuthor
-              />
+              <PostList posts={category.posts.map((post) => ({ ...post, author: { id: "anonymous", name: null, image: null } }))} hideAuthor />
             ) : (
               <PostList posts={category.posts} />
             )}
           </div>
-        </ScrollReveal>
-      </div>
+        </div>
+      </main>
     </div>
   )
 }

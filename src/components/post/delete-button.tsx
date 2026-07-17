@@ -25,6 +25,7 @@ export function DeleteButton({ postId }: DeleteButtonProps) {
       variant="destructive"
       size="sm"
       onClick={handleDelete}
+      className="h-9 rounded-none border border-[#191914] bg-[#ffb4aa] px-3 text-[#b52f1e] hover:bg-[#ff8f81] dark:border-[#f5f0e5]"
     >
       <Trash2 className="h-4 w-4" />
     </Button>

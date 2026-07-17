@@ -1,10 +1,10 @@
-import { getPhotos } from "@/lib/album-store"
-import { auth } from "@/lib/auth"
-import { ScrollReveal } from "@/components/effects/scroll-reveal"
+import { Camera, Images } from "lucide-react"
 import { PhotowallAdmin } from "@/components/album/photowall-admin"
 import { PhotowallGrid } from "@/components/album/photowall-grid"
 import { PhotowallUploader } from "@/components/album/photowall-uploader"
-import { Images, Camera } from "lucide-react"
+import { EditorialHeading, EditorialHero, EditorialPanel } from "@/components/ui/editorial"
+import { auth } from "@/lib/auth"
+import { getPhotos } from "@/lib/album-store"
 
 export const dynamic = "force-dynamic"
 
@@ -14,72 +14,48 @@ export default async function PhotowallPage() {
   const isLoggedIn = !!session?.user?.id
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] dark:bg-[#0a0a0a]">
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-stone-900 pt-32 pb-20">
-        {/* 装饰光晕 */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-amber-500/5 blur-[120px]" />
-          <div className="absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-stone-600/10 blur-[100px]" />
+    <div className="min-h-screen bg-[#ece6da] dark:bg-[#10100e]">
+      <EditorialHero
+        index="04"
+        eyebrow="CAMPUS ARCHIVE"
+        title="校园影像档案"
+        description="镜头不会让时间停下，但会替我们记住那些真实、热烈又稍纵即逝的校园现场。"
+        icon={Camera}
+        accentClass="bg-[#f3c84b]"
+      >
+        <div className="flex flex-wrap items-center gap-3 font-mono text-[10px] font-bold tracking-[0.12em]">
+          <span className="flex items-center gap-2 border border-[#191914] bg-[#fffaf0] px-3 py-2 dark:border-[#f5f0e5] dark:bg-[#191914]">
+            <Images className="h-3.5 w-3.5 text-[#e4532f]" /> {photos.length} FRAMES
+          </span>
+          <span className="border border-[#191914]/25 px-3 py-2 text-[#777268] dark:border-white/25 dark:text-[#989389]">CONTINUOUSLY UPDATED</span>
         </div>
+      </EditorialHero>
 
-        {/* 噪点纹理 */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' /%3E%3C/svg%3E\")",
-          }}
-        />
+      <main className="campus-dot-grid px-4 py-14 sm:px-6 sm:py-18 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <EditorialHeading
+            index="01"
+            eyebrow="PHOTO WALL"
+            title="在场证明"
+            meta={<span className="font-mono text-[10px] font-bold tracking-[0.12em]">CLICK A PHOTO TO EXPLORE</span>}
+          />
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 text-center">
-          <ScrollReveal>
-            <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 mb-6">
-              <Camera className="h-7 w-7 text-amber-400" />
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={0.1}>
-            <h1 className="font-serif text-4xl sm:text-5xl font-bold text-white mb-4 tracking-tight">
-              校园影像
-            </h1>
-          </ScrollReveal>
-          <ScrollReveal delay={0.2}>
-            <p className="text-stone-400 max-w-xl mx-auto leading-relaxed">
-              用镜头定格时光，用画面讲述故事。这里收录校园里的每一个珍贵瞬间。
-            </p>
-          </ScrollReveal>
-          <ScrollReveal delay={0.3}>
-            <div className="mt-6 flex items-center justify-center gap-6 text-xs text-stone-500">
-              <span className="flex items-center gap-1.5">
-                <Images className="h-3.5 w-3.5" />
-                {photos.length} 张照片
-              </span>
-              <span className="text-stone-700">·</span>
-              <span>持续更新中</span>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* Photo Wall */}
-      <div className="relative -mt-10 mx-auto max-w-7xl px-4 sm:px-6 pb-24">
-        {photos.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-stone-300 dark:border-stone-700 py-24 text-center">
-            <Camera className="mx-auto h-12 w-12 text-stone-300 dark:text-stone-700" />
-            <p className="mt-4 text-sm text-stone-400 dark:text-stone-500">
-              照片墙正在筹备中，敬请期待
-            </p>
+          <div className="mt-8">
+            {photos.length === 0 ? (
+              <EditorialPanel className="py-24 text-center">
+                <Camera className="mx-auto h-12 w-12 text-[#ff6b43]" />
+                <p className="mt-4 font-serif text-2xl font-bold">影像档案正在筹备</p>
+                <p className="mt-2 text-sm text-[#777268] dark:text-[#989389]">第一张照片，也许就由你来上传。</p>
+              </EditorialPanel>
+            ) : (
+              <PhotowallGrid photos={photos} isAdmin={isAdmin} />
+            )}
           </div>
-        ) : (
-          <PhotowallGrid photos={photos} isAdmin={isAdmin} />
-        )}
 
-        {/* Upload Panel */}
-        {isLoggedIn && !isAdmin && <PhotowallUploader />}
-
-        {/* Admin Panel */}
-        {isAdmin && <PhotowallAdmin />}
-      </div>
+          {isLoggedIn && !isAdmin && <PhotowallUploader />}
+          {isAdmin && <PhotowallAdmin />}
+        </div>
+      </main>
     </div>
   )
 }

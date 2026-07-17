@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { X, ChevronLeft, ChevronRight, Trash2, Loader2, ImageIcon, ArrowDown, ArrowUp } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { SafeImage } from "@/components/ui/safe-image"
 
 interface Photo {
   url: string
@@ -29,6 +30,10 @@ const spanPattern = [
   "row-span-2",
 ]
 
+const PAGE_SIZE = 24
+const SCROLL_KEY = "photowall-scroll-y"
+const MIN_RESTORE_OFFSET = 120
+
 export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [deletingUrl, setDeletingUrl] = useState<string | null>(null)
@@ -37,8 +42,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
   const [lightboxError, setLightboxError] = useState(false)
 
   // 分批渲染
-  const PAGE_SIZE = 24
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [visibleCount, setVisibleCount] = useState(Math.min(PAGE_SIZE, photos.length))
   const [loadingMore, setLoadingMore] = useState(false)
   const sentinelRef = useRef<HTMLDivElement>(null)
 
@@ -46,8 +50,6 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
   const [restoredY, setRestoredY] = useState<number | null>(null)
   const [showRestoreToast, setShowRestoreToast] = useState(false)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const SCROLL_KEY = "photowall-scroll-y"
-  const MIN_RESTORE_OFFSET = 120 // 至少滚动 120px 才提示恢复
 
   const closeLightbox = useCallback(() => setLightboxIndex(null), [])
   const openLightbox = useCallback((index: number) => {
@@ -93,25 +95,25 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
     const savedY = parseInt(raw, 10)
     if (Number.isNaN(savedY) || savedY <= MIN_RESTORE_OFFSET) return
 
-    // 根据保存的滚动位置预估需要的照片数量
-    // 每张照片约 320px 高，每行 4 列，所以每行约 1280px
-    // 预估需要的照片数 = (savedY / 320) * 列数，留足余量
-    const estimatedCount = Math.ceil((savedY / 300) * 4) + PAGE_SIZE
-    if (estimatedCount > visibleCount) {
-      setVisibleCount(Math.min(estimatedCount, localPhotos.length))
-    }
-
     // 等待照片渲染和动画完成后再恢复
+    let hideTimer: ReturnType<typeof setTimeout> | undefined
+    const estimatedCount = Math.min(Math.ceil((savedY / 300) * 4) + PAGE_SIZE, photos.length)
+    const expandTimer = setTimeout(() => {
+      setVisibleCount((current) => Math.max(current, estimatedCount))
+    }, 0)
     const restoreTimer = setTimeout(() => {
       window.scrollTo({ top: savedY, behavior: "smooth" })
       setRestoredY(savedY)
       setShowRestoreToast(true)
-      const hideTimer = setTimeout(() => setShowRestoreToast(false), 3000)
-      return () => clearTimeout(hideTimer)
+      hideTimer = setTimeout(() => setShowRestoreToast(false), 3000)
     }, 600)
 
-    return () => clearTimeout(restoreTimer)
-  }, [])
+    return () => {
+      clearTimeout(expandTimer)
+      clearTimeout(restoreTimer)
+      if (hideTimer) clearTimeout(hideTimer)
+    }
+  }, [photos.length])
 
   // 无限滚动：观察哨兵元素
   useEffect(() => {
@@ -192,7 +194,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
     <>
       {/* Mosaic Grid — CSS Grid with dense flow, no reflow on append */}
       <div
-        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3"
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4"
         style={{
           gridAutoRows: "90px",
           gridAutoFlow: "dense",
@@ -204,7 +206,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
             <div
               key={photo.url}
               className={cn(
-                "group relative overflow-hidden rounded-lg sm:rounded-xl bg-stone-200 dark:bg-stone-800 cursor-pointer",
+                "group relative cursor-pointer overflow-hidden border-2 border-[#191914] bg-[#d8d0c3] shadow-[4px_4px_0_#191914] transition-transform hover:-translate-y-1 dark:border-[#f5f0e5] dark:bg-[#2a2924] dark:shadow-[4px_4px_0_#f5f0e5]",
                 "opacity-0 animate-[fadeUp_0.5s_ease-out_forwards]",
                 span
               )}
@@ -213,20 +215,21 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
               }}
               onClick={() => openLightbox(index)}
             >
-              <img
+              <SafeImage
                 src={photo.thumb || photo.url}
                 alt={photo.caption ?? "校园照片"}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                loading="lazy"
+                fill
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                className="object-cover transition-transform duration-700 group-hover:scale-105 group-hover:saturate-[1.08]"
               />
 
               {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
+              <div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
               {/* Caption */}
               {photo.caption && (
-                <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-400">
-                  <p className="text-[10px] sm:text-xs text-white/90 leading-snug line-clamp-2">
+                <div className="absolute inset-x-2 bottom-2 translate-y-2 border border-white/50 bg-[#191914] p-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 sm:inset-x-3 sm:bottom-3 sm:p-3">
+                  <p className="line-clamp-2 text-[10px] leading-snug text-white/90 sm:text-xs">
                     {photo.caption}
                   </p>
                 </div>
@@ -240,7 +243,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
                     handleDelete(photo.url)
                   }}
                   disabled={deletingUrl === photo.url}
-                  className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/80 hover:bg-red-500/80 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-300"
+                  className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center border border-white/60 bg-[#191914] text-white/80 opacity-0 transition-all duration-300 hover:bg-[#e4532f] hover:text-white group-hover:opacity-100 sm:right-2 sm:top-2"
                   title="删除照片"
                 >
                   {deletingUrl === photo.url ? (
@@ -257,15 +260,15 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
 
       {/* Infinite scroll sentinel & loading indicator */}
       {visibleCount < localPhotos.length && (
-        <div ref={sentinelRef} className="flex flex-col items-center justify-center py-12">
+        <div ref={sentinelRef} className="flex flex-col items-center justify-center py-12 font-mono text-[10px] font-bold tracking-[0.12em]">
           {loadingMore ? (
             <>
-              <Loader2 className="h-6 w-6 text-stone-400 animate-spin mb-2" />
-              <p className="text-xs text-stone-400 dark:text-stone-500">加载更多...</p>
+              <Loader2 className="mb-2 h-6 w-6 animate-spin text-[#e4532f]" />
+              <p className="text-[#777268] dark:text-[#989389]">LOADING MORE FRAMES</p>
             </>
           ) : (
-            <p className="text-xs text-stone-400 dark:text-stone-500">
-              已加载 {visibleCount} / {localPhotos.length} 张
+            <p className="border border-[#191914]/25 bg-[#fffaf0] px-3 py-2 text-[#777268] dark:border-white/25 dark:bg-[#191914] dark:text-[#989389]">
+              LOADED {visibleCount} / {localPhotos.length}
             </p>
           )}
         </div>
@@ -274,13 +277,13 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
       {/* Lightbox */}
       {lightboxIndex !== null && localPhotos[lightboxIndex] && (
         <div
-          className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex items-center justify-center animate-page-enter"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-[#11110f]/95 backdrop-blur-md animate-page-enter"
           onClick={closeLightbox}
         >
           {/* Close */}
           <button
             onClick={closeLightbox}
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
+            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center border border-white/50 bg-[#191914] text-white transition-colors hover:bg-[#ff6b43] hover:text-[#191914] sm:right-6 sm:top-6"
           >
             <X className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
@@ -292,7 +295,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
                 e.stopPropagation()
                 prevPhoto()
               }}
-              className="absolute left-2 sm:left-4 md:left-8 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
+              className="absolute left-2 z-10 flex h-10 w-10 items-center justify-center border border-white/50 bg-[#191914] text-white transition-colors hover:bg-[#d9ef61] hover:text-[#191914] sm:left-4 sm:h-12 sm:w-12 md:left-8"
             >
               <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
@@ -303,7 +306,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
             className="relative max-w-[95vw] sm:max-w-[90vw] max-h-[90vh] sm:max-h-[85vh] flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative min-h-[200px] min-w-[200px] flex items-center justify-center">
+            <div className="relative flex h-[70vh] w-[82vw] max-w-6xl items-center justify-center sm:h-[78vh] sm:w-[86vw]">
               {lightboxLoading && !lightboxError && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                   <Loader2 className="h-10 w-10 text-white/60 animate-spin mb-3" />
@@ -316,11 +319,13 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
                   <p className="text-xs text-white/40">图片加载失败</p>
                 </div>
               )}
-              <img
+              <SafeImage
                 src={localPhotos[lightboxIndex].url}
                 alt={localPhotos[lightboxIndex].caption ?? "校园照片"}
+                fill
+                sizes="90vw"
                 className={cn(
-                  "max-w-full max-h-[75vh] sm:max-h-[80vh] object-contain rounded-lg shadow-2xl transition-opacity duration-300",
+                  "border border-white/40 object-contain drop-shadow-[8px_8px_0_#ff6b43] transition-opacity duration-300",
                   lightboxLoading || lightboxError ? "opacity-0" : "opacity-100"
                 )}
                 onLoad={() => setLightboxLoading(false)}
@@ -347,7 +352,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
                 e.stopPropagation()
                 nextPhoto()
               }}
-              className="absolute right-2 sm:right-4 md:right-8 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
+              className="absolute right-2 z-10 flex h-10 w-10 items-center justify-center border border-white/50 bg-[#191914] text-white transition-colors hover:bg-[#d9ef61] hover:text-[#191914] sm:right-4 sm:h-12 sm:w-12 md:right-8"
             >
               <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
@@ -358,14 +363,14 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
       {/* Restore position toast */}
       <div
         className={cn(
-          "fixed bottom-6 left-1/2 -translate-x-1/2 z-[150] flex items-center gap-3 rounded-full border bg-white/90 dark:bg-stone-900/90 backdrop-blur-md px-4 py-2.5 shadow-lg transition-all duration-500",
+          "fixed bottom-6 left-1/2 z-[150] flex -translate-x-1/2 items-center gap-3 border-2 border-[#191914] bg-[#fffaf0]/95 px-4 py-2.5 text-[#191914] shadow-[4px_4px_0_#191914] backdrop-blur-md transition-all duration-500 dark:border-[#f5f0e5] dark:bg-[#191914]/95 dark:text-[#f5f0e5] dark:shadow-[4px_4px_0_#f5f0e5]",
           showRestoreToast
             ? "translate-y-0 opacity-100"
             : "translate-y-4 opacity-0 pointer-events-none"
         )}
       >
-        <ArrowDown className="h-3.5 w-3.5 text-amber-500" />
-        <span className="text-xs text-stone-700 dark:text-stone-200">
+        <ArrowDown className="h-3.5 w-3.5 text-[#e4532f]" />
+        <span className="text-xs font-bold">
           已恢复上次浏览位置
         </span>
       </div>
@@ -375,7 +380,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
         <div className="fixed bottom-6 right-4 sm:right-6 z-[150] flex flex-col gap-2">
           <button
             onClick={handleReturnToSaved}
-            className="group flex items-center justify-center gap-2 rounded-full bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 px-4 py-2.5 text-xs font-medium shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+            className="group flex items-center justify-center gap-2 border-2 border-[#191914] bg-[#ff6b43] px-4 py-2.5 text-xs font-bold text-[#191914] shadow-[3px_3px_0_#191914] transition-all hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]"
             title="回到上次位置"
           >
             <ArrowDown className="h-3.5 w-3.5 transition-transform group-hover:translate-y-0.5" />
@@ -383,7 +388,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
           </button>
           <button
             onClick={handleClearAndGoTop}
-            className="group flex items-center justify-center gap-2 rounded-full bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 border border-stone-200 dark:border-stone-700 px-4 py-2 text-[11px] shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5"
+            className="group flex items-center justify-center gap-2 border-2 border-[#191914] bg-[#fffaf0] px-4 py-2 text-[11px] font-bold text-[#191914] shadow-[3px_3px_0_#191914] transition-all hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:bg-[#191914] dark:text-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]"
             title="返回顶部并清除记录"
           >
             <ArrowUp className="h-3 w-3 transition-transform group-hover:-translate-y-0.5" />

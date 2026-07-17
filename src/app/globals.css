@@ -410,9 +410,9 @@ body {
 .skeleton {
   background: linear-gradient(
     90deg,
-    rgba(229, 229, 229, 0.4) 25%,
-    rgba(229, 229, 229, 0.7) 50%,
-    rgba(229, 229, 229, 0.4) 75%
+    rgba(210, 202, 189, 0.45) 25%,
+    rgba(244, 239, 228, 0.9) 50%,
+    rgba(210, 202, 189, 0.45) 75%
   );
   background-size: 1000px 100%;
   animation: shimmer 1.8s infinite linear;
@@ -421,9 +421,9 @@ body {
 .dark .skeleton {
   background: linear-gradient(
     90deg,
-    rgba(40, 40, 40, 0.4) 25%,
-    rgba(40, 40, 40, 0.7) 50%,
-    rgba(40, 40, 40, 0.4) 75%
+    rgba(42, 41, 36, 0.55) 25%,
+    rgba(68, 66, 58, 0.75) 50%,
+    rgba(42, 41, 36, 0.55) 75%
   );
   background-size: 1000px 100%;
 }

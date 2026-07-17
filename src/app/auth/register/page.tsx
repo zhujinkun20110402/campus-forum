@@ -2,187 +2,100 @@
 
 import Link from "next/link"
 import { useActionState } from "react"
-import { Input } from "@/components/ui/input"
+import { ArrowRight, CheckCircle, Loader2, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { SafeImage } from "@/components/ui/safe-image"
 import { registerUser } from "@/lib/actions"
-import { AcademicParticles } from "@/components/effects/academic-particles"
-import { MottoStream } from "@/components/effects/motto-stream"
-import { ScrollReveal } from "@/components/effects/scroll-reveal"
-import { Sparkles, ArrowRight, CheckCircle, GraduationCap } from "lucide-react"
 
 export default function RegisterPage() {
   const [state, formAction, isPending] = useActionState(registerUser, null)
-
-  const benefits = [
-    "免费注册，即刻使用",
-    "与全校同学互动交流",
-    "发布帖子、参与讨论",
-    "失物招领、表白墙等特色功能",
-  ]
+  const benefits = ["与校园同学互动交流", "发布帖子并参与讨论", "使用失物招领与表白墙", "收藏属于自己的校园轨迹"]
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left Panel */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-gradient-to-br from-indigo-950 via-indigo-900 to-indigo-950">
-        <AcademicParticles />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(212,175,55,0.1),_transparent_50%)]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/80 via-transparent to-indigo-950/40" />
-
-        <div className="relative flex flex-col justify-between p-12 xl:p-16">
-          <ScrollReveal>
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center overflow-hidden">
-                <GraduationCap className="h-7 w-7 text-gold-400" />
-              </div>
-              <div>
-                <span className="text-white font-medium tracking-wide">北京二中经开区学校</span>
-                <span className="block text-xs text-indigo-300/50">校园论坛</span>
-              </div>
+    <div className="grid min-h-screen bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5] lg:grid-cols-[1.08fr_0.92fr]">
+      <section className="relative hidden min-h-screen overflow-hidden border-r-2 border-[#191914] bg-[#191914] text-[#f5f0e5] dark:border-[#f5f0e5] lg:block">
+        <SafeImage src="/images/campus-01.jpg" alt="校园教学楼" fill priority sizes="55vw" className="object-cover opacity-35 saturate-[0.75]" />
+        <div className="absolute inset-0 bg-[#11110f]/60" />
+        <div className="relative flex min-h-screen flex-col justify-between p-12 xl:p-16">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="relative h-11 w-11 overflow-hidden border-2 border-white bg-[#ff6b43]">
+              <SafeImage src="/images/school-logo.png" alt="校徽" fill sizes="44px" className="object-contain p-1" />
             </div>
-          </ScrollReveal>
+            <div>
+              <p className="font-serif text-sm font-bold">北京二中经开区学校</p>
+              <p className="mt-1 font-mono text-[8px] font-bold tracking-[0.18em] text-[#d9ef61]">CAMPUS FORUM</p>
+            </div>
+          </Link>
 
-          <div className="space-y-8">
-            <ScrollReveal delay={0.1}>
-              <h2 className="text-4xl xl:text-5xl font-serif font-bold text-white leading-tight">
-                加入我们
-              </h2>
-              <p className="mt-4 text-lg leading-relaxed text-indigo-200/60">
-                注册一个账号，<br />
-                开启你的校园社区之旅。
-              </p>
-            </ScrollReveal>
-
-            <ScrollReveal delay={0.2}>
-              <div className="mb-6">
-                <MottoStream size="sm" animated={false} />
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal delay={0.3}>
-              <div className="space-y-4">
-                {benefits.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 text-sm text-indigo-200/50"
-                  >
-                    <CheckCircle className="h-4 w-4 text-gold-400/70 shrink-0" />
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </ScrollReveal>
+          <div>
+            <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-[#ff8a68]">JOIN THE COMMUNITY</p>
+            <h1 className="mt-5 font-serif text-5xl font-bold leading-[1.05] tracking-tight xl:text-6xl">
+              把你的名字，<br />
+              <span className="text-[#d9ef61]">加入校园故事。</span>
+            </h1>
+            <div className="mt-9 space-y-3">
+              {benefits.map((benefit, index) => (
+                <div key={benefit} className="flex items-center gap-3 border-b border-white/15 pb-3 text-sm text-white/60">
+                  <span className="font-mono text-[9px] font-bold text-[#ff8a68]">0{index + 1}</span>
+                  <CheckCircle className="h-4 w-4 text-[#d9ef61]" />
+                  {benefit}
+                </div>
+              ))}
+            </div>
           </div>
 
-          <ScrollReveal delay={0.4}>
-            <div className="flex items-center gap-2 text-xs text-indigo-400/40">
-              <Sparkles className="h-3 w-3" />
-              北京二中经开区学校论坛 · 本固枝盛，学富国强
-            </div>
-          </ScrollReveal>
+          <p className="font-mono text-[9px] font-bold tracking-[0.14em] text-white/30">FREE TO JOIN · BUILT FOR CAMPUS</p>
         </div>
-      </div>
+      </section>
 
-      {/* Right Panel */}
-      <div className="flex w-full lg:w-[45%] items-center justify-center px-4 sm:px-8 py-12 relative bg-slate-50 dark:bg-indigo-950">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 to-white dark:from-indigo-950/50 dark:to-indigo-950" />
-        <div className="relative w-full max-w-sm">
-          <ScrollReveal>
-            <div className="text-center mb-10">
-              <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-indigo-200 dark:from-indigo-800 dark:to-indigo-700 mb-4 shadow-lg">
-                <GraduationCap className="h-7 w-7 text-indigo-700 dark:text-indigo-200" />
-              </div>
-              <h1 className="text-2xl font-serif font-bold text-slate-800 dark:text-slate-100">
-                注册账号
-              </h1>
-              <p className="mt-2 text-sm text-slate-400 dark:text-slate-500">
-                创建你的校园账号，加入论坛社区
-              </p>
+      <main className="campus-paper flex min-h-screen items-center justify-center px-4 py-12 sm:px-8">
+        <div className="w-full max-w-md">
+          <Link href="/" className="mb-8 flex items-center gap-3 lg:hidden">
+            <div className="relative h-10 w-10 overflow-hidden border-2 border-[#191914] bg-[#ff6b43] dark:border-[#f5f0e5]">
+              <SafeImage src="/images/school-logo.png" alt="校徽" fill sizes="40px" className="object-contain p-1" />
             </div>
-          </ScrollReveal>
+            <span className="font-serif text-sm font-bold">校园论坛</span>
+          </Link>
 
-          <ScrollReveal delay={0.1}>
-            <form action={formAction} className="space-y-5">
+          <div className="border-2 border-[#191914] bg-[#fffaf0] p-6 shadow-[7px_7px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[7px_7px_0_#f5f0e5] sm:p-8">
+            <p className="font-mono text-[9px] font-bold tracking-[0.18em] text-[#e4532f]">CREATE ACCOUNT</p>
+            <h1 className="mt-3 font-serif text-4xl font-bold tracking-tight">加入校园社区</h1>
+            <p className="mt-2 text-sm text-[#777268] dark:text-[#989389]">创建账号，开始记录与回应。</p>
+
+            <form action={formAction} className="mt-8 space-y-5">
               {state && "message" in state && state.message && (
-                <div className="rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/50 p-3 text-sm text-rose-600 dark:text-rose-400">
-                  {state.message}
-                </div>
+                <div className="border-2 border-[#d44120] bg-[#ffb4aa]/35 p-3 text-sm text-[#b52f1e]" role="alert">{state.message}</div>
               )}
 
-              <div className="space-y-1.5">
-                <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  用户名 <span className="text-rose-400">*</span>
-                </label>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="中英文、数字、下划线"
-                  required
-                  className="h-11 rounded-xl border-slate-200 dark:border-indigo-800/60 bg-white dark:bg-indigo-900/40"
-                />
-                {state && "errors" in state && state.errors?.name && (
-                  <p className="text-sm text-rose-500">{state.errors.name[0]}</p>
-                )}
-              </div>
+              <AuthField index="01" label="用户名" id="name" type="text" placeholder="中英文、数字、下划线" error={state && "errors" in state ? state.errors?.name?.[0] : undefined} />
+              <AuthField index="02" label="邮箱" id="email" type="email" placeholder="用于登录和找回密码" error={state && "errors" in state ? state.errors?.email?.[0] : undefined} />
+              <AuthField index="03" label="密码" id="password" type="password" placeholder="至少 6 位字符" error={state && "errors" in state ? state.errors?.password?.[0] : undefined} />
 
-              <div className="space-y-1.5">
-                <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  邮箱 <span className="text-rose-400">*</span>
-                </label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="用于登录和找回密码"
-                  required
-                  className="h-11 rounded-xl border-slate-200 dark:border-indigo-800/60 bg-white dark:bg-indigo-900/40"
-                />
-                {state && "errors" in state && state.errors?.email && (
-                  <p className="text-sm text-rose-500">{state.errors.email[0]}</p>
-                )}
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  密码 <span className="text-rose-400">*</span>
-                </label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="至少 6 位字符"
-                  required
-                  className="h-11 rounded-xl border-slate-200 dark:border-indigo-800/60 bg-white dark:bg-indigo-900/40"
-                />
-                {state && "errors" in state && state.errors?.password && (
-                  <p className="text-sm text-rose-500">{state.errors.password[0]}</p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isPending}
-                className="w-full h-11 bg-indigo-700 hover:bg-indigo-800 text-white rounded-full shadow-md shadow-indigo-700/20 hover:shadow-lg hover:shadow-indigo-700/30 hover:-translate-y-0.5 transition-all"
-              >
-                {isPending ? "注册中..." : "注册"}
+              <Button type="submit" disabled={isPending} className="h-12 w-full rounded-none border-2 border-[#191914] bg-[#d9ef61] font-bold text-[#191914] shadow-[4px_4px_0_#191914] transition-transform hover:-translate-y-1 hover:bg-[#d9ef61] dark:border-[#f5f0e5] dark:bg-[#d9ef61] dark:text-[#191914] dark:shadow-[4px_4px_0_#f5f0e5]">
+                {isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />注册中...</> : <><UserPlus className="mr-2 h-4 w-4" />创建账号</>}
               </Button>
             </form>
-          </ScrollReveal>
+          </div>
 
-          <ScrollReveal delay={0.2}>
-            <p className="mt-8 text-center text-sm text-slate-400 dark:text-slate-500">
-              已有账号？{" "}
-              <Link
-                href="/auth/signin"
-                className="font-medium text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors inline-flex items-center gap-0.5"
-              >
-                立即登录
-                <ArrowRight className="h-3 w-3" />
-              </Link>
-            </p>
-          </ScrollReveal>
+          <p className="mt-8 text-center text-sm text-[#777268] dark:text-[#989389]">
+            已有账号？{" "}
+            <Link href="/auth/signin" className="inline-flex items-center gap-1 font-bold text-[#d44120] underline decoration-2 underline-offset-4 dark:text-[#ff8a68]">
+              立即登录 <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </p>
         </div>
-      </div>
+      </main>
+    </div>
+  )
+}
+
+function AuthField({ index, label, id, type, placeholder, error }: { index: string; label: string; id: string; type: string; placeholder: string; error?: string }) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-2 block text-sm font-bold"><span className="mr-2 font-mono text-[9px] text-[#e4532f]">{index}</span>{label}</label>
+      <Input id={id} name={id} type={type} placeholder={placeholder} required className="h-12 rounded-none border-2 border-[#191914] bg-white px-4 text-[#191914] focus-visible:ring-[#ff6b43] dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5]" />
+      {error && <p className="mt-2 border-l-4 border-[#d44120] bg-[#ffb4aa]/30 px-3 py-2 text-sm text-[#b52f1e]" role="alert">{error}</p>}
     </div>
   )
 }

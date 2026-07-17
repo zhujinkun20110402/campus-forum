@@ -23,7 +23,7 @@ export function LikeButton({ postId, likeCount, isLiked }: LikeButtonProps) {
       variant="ghost"
       size="sm"
       onClick={handleClick}
-      className="gap-1.5 rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-2.5 py-1.5 sm:px-4 sm:py-2 h-auto text-sm text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800"
+      className="h-9 gap-1.5 rounded-none border border-[#191914] bg-[#fffaf0] px-3 text-sm font-bold text-[#191914] hover:bg-[#ffb4aa] dark:border-[#f5f0e5] dark:bg-[#191914] dark:text-[#f5f0e5] dark:hover:bg-[#ffb4aa] dark:hover:text-[#191914]"
     >
       <Heart
         className={`h-4 w-4 ${isLiked ? "fill-current text-red-500" : ""}`}

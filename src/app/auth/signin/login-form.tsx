@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Loader2, LogIn } from "lucide-react"
 
 function LoginFormInner() {
   const router = useRouter()
@@ -46,18 +47,18 @@ function LoginFormInner() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {registered === "true" && (
-        <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/50 p-3 text-sm text-emerald-700 dark:text-emerald-300">
+        <div className="border-2 border-[#326b42] bg-[#b9ddbd]/45 p-3 text-sm font-bold text-[#275836] dark:text-[#b9ddbd]" role="status">
           注册成功，请登录
         </div>
       )}
       {error && (
-        <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/50 p-3 text-sm text-red-600 dark:text-red-400">
+        <div className="border-2 border-[#d44120] bg-[#ffb4aa]/35 p-3 text-sm text-[#b52f1e]" role="alert">
           {error}
         </div>
       )}
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
-          用户名 / 邮箱
+        <label htmlFor="name" className="mb-2 flex items-center justify-between text-sm font-bold">
+          <span><span className="mr-2 font-mono text-[9px] text-[#e4532f]">01</span>用户名 / 邮箱</span>
         </label>
         <Input
           id="name"
@@ -65,12 +66,12 @@ function LoginFormInner() {
           type="text"
           placeholder="请输入用户名或邮箱"
           required
-          className="h-11 rounded-xl border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900"
+          className="h-12 rounded-none border-2 border-[#191914] bg-white px-4 text-[#191914] focus-visible:ring-[#ff6b43] dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5]"
         />
       </div>
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
-          密码
+        <label htmlFor="password" className="mb-2 flex items-center justify-between text-sm font-bold">
+          <span><span className="mr-2 font-mono text-[9px] text-[#e4532f]">02</span>密码</span>
         </label>
         <Input
           id="password"
@@ -78,15 +79,15 @@ function LoginFormInner() {
           type="password"
           placeholder="请输入密码"
           required
-          className="h-11 rounded-xl border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900"
+          className="h-12 rounded-none border-2 border-[#191914] bg-white px-4 text-[#191914] focus-visible:ring-[#ff6b43] dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5]"
         />
       </div>
       <Button
         type="submit"
         disabled={loading}
-        className="w-full h-11 bg-stone-800 hover:bg-stone-900 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-stone-900 rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+        className="h-12 w-full rounded-none border-2 border-[#191914] bg-[#ff6b43] font-bold text-[#191914] shadow-[4px_4px_0_#191914] transition-transform hover:-translate-y-1 hover:bg-[#ff6b43] dark:border-[#f5f0e5] dark:bg-[#ff6b43] dark:text-[#191914] dark:shadow-[4px_4px_0_#f5f0e5]"
       >
-        {loading ? "登录中..." : "登录"}
+        {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />登录中...</> : <><LogIn className="mr-2 h-4 w-4" />登录</>}
       </Button>
     </form>
   )
@@ -94,7 +95,7 @@ function LoginFormInner() {
 
 export function LoginForm() {
   return (
-    <Suspense fallback={<div className="text-sm text-stone-400">加载中...</div>}>
+    <Suspense fallback={<div className="h-12 w-full animate-pulse border-2 border-[#191914]/25 bg-[#ece6da] dark:border-white/25 dark:bg-[#292821]" />}>
       <LoginFormInner />
     </Suspense>
   )

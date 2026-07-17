@@ -57,10 +57,10 @@ export function ShareButton({ postId, title }: ShareButtonProps) {
   return (
     <button
       onClick={handleShare}
-      className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full border px-2.5 py-1.5 sm:px-4 sm:py-2 text-sm transition-colors ${
+      className={`inline-flex h-9 items-center gap-1.5 border px-3 text-sm font-bold transition-colors ${
         copied
-          ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
-          : "border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800"
+          ? "border-[#326b42] bg-[#b9ddbd] text-[#275836]"
+          : "border-[#191914] bg-[#fffaf0] text-[#191914] hover:bg-[#d9ef61] dark:border-[#f5f0e5] dark:bg-[#191914] dark:text-[#f5f0e5] dark:hover:bg-[#d9ef61] dark:hover:text-[#191914]"
       }`}
     >
       {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}

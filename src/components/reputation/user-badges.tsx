@@ -46,7 +46,7 @@ export function UserBadges({ stats, className, showLocked = true }: UserBadgesPr
         </span>
       </div>
 
-      <div className="grid grid-cols-4 sm:grid-cols-7 gap-3">
+      <div className="grid grid-cols-4 gap-3">
         {badges.map((badge) => (
           <BadgeItem key={badge.id} badge={badge} showLocked={showLocked} />
         ))}
@@ -70,7 +70,7 @@ function BadgeItem({ badge, showLocked }: { badge: BadgeInfo; showLocked: boolea
     >
       <div
         className={cn(
-          "h-11 w-11 rounded-xl flex items-center justify-center border transition-transform group-hover:scale-110",
+          "flex h-11 w-11 items-center justify-center border-2 transition-transform group-hover:-rotate-3 group-hover:scale-105",
           badge.earned
             ? cn(badge.bgColor, "border-current/20", badge.color)
             : "bg-stone-100 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-600"
@@ -95,7 +95,7 @@ function BadgeItem({ badge, showLocked }: { badge: BadgeInfo; showLocked: boolea
 
       {/* Tooltip */}
       <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-        <div className="whitespace-nowrap rounded-md bg-stone-900 dark:bg-stone-700 px-2 py-1 text-[10px] text-white shadow-lg">
+        <div className="whitespace-nowrap border border-white/30 bg-[#191914] px-2 py-1 text-[10px] text-white shadow-lg">
           {badge.description}
         </div>
       </div>

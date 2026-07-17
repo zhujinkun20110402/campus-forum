@@ -28,10 +28,10 @@ export function PinButton({ postId, initialPinned }: PinButtonProps) {
     <button
       onClick={handleToggle}
       disabled={isPending}
-      className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-full border px-2.5 py-1.5 sm:px-4 sm:py-2 text-sm transition-colors ${
+      className={`inline-flex h-9 items-center gap-1.5 border px-3 text-sm font-bold transition-colors disabled:opacity-50 ${
         pinned
-          ? "border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400"
-          : "border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800"
+          ? "border-[#191914] bg-[#f3c84b] text-[#191914] dark:border-[#f5f0e5]"
+          : "border-[#191914] bg-[#fffaf0] text-[#191914] hover:bg-[#f3c84b] dark:border-[#f5f0e5] dark:bg-[#191914] dark:text-[#f5f0e5] dark:hover:bg-[#f3c84b] dark:hover:text-[#191914]"
       }`}
     >
       {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}

@@ -1,126 +1,78 @@
 import Link from "next/link"
-import { SafeImage } from "@/components/ui/safe-image"
+import { ArrowRight, BookOpen, Heart, Search } from "lucide-react"
 import { LoginForm } from "@/app/auth/signin/login-form"
-import { AcademicParticles } from "@/components/effects/academic-particles"
-import { MottoStream } from "@/components/effects/motto-stream"
-import { ScrollReveal } from "@/components/effects/scroll-reveal"
-import { ArrowRight, BookOpen, Search, Heart } from "lucide-react"
+import { SafeImage } from "@/components/ui/safe-image"
 
 export default function SignInPage() {
   return (
-    <div className="flex min-h-screen">
-      {/* Left Panel */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-[#0a0a0a]">
-        <AcademicParticles />
-
-        {/* Background decorations */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_rgba(212,175,55,0.08),_transparent_50%)]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/90 via-transparent to-[#0a0a0a]/40" />
-
-        <div className="relative flex flex-col justify-between p-12 xl:p-16">
-          {/* Top: Logo */}
-          <ScrollReveal>
-            <div className="flex items-center gap-3">
-              <div className="relative h-10 w-10 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 overflow-hidden">
-                <SafeImage src="/images/school-logo.png" alt="校徽" fill className="object-contain p-1.5" />
-              </div>
-              <span className="text-sm font-medium text-white/80">
-                北京二中经开区学校
-              </span>
+    <div className="grid min-h-screen bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5] lg:grid-cols-[1.08fr_0.92fr]">
+      <section className="relative hidden min-h-screen overflow-hidden border-r-2 border-[#191914] bg-[#191914] text-[#f5f0e5] dark:border-[#f5f0e5] lg:block">
+        <SafeImage src="/images/campus-03.jpg" alt="校园操场" fill priority sizes="55vw" className="object-cover opacity-45 saturate-[0.8]" />
+        <div className="absolute inset-0 bg-[#11110f]/55" />
+        <div className="relative flex min-h-screen flex-col justify-between p-12 xl:p-16">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="relative h-11 w-11 overflow-hidden border-2 border-white bg-[#d9ef61]">
+              <SafeImage src="/images/school-logo.png" alt="校徽" fill sizes="44px" className="object-contain p-1" />
             </div>
-          </ScrollReveal>
+            <div>
+              <p className="font-serif text-sm font-bold">北京二中经开区学校</p>
+              <p className="mt-1 font-mono text-[8px] font-bold tracking-[0.18em] text-[#ff8a68]">CAMPUS FORUM</p>
+            </div>
+          </Link>
 
-          {/* Middle: Content */}
-          <div className="space-y-8">
-            <ScrollReveal delay={0.1}>
-              <h2 className="font-serif text-4xl xl:text-5xl text-white tracking-wide leading-tight">
-                欢迎回到
-                <br />
-                <span className="text-amber-400">校园论坛</span>
-              </h2>
-            </ScrollReveal>
+          <div>
+            <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-[#d9ef61]">WELCOME BACK</p>
+            <h1 className="mt-5 font-serif text-5xl font-bold leading-[1.05] tracking-tight xl:text-6xl">
+              回到校园，<br />
+              <span className="text-[#ff8a68]">继续那场讨论。</span>
+            </h1>
+            <p className="mt-6 max-w-lg text-sm leading-7 text-white/55">这里保存着同学们分享的问题、线索、活动和每一次认真回应。</p>
 
-            <ScrollReveal delay={0.2}>
-              <div className="mb-6">
-                <MottoStream size="sm" animated={false} />
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal delay={0.3}>
-              <p className="text-base text-white/30 leading-relaxed max-w-sm">
-                连接每一个校园故事，分享你的精彩瞬间。
-                在这里，学习、交流、互助、表白，让校园生活更加丰富多彩。
-              </p>
-            </ScrollReveal>
-
-            <ScrollReveal delay={0.4}>
-              <div className="space-y-3">
-                {[
-                  { icon: BookOpen, text: "学习资料共享与难题讨论" },
-                  { icon: Search, text: "失物招领与互帮互助" },
-                  { icon: Heart, text: "匿名表白墙 · 说出你的心声" },
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 text-sm text-white/30"
-                  >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/5 border border-white/10">
-                      <item.icon className="h-4 w-4 text-amber-400/60" />
-                    </span>
-                    {item.text}
+            <div className="mt-9 grid max-w-xl grid-cols-3 border-y border-white/30">
+              {[
+                [BookOpen, "学习交流"],
+                [Search, "失物招领"],
+                [Heart, "匿名心声"],
+              ].map(([Icon, label], index) => {
+                const ItemIcon = Icon as React.ComponentType<{ className?: string }>
+                return (
+                  <div key={String(label)} className={index > 0 ? "border-l border-white/25 px-3 py-4 text-center" : "px-3 py-4 text-center"}>
+                    <ItemIcon className="mx-auto h-4 w-4 text-[#f3c84b]" />
+                    <p className="mt-2 text-xs text-white/60">{label as string}</p>
                   </div>
-                ))}
-              </div>
-            </ScrollReveal>
+                )
+              })}
+            </div>
           </div>
 
-          {/* Bottom */}
-          <ScrollReveal delay={0.5}>
-            <div className="flex items-center gap-2 text-xs text-white/20">
-              <span className="h-px w-8 bg-white/10" />
-              北京二中经开区学校论坛
-            </div>
-          </ScrollReveal>
+          <p className="font-mono text-[9px] font-bold tracking-[0.14em] text-white/30">本固枝盛 · 学富国强</p>
         </div>
-      </div>
+      </section>
 
-      {/* Right Panel */}
-      <div className="flex w-full lg:w-[45%] items-center justify-center px-4 sm:px-8 py-12 relative bg-[#faf9f7] dark:bg-[#0a0a0a]">
-        <div className="absolute inset-0 bg-gradient-to-br from-stone-100/50 to-white dark:from-[#0a0a0a]/50 dark:to-[#0f0f0f]" />
-
-        <div className="relative w-full max-w-sm">
-          <ScrollReveal>
-            <div className="text-center mb-10">
-              <div className="relative h-14 w-14 rounded-2xl bg-stone-100 dark:bg-stone-800 overflow-hidden mb-5 mx-auto">
-                <SafeImage src="/images/school-logo.png" alt="校徽" fill className="object-contain p-2" />
-              </div>
-              <h1 className="font-serif text-2xl font-semibold text-stone-800 dark:text-stone-100">
-                登录
-              </h1>
-              <p className="mt-2 text-sm text-stone-400 dark:text-stone-500">
-                使用你的账号继续
-              </p>
+      <main className="campus-paper flex min-h-screen items-center justify-center px-4 py-12 sm:px-8">
+        <div className="w-full max-w-md">
+          <Link href="/" className="mb-8 flex items-center gap-3 lg:hidden">
+            <div className="relative h-10 w-10 overflow-hidden border-2 border-[#191914] bg-[#d9ef61] dark:border-[#f5f0e5]">
+              <SafeImage src="/images/school-logo.png" alt="校徽" fill sizes="40px" className="object-contain p-1" />
             </div>
-          </ScrollReveal>
+            <span className="font-serif text-sm font-bold">校园论坛</span>
+          </Link>
 
-          <ScrollReveal delay={0.1}>
-            <LoginForm />
-          </ScrollReveal>
+          <div className="border-2 border-[#191914] bg-[#fffaf0] p-6 shadow-[7px_7px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[7px_7px_0_#f5f0e5] sm:p-8">
+            <p className="font-mono text-[9px] font-bold tracking-[0.18em] text-[#e4532f]">MEMBER LOGIN</p>
+            <h1 className="mt-3 font-serif text-4xl font-bold tracking-tight">欢迎回来</h1>
+            <p className="mt-2 text-sm text-[#777268] dark:text-[#989389]">使用校园账号继续浏览与讨论。</p>
+            <div className="mt-8"><LoginForm /></div>
+          </div>
 
-          <ScrollReveal delay={0.15}>
-            <p className="mt-8 text-center text-sm text-stone-400 dark:text-stone-500">
-              还没有账号？{" "}
-              <Link
-                href="/auth/register"
-                className="font-medium text-amber-600 dark:text-amber-400 underline underline-offset-4 hover:text-amber-700 dark:hover:text-amber-300 transition-colors inline-flex items-center gap-0.5"
-              >
-                立即注册
-                <ArrowRight className="h-3 w-3" />
-              </Link>
-            </p>
-          </ScrollReveal>
+          <p className="mt-8 text-center text-sm text-[#777268] dark:text-[#989389]">
+            还没有账号？{" "}
+            <Link href="/auth/register" className="inline-flex items-center gap-1 font-bold text-[#d44120] underline decoration-2 underline-offset-4 dark:text-[#ff8a68]">
+              立即注册 <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </p>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

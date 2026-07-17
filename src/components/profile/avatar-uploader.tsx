@@ -3,6 +3,7 @@
 import { useState, useRef } from "react"
 import { Camera, Loader2, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { SafeImage } from "@/components/ui/safe-image"
 
 interface AvatarUploaderProps {
   value: string
@@ -42,17 +43,17 @@ export function AvatarUploader({ value, onChange }: AvatarUploaderProps) {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="relative group">
+      <div className="group relative">
         <div
           className={cn(
-            "h-24 w-24 rounded-full overflow-hidden ring-4 ring-blue-100 dark:ring-blue-900 bg-stone-200 dark:bg-stone-700",
+            "relative h-28 w-28 overflow-hidden border-2 border-[#191914] bg-[#ece6da] shadow-[5px_5px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#292821] dark:shadow-[5px_5px_0_#f5f0e5]",
             uploading && "opacity-70"
           )}
         >
           {value ? (
-            <img src={value} alt="头像预览" className="h-full w-full object-cover" />
+            <SafeImage src={value} alt="头像预览" fill sizes="112px" className="object-cover" />
           ) : (
-            <div className="h-full w-full flex items-center justify-center text-stone-500 dark:text-stone-400">
+            <div className="flex h-full w-full items-center justify-center text-[#777268] dark:text-[#aaa69c]">
               <Camera className="h-8 w-8" />
             </div>
           )}
@@ -60,7 +61,7 @@ export function AvatarUploader({ value, onChange }: AvatarUploaderProps) {
 
         {uploading && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <Loader2 className="h-6 w-6 text-white animate-spin drop-shadow-md" />
+            <Loader2 className="h-6 w-6 animate-spin text-white drop-shadow-md" />
           </div>
         )}
 
@@ -68,7 +69,8 @@ export function AvatarUploader({ value, onChange }: AvatarUploaderProps) {
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-colors cursor-pointer"
+          className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/0 transition-colors group-hover:bg-black/35"
+          aria-label="上传自定义头像"
         >
           <Camera className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
         </button>
@@ -77,7 +79,7 @@ export function AvatarUploader({ value, onChange }: AvatarUploaderProps) {
           <button
             type="button"
             onClick={() => onChange("")}
-            className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center shadow-sm hover:bg-red-600 transition-colors"
+            className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center border-2 border-[#191914] bg-[#ff6b43] text-[#191914] transition-transform hover:scale-110 dark:border-[#f5f0e5]"
             title="清除头像"
           >
             <X className="h-3 w-3" />
@@ -94,10 +96,10 @@ export function AvatarUploader({ value, onChange }: AvatarUploaderProps) {
       </div>
 
       <div className="text-center">
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+        <p className="mb-1 text-sm font-bold">
           点击头像上传自定义图片
         </p>
-        <p className="text-xs text-gray-400 dark:text-gray-500">
+        <p className="font-mono text-[9px] tracking-[0.1em] text-[#777268] dark:text-[#989389]">
           支持 JPG / PNG，建议正方形
         </p>
       </div>

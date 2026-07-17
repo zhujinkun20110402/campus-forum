@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ImageUpload } from "@/components/post/image-upload"
 import { createPost } from "@/lib/actions"
 import { postSchema, type PostInput } from "@/lib/validations"
-import { Loader2 } from "lucide-react"
+import { Loader2, Send } from "lucide-react"
 
 interface PostFormProps {
   categories: { id: string; name: string }[]
@@ -114,30 +114,32 @@ export function PostForm({ categories }: PostFormProps) {
   ]
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      <div className="space-y-1.5">
-        <label htmlFor="title" className="block text-sm font-medium text-stone-700 dark:text-stone-300">
-          标题
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
+      <div className="space-y-2">
+        <label htmlFor="title" className="flex items-center justify-between text-sm font-bold">
+          <span><span className="mr-2 font-mono text-[9px] text-[#e4532f]">01</span>标题</span>
+          <span className="font-mono text-[9px] font-medium tracking-[0.1em] text-[#989389]">MAKE IT CLEAR</span>
         </label>
         <Input
           id="title"
           {...register("title")}
           placeholder="请输入帖子标题"
-          className="h-11 rounded-xl border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900"
+          className="h-12 rounded-none border-2 border-[#191914] bg-white px-4 text-base font-medium text-[#191914] focus-visible:ring-[#ff6b43] dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5]"
         />
         {errors.title && (
-          <p className="text-sm text-red-500">{errors.title.message}</p>
+          <p className="border-l-4 border-[#d44120] bg-[#ffb4aa]/30 px-3 py-2 text-sm text-[#b52f1e]" role="alert">{errors.title.message}</p>
         )}
       </div>
 
-      <div className="space-y-1.5">
-        <label htmlFor="categoryId" className="block text-sm font-medium text-stone-700 dark:text-stone-300">
-          分类
+      <div className="space-y-2">
+        <label htmlFor="categoryId" className="flex items-center justify-between text-sm font-bold">
+          <span><span className="mr-2 font-mono text-[9px] text-[#e4532f]">02</span>分类</span>
+          <span className="font-mono text-[9px] font-medium tracking-[0.1em] text-[#989389]">FIND YOUR CORNER</span>
         </label>
         <select
           id="categoryId"
           {...register("categoryId")}
-          className="flex h-11 w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-2 text-sm text-stone-800 dark:text-stone-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2"
+          className="flex h-12 w-full border-2 border-[#191914] bg-white px-4 py-2 text-sm font-medium text-[#191914] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff6b43] focus-visible:ring-offset-2 dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5]"
         >
           <option value="">请选择分类</option>
           {categories.map((category) => (
@@ -147,29 +149,30 @@ export function PostForm({ categories }: PostFormProps) {
           ))}
         </select>
         {errors.categoryId && (
-          <p className="text-sm text-red-500">{errors.categoryId.message}</p>
+          <p className="border-l-4 border-[#d44120] bg-[#ffb4aa]/30 px-3 py-2 text-sm text-[#b52f1e]" role="alert">{errors.categoryId.message}</p>
         )}
       </div>
 
-      <div className="space-y-1.5">
-        <label htmlFor="content" className="block text-sm font-medium text-stone-700 dark:text-stone-300">
-          内容 <span className="text-stone-400 font-normal">— 支持 Markdown</span>
+      <div className="space-y-2">
+        <label htmlFor="content" className="flex items-center justify-between text-sm font-bold">
+          <span><span className="mr-2 font-mono text-[9px] text-[#e4532f]">03</span>正文</span>
+          <span className="font-mono text-[9px] font-medium tracking-[0.1em] text-[#989389]">MARKDOWN READY</span>
         </label>
 
         {/* Toolbar */}
-        <div className="flex flex-wrap items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1 border-2 border-b-0 border-[#191914] bg-[#ece6da] p-2 dark:border-[#f5f0e5] dark:bg-[#292821]">
           {toolbarButtons.map((btn) => (
             <button
               key={btn.title}
               type="button"
               title={btn.title}
               onClick={() => insertMarkdown(btn.syntax, btn.placeholder)}
-              className="h-8 w-8 rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-xs font-medium text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-200 transition-colors"
+              className="h-8 min-w-8 border border-[#191914]/35 bg-[#fffaf0] px-1.5 text-xs font-bold text-[#191914] transition-colors hover:border-[#191914] hover:bg-[#f3c84b] dark:border-white/35 dark:bg-[#191914] dark:text-[#f5f0e5] dark:hover:border-white dark:hover:bg-[#f3c84b] dark:hover:text-[#191914]"
             >
               {btn.label}
             </button>
           ))}
-          <div className="w-px h-6 bg-stone-200 dark:bg-stone-700 mx-1" />
+          <div className="mx-1 h-6 w-px bg-[#191914]/30 dark:bg-white/30" />
           <ImageUpload value={uploadedImages} onChange={handleImageUpload} />
         </div>
 
@@ -189,23 +192,23 @@ export function PostForm({ categories }: PostFormProps) {
               onBlur={field.onBlur}
               placeholder="请输入帖子内容，支持 Markdown 格式\n拖拽图片或 Ctrl+V 粘贴上传"
               rows={10}
-              className="rounded-xl border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 font-mono text-sm resize-y min-h-[200px]"
+              className="min-h-[280px] resize-y rounded-none border-2 border-[#191914] bg-white p-4 font-mono text-sm leading-7 text-[#191914] focus-visible:ring-[#ff6b43] focus-visible:ring-offset-0 dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5]"
             />
           )}
         />
         {errors.content && (
-          <p className="text-sm text-red-500">{errors.content.message}</p>
+          <p className="border-l-4 border-[#d44120] bg-[#ffb4aa]/30 px-3 py-2 text-sm text-[#b52f1e]" role="alert">{errors.content.message}</p>
         )}
       </div>
 
       {errors.root && (
-        <p className="text-sm text-red-500">{errors.root.message}</p>
+        <p className="border-2 border-[#d44120] bg-[#ffb4aa]/30 px-4 py-3 text-sm font-medium text-[#b52f1e]" role="alert">{errors.root.message}</p>
       )}
 
       <Button
         type="submit"
         disabled={isPending}
-        className="w-full h-11 bg-stone-800 hover:bg-stone-900 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-stone-900 rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+        className="h-12 w-full rounded-none border-2 border-[#191914] bg-[#ff6b43] font-bold text-[#191914] shadow-[4px_4px_0_#191914] transition-transform hover:-translate-y-1 hover:bg-[#ff6b43] dark:border-[#f5f0e5] dark:bg-[#ff6b43] dark:text-[#191914] dark:shadow-[4px_4px_0_#f5f0e5]"
       >
         {isPending ? (
           <>
@@ -213,7 +216,7 @@ export function PostForm({ categories }: PostFormProps) {
             发布中...
           </>
         ) : (
-          "发布帖子"
+          <><Send className="mr-2 h-4 w-4" />发布帖子</>
         )}
       </Button>
     </form>

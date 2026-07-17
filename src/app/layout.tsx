@@ -3,7 +3,7 @@ import { Noto_Serif_SC, Noto_Sans_SC, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/components/layout/providers"
 import { HeaderWrapper } from "@/components/layout/header-wrapper"
-import { Footer } from "@/components/layout/footer"
+import { FooterWrapper } from "@/components/layout/footer-wrapper"
 import { NavigationProgress } from "@/components/layout/navigation-progress"
 
 const notoSerif = Noto_Serif_SC({
@@ -71,7 +71,7 @@ export default function RootLayout({
           <NavigationProgress />
           <HeaderWrapper />
           <main className="flex-1">{children}</main>
-          <Footer />
+          <FooterWrapper />
         </Providers>
       </body>
     </html>

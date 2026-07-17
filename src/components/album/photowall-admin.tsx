@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Loader2, Plus, ImagePlus, X, Check, Eye, EyeOff, Trash2, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { SafeImage } from "@/components/ui/safe-image"
 
 interface PendingPhoto {
   url: string
@@ -137,14 +138,14 @@ export function PhotowallAdmin() {
               fetchPending()
             }}
             variant="outline"
-            className="rounded-full border-stone-300 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 px-6"
+            className="h-11 border-2 border-[#191914] bg-[#ff6b43] px-6 font-bold text-[#191914] shadow-[4px_4px_0_#191914] transition-transform hover:-translate-y-1 hover:bg-[#ff6b43] dark:border-[#f5f0e5] dark:bg-[#ff6b43] dark:text-[#191914] dark:shadow-[4px_4px_0_#f5f0e5]"
           >
             <Plus className="mr-2 h-4 w-4" />
             管理照片墙
           </Button>
         </div>
       ) : (
-        <div className="rounded-3xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#141414] p-6 sm:p-8 shadow-lg space-y-8">
+        <div className="space-y-8 border-2 border-[#191914] bg-[#fffaf0] p-6 text-[#191914] shadow-[6px_6px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#191914] dark:text-[#f5f0e5] dark:shadow-[6px_6px_0_#f5f0e5] sm:p-8">
           {/* Upload Section */}
           <div>
             <div className="flex items-center justify-between mb-6">
@@ -170,14 +171,14 @@ export function PhotowallAdmin() {
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 disabled={uploading}
-                className="rounded-xl border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 text-stone-700 dark:text-stone-200"
+                className="h-12 rounded-none border-2 border-[#191914] bg-white text-[#191914] focus-visible:ring-[#ff6b43] dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5]"
               />
             </div>
 
             {/* Upload Area */}
             <div
               onClick={() => !uploading && fileInputRef.current?.click()}
-              className="relative rounded-2xl border-2 border-dashed border-stone-300 dark:border-stone-700 hover:border-amber-400 dark:hover:border-amber-500 transition-colors p-8 text-center cursor-pointer group"
+              className="group relative cursor-pointer border-2 border-dashed border-[#191914]/45 bg-[#ece6da]/50 p-8 text-center transition-colors hover:border-[#e4532f] hover:bg-[#ff6b43]/5 dark:border-white/40 dark:bg-[#11110f]/50 dark:hover:border-[#ff6b43]"
             >
               <input
                 ref={fileInputRef}
@@ -233,7 +234,7 @@ export function PhotowallAdmin() {
           </div>
 
           {/* Pending Review Section */}
-          <div className="border-t border-stone-100 dark:border-stone-800 pt-6">
+          <div className="border-t-2 border-[#191914] pt-6 dark:border-[#f5f0e5]">
             <button
               onClick={() => setShowPending((prev) => !prev)}
               className="flex items-center justify-between w-full text-left"
@@ -261,7 +262,7 @@ export function PhotowallAdmin() {
                     <Loader2 className="h-6 w-6 text-amber-500 animate-spin" />
                   </div>
                 ) : pendingPhotos.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-stone-200 dark:border-stone-700 py-8 text-center">
+                  <div className="border-2 border-dashed border-[#191914]/30 py-8 text-center dark:border-white/30">
                     <Check className="mx-auto h-8 w-8 text-stone-300 dark:text-stone-600" />
                     <p className="mt-2 text-sm text-stone-400 dark:text-stone-500">
                       暂无待审核照片
@@ -272,13 +273,14 @@ export function PhotowallAdmin() {
                     {pendingPhotos.map((photo) => (
                       <div
                         key={photo.url}
-                        className="group relative aspect-square rounded-xl overflow-hidden bg-stone-200 dark:bg-stone-800"
+                        className="group relative aspect-square overflow-hidden border-2 border-[#191914] bg-[#ece6da] dark:border-[#f5f0e5] dark:bg-[#292821]"
                       >
-                        <img
+                        <SafeImage
                           src={photo.thumb || photo.url}
                           alt={photo.caption ?? "待审核照片"}
-                          className="h-full w-full object-cover"
-                          loading="lazy"
+                          fill
+                          sizes="(min-width: 768px) 25vw, 50vw"
+                          className="object-cover"
                         />
                         {/* Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">

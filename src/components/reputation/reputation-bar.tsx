@@ -17,6 +17,8 @@ export function ReputationBar({ raputation, role, className }: ReputationBarProp
   const progress = getLevelProgress(raputation, role)
   const displayRep = getDisplayRaputation(raputation, role)
   const isAdmin = role === "ADMIN"
+  const barColors = ["bg-[#777268]", "bg-[#3f8450]", "bg-[#849326]", "bg-[#d29b20]", "bg-[#a47537]", "bg-[#df6b35]", "bg-[#d94d5a]", "bg-[#f3c84b]"]
+  const barColor = isAdmin ? "bg-[#ff6b43]" : barColors[Math.max(0, Math.min(info.level - 1, barColors.length - 1))]
 
   return (
     <div className={cn("rounded-2xl border p-5", info.borderColor, info.bgColor, className)}>
@@ -55,11 +57,11 @@ export function ReputationBar({ raputation, role, className }: ReputationBarProp
       </div>
 
       {/* 进度条 */}
-      <div className="h-2 w-full rounded-full bg-stone-200/60 dark:bg-stone-700/40 overflow-hidden">
+      <div className="h-2 w-full overflow-hidden border border-[#191914]/20 bg-[#fffaf0]/60 dark:border-white/20 dark:bg-[#11110f]/50">
         <div
           className={cn(
-            "h-full rounded-full bg-gradient-to-r transition-all duration-700",
-            info.gradient
+            "h-full transition-all duration-700",
+            barColor
           )}
           style={{ width: `${progress.progress}%` }}
         />

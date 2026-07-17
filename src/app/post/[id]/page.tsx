@@ -1,72 +1,54 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
-import { Badge } from "@/components/ui/badge"
-import { formatRelativeTime } from "@/lib/utils"
+import { ArrowLeft, Clock, MessageSquare } from "lucide-react"
 import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
 import rehypeHighlight from "rehype-highlight"
-import { LikeButton } from "@/components/post/like-button"
-import { CommentList } from "@/components/comment/comment-list"
+import remarkGfm from "remark-gfm"
 import { CommentForm } from "@/components/comment/comment-form"
-import { DeleteButton } from "@/components/post/delete-button"
-import { ShareButton } from "@/components/post/share-button"
-import { PinButton } from "@/components/post/pin-button"
-import { isPostPinned } from "@/lib/pinned-posts"
+import { CommentList } from "@/components/comment/comment-list"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
-import { UserAvatar } from "@/components/user/user-avatar"
+import { DeleteButton } from "@/components/post/delete-button"
+import { LikeButton } from "@/components/post/like-button"
+import { PinButton } from "@/components/post/pin-button"
+import { ShareButton } from "@/components/post/share-button"
 import { LevelBadge } from "@/components/reputation/level-badge"
-import { MessageSquare, Clock, ArrowLeft } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { EditorialHeading, EditorialPanel } from "@/components/ui/editorial"
+import { UserAvatar } from "@/components/user/user-avatar"
+import { auth } from "@/lib/auth"
+import { isPostPinned } from "@/lib/pinned-posts"
+import { prisma } from "@/lib/prisma"
+import { cn, formatRelativeTime } from "@/lib/utils"
 
 const categoryStyles: Record<string, string> = {
-  announcement: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-950/60",
-  lostfound: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-950/60",
-  confession: "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-950/60",
-  study: "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-950/60",
-  activity: "bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-950/60",
-  secondhand: "bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800 hover:bg-orange-100 dark:hover:bg-orange-950/60",
+  announcement: "bg-[#ff6b43]",
+  lostfound: "bg-[#d9ef61]",
+  confession: "bg-[#ffb4aa]",
+  study: "bg-[#f3c84b]",
+  activity: "bg-[#b9ddbd]",
+  secondhand: "bg-[#f2d0b2]",
 }
 
-export default async function PostPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-
   const [post, session, pinned] = await Promise.all([
     prisma.post.findUnique({
       where: { id },
       include: {
-        author: {
-          select: { id: true, name: true, image: true, role: true, raputation: true },
-        },
-        category: {
-          select: { name: true, slug: true },
-        },
+        author: { select: { id: true, name: true, image: true, role: true, raputation: true } },
+        category: { select: { name: true, slug: true } },
         comments: {
           orderBy: { createdAt: "asc" },
-          include: {
-            author: {
-              select: { id: true, name: true, image: true, role: true, raputation: true },
-            },
-          },
+          include: { author: { select: { id: true, name: true, image: true, role: true, raputation: true } } },
         },
         likes: true,
-        _count: {
-          select: { comments: true, likes: true },
-        },
+        _count: { select: { comments: true, likes: true } },
       },
     }),
     auth(),
     isPostPinned(id),
   ])
 
-  if (!post) {
-    notFound()
-  }
+  if (!post) notFound()
 
   const currentUser = session?.user
   const isAuthor = currentUser?.id === post.author.id
@@ -74,148 +56,80 @@ export default async function PostPage({
   const isConfession = post.category.slug === "confession"
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
-      {/* Breadcrumb */}
-      <ScrollReveal>
-        <div className="flex items-center gap-2 text-sm text-stone-400 dark:text-stone-500 mb-6">
-          <Link href="/" className="hover:text-stone-600 dark:hover:text-stone-300 transition-colors inline-flex items-center gap-1">
-            <ArrowLeft className="h-3.5 w-3.5" />
-            首页
-          </Link>
-          <span>/</span>
-          <Link href={`/category/${post.category.slug}`} className="hover:text-stone-600 dark:hover:text-stone-300 transition-colors">
-            {post.category.name}
-          </Link>
-          <span>/</span>
-          <span className="text-stone-300 dark:text-stone-600 truncate max-w-[200px]">
-            {post.title}
-          </span>
-        </div>
-      </ScrollReveal>
+    <div className="min-h-screen bg-[#ece6da] dark:bg-[#10100e]">
+      <section className="campus-paper border-b-2 border-[#191914] px-4 pb-14 pt-28 dark:border-[#f5f0e5] sm:px-6 sm:pb-16 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <ScrollReveal>
+            <nav className="flex min-w-0 items-center gap-2 font-mono text-[9px] font-bold tracking-[0.1em] text-[#777268] dark:text-[#989389]" aria-label="面包屑">
+              <Link href="/" className="inline-flex shrink-0 items-center gap-1 hover:text-[#e4532f]"><ArrowLeft className="h-3 w-3" />HOME</Link>
+              <span>/</span>
+              <Link href={`/category/${post.category.slug}`} className="shrink-0 hover:text-[#e4532f]">{post.category.name}</Link>
+              <span>/</span>
+              <span className="truncate">ARTICLE</span>
+            </nav>
 
-      {/* Post Header */}
-      <ScrollReveal delay={0.05}>
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-5">
-            <Link href={`/category/${post.category.slug}`}>
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs font-normal cursor-pointer transition-colors",
-                  categoryStyles[post.category.slug] ?? "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
-                )}
-              >
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link href={`/category/${post.category.slug}`} className={cn("border-2 border-[#191914] px-3 py-1.5 font-mono text-[9px] font-bold tracking-[0.1em] text-[#191914] dark:border-[#f5f0e5]", categoryStyles[post.category.slug] ?? "bg-[#e5ded1]")}>
                 {post.category.name}
-              </Badge>
-            </Link>
-            <span className="flex items-center gap-1 text-sm text-stone-400 dark:text-stone-500">
-              <Clock className="h-3.5 w-3.5" />
-              {formatRelativeTime(post.createdAt)}
-            </span>
-          </div>
+              </Link>
+              <span className="flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-[#777268] dark:text-[#989389]"><Clock className="h-3.5 w-3.5 text-[#e4532f]" />{formatRelativeTime(post.createdAt)}</span>
+              {pinned && <span className="border border-[#191914] bg-[#f3c84b] px-2 py-1 font-mono text-[8px] font-bold text-[#191914] dark:border-[#f5f0e5]">PINNED</span>}
+            </div>
 
-          <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-stone-800 dark:text-stone-100 mb-6 leading-tight">
-            {post.title}
-          </h1>
+            <h1 className="mt-6 max-w-4xl font-serif text-4xl font-bold leading-[1.12] tracking-[-0.045em] text-[#191914] dark:text-[#f5f0e5] sm:text-5xl lg:text-6xl">
+              {post.title}
+            </h1>
 
-          {/* Author */}
-          {!isConfession && (
-            <div className="flex items-center gap-3">
-              <UserAvatar
-                name={post.author.name}
-                image={post.author.image}
-                role={post.author.role}
-                size="lg"
-              />
+            <div className="mt-8 flex items-center gap-3">
+              {isConfession ? (
+                <div className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-[#191914] bg-[#ffb4aa] font-bold text-[#191914] dark:border-[#f5f0e5]">?</div>
+              ) : (
+                <Link href={`/profile/${post.author.id}`}><UserAvatar name={post.author.name} image={post.author.image} role={post.author.role} size="lg" /></Link>
+              )}
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="font-medium text-stone-800 dark:text-stone-100">
-                    {post.author.name}
-                  </p>
-                  <LevelBadge raputation={post.author.raputation} role={post.author.role} size="xs" showTitle={false} />
+                  <p className="text-sm font-bold">{isConfession ? "匿名同学" : (post.author.name ?? "未命名用户")}</p>
+                  {!isConfession && <LevelBadge raputation={post.author.raputation} role={post.author.role} size="xs" showTitle={false} />}
                 </div>
-                <p className="text-xs text-stone-400 dark:text-stone-500">作者</p>
+                <p className="mt-1 font-mono text-[8px] tracking-[0.14em] text-[#918b80]">{isConfession ? "ANONYMOUS VOICE" : "CAMPUS AUTHOR"}</p>
               </div>
             </div>
-          )}
+          </ScrollReveal>
+        </div>
+      </section>
 
-          {isConfession && (
-            <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-full bg-rose-50 dark:bg-rose-950/40 flex items-center justify-center ring-2 ring-rose-100 dark:ring-rose-900/30">
-                <span className="text-sm text-rose-400">?</span>
+      <main className="campus-dot-grid px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <ScrollReveal>
+            <EditorialPanel className="p-6 sm:p-10 lg:p-12">
+              <article className="prose prose-stone max-w-none dark:prose-invert prose-a:text-[#d44120] prose-img:rounded-none">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{post.content}</ReactMarkdown>
+              </article>
+
+              <div className="mt-10 flex flex-wrap items-center gap-2 border-t-2 border-[#191914] pt-6 dark:border-[#f5f0e5]">
+                <LikeButton postId={post.id} likeCount={post._count.likes} isLiked={post.likes.some((like) => like.userId === currentUser?.id)} />
+                <span className="inline-flex h-9 items-center gap-2 border border-[#191914] bg-[#fffaf0] px-3 text-sm font-bold dark:border-[#f5f0e5] dark:bg-[#191914]">
+                  <MessageSquare className="h-4 w-4 text-[#e4532f]" /> {post._count.comments} 条评论
+                </span>
+                <ShareButton postId={post.id} title={post.title} />
+                {isAdmin && <PinButton postId={post.id} initialPinned={pinned} />}
+                {(isAuthor || isAdmin) && <DeleteButton postId={post.id} />}
               </div>
-              <div>
-                <p className="font-medium text-stone-500 dark:text-stone-400">
-                  匿名同学
-                </p>
-                <p className="text-xs text-stone-400 dark:text-stone-500">表白墙</p>
-              </div>
+            </EditorialPanel>
+          </ScrollReveal>
+
+          <section className="mt-14">
+            <EditorialHeading index="02" eyebrow="DISCUSSION" title="讨论区" meta={`${post._count.comments} 条回应`} />
+            <div className="mt-7">
+              <CommentList comments={post.comments} currentUserId={currentUser?.id} isAdmin={isAdmin} postId={post.id} />
             </div>
-          )}
+            <EditorialPanel className="mt-7 p-5 sm:p-7">
+              <p className="mb-4 font-mono text-[9px] font-bold tracking-[0.16em] text-[#e4532f]">LEAVE A RESPONSE</p>
+              <CommentForm postId={post.id} />
+            </EditorialPanel>
+          </section>
         </div>
-      </ScrollReveal>
-
-      {/* Post Content */}
-      <ScrollReveal delay={0.1}>
-        <article className="prose prose-stone dark:prose-invert max-w-none mb-8 prose-img:rounded-xl prose-a:text-amber-600">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeHighlight]}
-          >
-            {post.content}
-          </ReactMarkdown>
-        </article>
-      </ScrollReveal>
-
-      {/* Actions Bar */}
-      <ScrollReveal delay={0.15}>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 py-5 border-y border-stone-200 dark:border-stone-800 mb-10">
-          <LikeButton
-            postId={post.id}
-            likeCount={post._count.likes}
-            isLiked={post.likes.some(
-              (like) => like.userId === currentUser?.id
-            )}
-          />
-
-          <button className="inline-flex items-center gap-2 rounded-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-1.5 sm:px-4 sm:py-2 text-sm text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
-            <MessageSquare className="h-4 w-4" />
-            <span className="hidden sm:inline">{post._count.comments} 条评论</span>
-            <span className="sm:hidden">{post._count.comments}</span>
-          </button>
-
-          <ShareButton postId={post.id} title={post.title} />
-
-          {isAdmin && <PinButton postId={post.id} initialPinned={pinned} />}
-
-          {(isAuthor || isAdmin) && (
-            <DeleteButton postId={post.id} />
-          )}
-        </div>
-      </ScrollReveal>
-
-      {/* Comments */}
-      <div className="mb-8">
-        <ScrollReveal>
-          <h2 className="font-serif text-xl font-semibold text-stone-800 dark:text-stone-100 mb-6">
-            讨论区
-            <span className="ml-2 text-sm font-normal text-stone-400 dark:text-stone-500">
-              ({post._count.comments})
-            </span>
-          </h2>
-        </ScrollReveal>
-
-        <CommentList
-          comments={post.comments}
-          currentUserId={currentUser?.id}
-          isAdmin={isAdmin}
-          postId={post.id}
-        />
-
-        <div className="mt-8">
-          <CommentForm postId={post.id} />
-        </div>
-      </div>
+      </main>
     </div>
   )
 }

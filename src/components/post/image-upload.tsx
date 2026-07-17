@@ -3,6 +3,7 @@
 import { useRef, useState } from "react"
 import { ImagePlus, Loader2, X, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { SafeImage } from "@/components/ui/safe-image"
 
 interface ImageUploadProps {
   value: string[]
@@ -87,7 +88,7 @@ export function ImageUpload({ value = [], onChange }: ImageUploadProps) {
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
           className={cn(
-            "inline-flex items-center gap-2 rounded-lg border border-dashed border-stone-300 dark:border-stone-600 px-4 py-2.5 text-sm text-stone-500 dark:text-stone-400 hover:border-amber-400 dark:hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400 transition-colors",
+            "inline-flex h-8 items-center gap-2 border border-dashed border-[#191914]/45 bg-[#fffaf0] px-3 text-xs font-bold text-[#5f5c54] transition-colors hover:border-[#191914] hover:bg-[#d9ef61] hover:text-[#191914] dark:border-white/40 dark:bg-[#191914] dark:text-[#aaa69c] dark:hover:border-white dark:hover:bg-[#d9ef61] dark:hover:text-[#191914]",
             uploading && "opacity-50 cursor-not-allowed"
           )}
         >
@@ -103,7 +104,7 @@ export function ImageUpload({ value = [], onChange }: ImageUploadProps) {
             </>
           )}
         </button>
-        <span className="text-[11px] text-stone-400 dark:text-stone-500">
+        <span className="font-mono text-[9px] tracking-[0.1em] text-[#918b80] dark:text-[#7f7b73]">
           支持粘贴上传
         </span>
         <input
@@ -117,13 +118,13 @@ export function ImageUpload({ value = [], onChange }: ImageUploadProps) {
       </div>
 
       {uploadedUrl && (
-        <div className="flex items-center gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 px-3 py-2">
-          <Check className="h-4 w-4 text-emerald-500" />
-          <span className="text-sm text-emerald-700 dark:text-emerald-300">上传成功</span>
+        <div className="flex items-center gap-2 border border-[#326b42] bg-[#b9ddbd]/45 px-3 py-2 text-[#275836] dark:text-[#b9ddbd]">
+          <Check className="h-4 w-4" />
+          <span className="text-sm font-bold">上传成功</span>
           <button
             type="button"
             onClick={() => handleCopyUrl(uploadedUrl)}
-            className="ml-auto text-xs text-emerald-600 dark:text-emerald-400 hover:underline"
+            className="ml-auto text-xs font-bold underline-offset-4 hover:underline"
           >
             复制 Markdown
           </button>
@@ -133,19 +134,18 @@ export function ImageUpload({ value = [], onChange }: ImageUploadProps) {
       {value.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {value.map((url, i) => (
-            <div key={i} className="group relative h-20 w-20 rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-              <img
+            <div key={i} className="group relative h-20 w-20 overflow-hidden border-2 border-[#191914] bg-[#ece6da] shadow-[2px_2px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#292821] dark:shadow-[2px_2px_0_#f5f0e5]">
+              <SafeImage
                 src={url}
-                alt=""
-                className="h-full w-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none"
-                }}
+                alt="已上传的帖子图片"
+                fill
+                sizes="80px"
+                className="object-cover"
               />
               <button
                 type="button"
                 onClick={() => onChange(value.filter((_, j) => j !== i))}
-                className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center bg-[#d44120] text-white opacity-0 transition-opacity group-hover:opacity-100"
               >
                 <X className="h-3 w-3" />
               </button>

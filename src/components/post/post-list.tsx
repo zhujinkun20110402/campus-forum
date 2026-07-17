@@ -27,7 +27,7 @@ interface PostListProps {
 
 export function PostList({ posts, hideAuthor = false }: PostListProps) {
   return (
-    <div className="divide-y divide-stone-100 dark:divide-stone-800 border-y border-stone-100 dark:border-stone-800">
+    <div className="grid gap-5">
       {posts.map((post) => (
         <PostCard key={post.id} post={post} hideAuthor={hideAuthor} />
       ))}

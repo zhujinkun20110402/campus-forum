@@ -9,6 +9,8 @@ import { BanUserButton } from "@/components/admin/ban-user-button"
 import { ReputationAdjustButton } from "@/components/admin/reputation-adjust-button"
 import { LevelBadge } from "@/components/reputation/level-badge"
 import { getPhotos } from "@/lib/album-store"
+import { EditorialHero } from "@/components/ui/editorial"
+import { SafeImage } from "@/components/ui/safe-image"
 import {
   Users,
   FileText,
@@ -30,15 +32,15 @@ export default async function AdminPage() {
 
   if (!session?.user?.id || session.user.role !== "ADMIN") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#faf9f7] dark:bg-[#0a0a0a]">
-        <div className="text-center px-4">
-          <div className="inline-flex items-center justify-center h-20 w-20 rounded-3xl bg-rose-50 dark:bg-rose-950/30 text-rose-500 dark:text-rose-400 mb-6 shadow-lg">
+      <div className="campus-paper flex min-h-screen items-center justify-center bg-[#f4efe4] px-4 dark:bg-[#11110f]">
+        <div className="border-2 border-[#191914] bg-[#fffaf0] px-8 py-12 text-center shadow-[7px_7px_0_#ff6b43] dark:border-[#f5f0e5] dark:bg-[#191914]">
+          <div className="mb-6 inline-flex h-20 w-20 items-center justify-center border-2 border-[#191914] bg-[#ffb4aa] text-[#b52f1e] dark:border-[#f5f0e5]">
             <Shield className="h-10 w-10" />
           </div>
-          <h1 className="text-2xl font-serif font-semibold text-stone-800 dark:text-stone-100 mb-3">
+          <h1 className="mb-3 font-serif text-2xl font-bold">
             没有权限访问
           </h1>
-          <p className="text-stone-500 dark:text-stone-400 max-w-sm mx-auto leading-relaxed">
+          <p className="mx-auto max-w-sm leading-relaxed text-[#777268] dark:text-[#989389]">
             您需要管理员权限才能访问此页面。如有疑问，请联系系统管理员。
           </p>
         </div>
@@ -140,42 +142,36 @@ export default async function AdminPage() {
     .slice(0, 5)
 
   return (
-    <div className="min-h-screen bg-[#faf9f7] dark:bg-[#0a0a0a]">
-      {/* Admin Header */}
-      <section className="relative overflow-hidden bg-stone-900 pt-28 pb-16">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(212,175,55,0.06),_transparent_60%)]" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-          <ScrollReveal>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-amber-500/20 border border-amber-500/20 flex items-center justify-center">
-                <Shield className="h-5 w-5 text-amber-400" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
-                  管理员仪表盘
-                </h1>
-                <p className="text-sm text-stone-400">北京二中经开区学校 · 校园论坛管理后台</p>
-              </div>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
+    <div className="min-h-screen bg-[#ece6da] dark:bg-[#10100e]">
+      <EditorialHero
+        index="10"
+        eyebrow="CONTROL ROOM"
+        title="校园社区管理台"
+        description="查看社区运行状态、内容趋势与成员数据，保持校园论坛健康、有序地运转。"
+        icon={Shield}
+        accentClass="bg-[#f3c84b]"
+        compact
+      >
+        <span className="inline-flex items-center gap-2 border border-[#191914] bg-[#fffaf0] px-3 py-2 font-mono text-[9px] font-bold tracking-[0.14em] dark:border-[#f5f0e5] dark:bg-[#191914]">
+          <CheckCircle2 className="h-3.5 w-3.5 text-[#326b42]" /> SYSTEM ONLINE
+        </span>
+      </EditorialHero>
 
-      <div className="relative -mt-8 mx-auto max-w-7xl px-4 sm:px-6 space-y-8 pb-20">
+      <div className="campus-dot-grid mx-auto max-w-7xl space-y-8 px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         {/* Stats Grid */}
         <ScrollReveal>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className="rounded-2xl bg-white dark:bg-[#141414] border border-stone-200 dark:border-stone-800 p-5 shadow-sm hover:shadow-md transition-shadow"
+                className="border-2 border-[#191914] bg-[#fffaf0] p-5 shadow-[4px_4px_0_rgba(25,25,20,0.16)] transition-transform hover:-translate-y-1 dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[4px_4px_0_rgba(245,240,229,0.12)]"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <div className={`h-10 w-10 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
+                  <div className={`flex h-10 w-10 items-center justify-center border border-[#191914]/25 ${stat.bgColor} dark:border-white/25`}>
                     <stat.icon className={`h-5 w-5 ${stat.textColor}`} />
                   </div>
-                  <span className="text-[10px] text-stone-400 dark:text-stone-500 bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded-full">
-                    实时
+                  <span className="border border-[#191914]/20 px-2 py-0.5 font-mono text-[8px] font-bold tracking-[0.1em] text-[#777268] dark:border-white/20 dark:text-[#989389]">
+                    LIVE
                   </span>
                 </div>
                 <div className={`text-3xl font-mono font-bold ${stat.textColor}`}>
@@ -189,7 +185,7 @@ export default async function AdminPage() {
 
         {/* Reputation Leaderboard */}
         <ScrollReveal delay={0.05}>
-          <div className="rounded-3xl bg-white dark:bg-[#141414] border border-stone-200 dark:border-stone-800 shadow-sm p-6">
+          <div className="border-2 border-[#191914] bg-[#fffaf0] p-6 shadow-[5px_5px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[5px_5px_0_#f5f0e5]">
             <div className="flex items-center gap-2 mb-5">
               <div className="h-8 w-8 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
                 <Award className="h-4 w-4 text-amber-500" />
@@ -203,9 +199,9 @@ export default async function AdminPage() {
               {reputationLeaderboard.map((user, index) => (
                 <div
                   key={user.id}
-                  className="flex items-center gap-3 rounded-xl bg-stone-50/50 dark:bg-stone-900/30 p-3"
+                className="flex items-center gap-3 border-b border-[#191914]/15 p-3 last:border-b-0 dark:border-white/15"
                 >
-                  <span className={`shrink-0 h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center border border-[#191914]/25 text-xs font-bold ${
                     index === 0
                       ? "bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400"
                       : index === 1
@@ -250,8 +246,8 @@ export default async function AdminPage() {
         {/* Category Distribution + System Status */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Category Distribution */}
-          <ScrollReveal delay={0.05} >
-            <div className="lg:col-span-2 rounded-3xl bg-white dark:bg-[#141414] border border-stone-200 dark:border-stone-800 shadow-sm p-6">
+          <ScrollReveal delay={0.05} className="lg:col-span-2">
+            <div className="border-2 border-[#191914] bg-[#fffaf0] p-6 shadow-[5px_5px_0_rgba(25,25,20,0.16)] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[5px_5px_0_rgba(245,240,229,0.1)]">
               <div className="flex items-center gap-2 mb-5">
                 <Activity className="h-5 w-5 text-stone-600 dark:text-stone-400" />
                 <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">分类分布</h2>
@@ -262,9 +258,9 @@ export default async function AdminPage() {
                     <span className="text-sm text-stone-600 dark:text-stone-400 w-14 sm:w-20 shrink-0 truncate">
                       {cat.name}
                     </span>
-                    <div className="flex-1 h-6 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
+                    <div className="h-6 flex-1 overflow-hidden border border-[#191914]/20 bg-[#ece6da] dark:border-white/20 dark:bg-[#292821]">
                       <div
-                        className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all duration-700"
+                        className="h-full bg-[#ff6b43] transition-all duration-700"
                         style={{ width: `${(cat._count.posts / maxCategoryCount) * 100}%` }}
                       />
                     </div>
@@ -279,7 +275,7 @@ export default async function AdminPage() {
 
           {/* System Status */}
           <ScrollReveal delay={0.1}>
-            <div className="rounded-3xl bg-stone-900 border border-stone-800 p-6">
+            <div className="border-2 border-[#191914] bg-[#191914] p-6 text-[#f5f0e5] shadow-[5px_5px_0_#d9ef61] dark:border-[#f5f0e5]">
               <div className="flex items-center gap-2 mb-5">
                 <Server className="h-5 w-5 text-amber-400" />
                 <h3 className="text-sm font-semibold text-white">系统状态</h3>
@@ -314,7 +310,7 @@ export default async function AdminPage() {
 
         {/* Photo Wall Preview */}
         <ScrollReveal delay={0.1}>
-          <div className="rounded-3xl bg-white dark:bg-[#141414] border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
+          <div className="overflow-hidden border-2 border-[#191914] bg-[#fffaf0] shadow-[5px_5px_0_rgba(25,25,20,0.16)] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[5px_5px_0_rgba(245,240,229,0.1)]">
             <div className="p-6 border-b border-stone-100 dark:border-stone-800">
               <div className="flex items-center gap-2">
                 <Images className="h-5 w-5 text-amber-500" />
@@ -336,12 +332,14 @@ export default async function AdminPage() {
                   {photos.slice(0, 16).map((photo) => (
                     <div
                       key={photo.url}
-                      className="relative aspect-square rounded-lg overflow-hidden group"
+                      className="group relative aspect-square overflow-hidden border border-[#191914]/20 dark:border-white/20"
                     >
-                      <img
+                      <SafeImage
                         src={photo.thumb || photo.url}
                         alt={photo.caption ?? ""}
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="(min-width: 1024px) 12vw, 25vw"
+                        className="object-cover"
                       />
                       {photo.caption && (
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-end p-1.5 transition-opacity">
@@ -372,7 +370,7 @@ export default async function AdminPage() {
 
         {/* Users Management */}
         <ScrollReveal delay={0.15}>
-          <div className="rounded-3xl bg-white dark:bg-[#141414] border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
+          <div className="overflow-hidden border-2 border-[#191914] bg-[#fffaf0] shadow-[5px_5px_0_rgba(25,25,20,0.16)] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[5px_5px_0_rgba(245,240,229,0.1)]">
             <div className="p-6 border-b border-stone-100 dark:border-stone-800">
               <div className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-stone-600 dark:text-stone-400" />
@@ -479,8 +477,8 @@ export default async function AdminPage() {
         {/* Recent Posts + Recent Comments */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Posts */}
-          <ScrollReveal delay={0.2}>
-            <div className="lg:col-span-2 rounded-3xl bg-white dark:bg-[#141414] border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
+          <ScrollReveal delay={0.2} className="lg:col-span-2">
+            <div className="overflow-hidden border-2 border-[#191914] bg-[#fffaf0] shadow-[5px_5px_0_rgba(25,25,20,0.16)] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[5px_5px_0_rgba(245,240,229,0.1)]">
               <div className="p-6 border-b border-stone-100 dark:border-stone-800">
                 <div className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-stone-600 dark:text-stone-400" />
@@ -556,7 +554,7 @@ export default async function AdminPage() {
 
           {/* Recent Comments */}
           <ScrollReveal delay={0.25}>
-            <div className="rounded-3xl bg-white dark:bg-[#141414] border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
+            <div className="overflow-hidden border-2 border-[#191914] bg-[#fffaf0] shadow-[5px_5px_0_rgba(25,25,20,0.16)] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[5px_5px_0_rgba(245,240,229,0.1)]">
               <div className="p-6 border-b border-stone-100 dark:border-stone-800">
                 <div className="flex items-center gap-2">
                   <MessageSquare className="h-5 w-5 text-stone-600 dark:text-stone-400" />
@@ -568,7 +566,7 @@ export default async function AdminPage() {
                   <a
                     key={comment.id}
                     href={`/post/${comment.post.id}`}
-                    className="block rounded-xl border border-stone-100 dark:border-stone-800 p-3 hover:border-stone-200 dark:hover:border-stone-600 hover:bg-stone-50 dark:hover:bg-stone-800/30 transition-colors"
+                    className="block border-b border-[#191914]/15 p-3 transition-colors last:border-b-0 hover:bg-[#d9ef61]/25 dark:border-white/15 dark:hover:bg-[#292821]"
                   >
                     <div className="flex items-center gap-2 mb-1.5">
                       <Avatar className="h-5 w-5">
