@@ -64,21 +64,23 @@ export function FeedLoader({ initialPosts, pageSize = 12 }: FeedLoaderProps) {
   }, [loadMore])
 
   return (
-    <div className="divide-y divide-stone-100 dark:divide-stone-800 border-y border-stone-100 dark:border-stone-800">
-      {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
-      ))}
+    <div>
+      <div className="grid gap-5">
+        {posts.map((post) => (
+          <PostCard key={post.id} post={post} />
+        ))}
+      </div>
 
-      <div ref={sentinelRef} className="flex justify-center py-8">
+      <div ref={sentinelRef} className="flex min-h-20 items-center justify-center py-8">
         {loading && (
-          <div className="flex items-center gap-2 text-sm text-stone-400 dark:text-stone-500">
+          <div className="flex items-center gap-2 border border-[#191914] bg-[#fffaf0] px-4 py-2 font-mono text-[10px] font-bold tracking-[0.12em] text-[#777268] dark:border-[#f5f0e5] dark:bg-[#191914] dark:text-[#aaa69c]">
             <Loader2 className="h-4 w-4 animate-spin" />
-            加载中...
+            LOADING MORE
           </div>
         )}
         {!hasMore && posts.length > 0 && (
-          <p className="text-sm text-stone-400 dark:text-stone-500">
-            — 已经到底了 —
+          <p className="font-mono text-[10px] font-bold tracking-[0.16em] text-[#918b80] dark:text-[#77736b]">
+            — YOU&apos;RE ALL CAUGHT UP —
           </p>
         )}
       </div>

@@ -9,12 +9,13 @@ interface SafeImageProps {
   fill?: boolean
   width?: number
   height?: number
+  sizes?: string
   className?: string
   priority?: boolean
   fallback?: string
 }
 
-export function SafeImage({ src, alt, fill, width, height, className, priority, fallback }: SafeImageProps) {
+export function SafeImage({ src, alt, fill, width, height, sizes, className, priority, fallback }: SafeImageProps) {
   const [error, setError] = useState(false)
 
   if (error) {
@@ -37,6 +38,7 @@ export function SafeImage({ src, alt, fill, width, height, className, priority, 
       fill={fill}
       width={width}
       height={height}
+      sizes={sizes}
       className={className}
       priority={priority}
       onError={() => setError(true)}

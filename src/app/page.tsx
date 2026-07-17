@@ -1,125 +1,129 @@
 import Link from "next/link"
-import { SafeImage } from "@/components/ui/safe-image"
-import { auth } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
+import {
+  ArrowRight,
+  BookOpen,
+  CalendarDays,
+  Camera,
+  ChevronDown,
+  Compass,
+  Heart,
+  MapPin,
+  Megaphone,
+  MessageCircle,
+  Plus,
+  Search,
+  Sparkles,
+  TrendingUp,
+  Users,
+} from "lucide-react"
+import { ActiveUsers } from "@/components/home/active-users"
 import { FeedLoader } from "@/components/home/feed-loader"
 import { PinnedPosts } from "@/components/home/pinned-posts"
 import { TrendingPosts } from "@/components/home/trending-posts"
-import { ActiveUsers } from "@/components/home/active-users"
-import { getPinnedPosts, getTrendingPosts } from "@/lib/actions"
-import { AcademicParticles } from "@/components/effects/academic-particles"
-import { MottoStream } from "@/components/effects/motto-stream"
-import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { CountUp } from "@/components/effects/count-up"
-import {
-  ArrowRight,
-  Plus,
-  ChevronDown,
-  Megaphone,
-  Search,
-  BookOpen,
-  Heart,
-  Users,
-  TrendingUp,
-  Sparkles,
-  MapPin,
-  Compass,
-} from "lucide-react"
+import { ScrollReveal } from "@/components/effects/scroll-reveal"
+import { SafeImage } from "@/components/ui/safe-image"
+import { auth } from "@/lib/auth"
+import { getPinnedPosts, getTrendingPosts } from "@/lib/actions"
+import { prisma } from "@/lib/prisma"
 import { cn } from "@/lib/utils"
 
 const categoryEntries = [
   {
     slug: "announcement",
     name: "校园公告",
-    desc: "学生会 & 校园通知",
+    desc: "重要通知、学生会动态",
+    english: "NOTICE",
     icon: Megaphone,
-    color: "text-amber-700",
-    bgColor: "bg-amber-50",
-    darkBgColor: "dark:bg-amber-950/20",
-    borderColor: "border-amber-200/80",
-    darkBorderColor: "dark:border-amber-800/40",
-    hoverBorder: "hover:border-amber-400",
-    darkHoverBorder: "dark:hover:border-amber-600",
+    surface: "bg-[#ff6b43]",
   },
   {
     slug: "lostfound",
     name: "寻物启事",
-    desc: "失物招领 · 互帮互助",
+    desc: "失物招领、同学互助",
+    english: "FOUND",
     icon: Search,
-    color: "text-emerald-700",
-    bgColor: "bg-emerald-50",
-    darkBgColor: "dark:bg-emerald-950/20",
-    borderColor: "border-emerald-200/80",
-    darkBorderColor: "dark:border-emerald-800/40",
-    hoverBorder: "hover:border-emerald-400",
-    darkHoverBorder: "dark:hover:border-emerald-600",
+    surface: "bg-[#d9ef61]",
   },
   {
     slug: "study",
     name: "学习交流",
-    desc: "学术讨论 · 共同进步",
+    desc: "问题讨论、资料分享",
+    english: "STUDY",
     icon: BookOpen,
-    color: "text-sky-700",
-    bgColor: "bg-sky-50",
-    darkBgColor: "dark:bg-sky-950/20",
-    borderColor: "border-sky-200/80",
-    darkBorderColor: "dark:border-sky-800/40",
-    hoverBorder: "hover:border-sky-400",
-    darkHoverBorder: "dark:hover:border-sky-600",
+    surface: "bg-[#f3c84b]",
   },
   {
     slug: "confession",
     name: "表白墙",
-    desc: "匿名说出你的心声",
+    desc: "匿名写下此刻心声",
+    english: "VOICE",
     icon: Heart,
-    color: "text-rose-700",
-    bgColor: "bg-rose-50",
-    darkBgColor: "dark:bg-rose-950/20",
-    borderColor: "border-rose-200/80",
-    darkBorderColor: "dark:border-rose-800/40",
-    hoverBorder: "hover:border-rose-400",
-    darkHoverBorder: "dark:hover:border-rose-600",
+    surface: "bg-[#ffb4aa]",
     isPage: true,
   },
   {
     slug: "activity",
     name: "校园活动",
-    desc: "精彩纷呈 · 不容错过",
+    desc: "社团、比赛与招募",
+    english: "EVENT",
     icon: Sparkles,
-    color: "text-violet-700",
-    bgColor: "bg-violet-50",
-    darkBgColor: "dark:bg-violet-950/20",
-    borderColor: "border-violet-200/80",
-    darkBorderColor: "dark:border-violet-800/40",
-    hoverBorder: "hover:border-violet-400",
-    darkHoverBorder: "dark:hover:border-violet-600",
+    surface: "bg-[#b9ddbd]",
   },
   {
     slug: "secondhand",
     name: "二手交易",
-    desc: "物尽其用 · 循环利用",
+    desc: "闲置流转、物尽其用",
+    english: "MARKET",
     icon: TrendingUp,
-    color: "text-orange-700",
-    bgColor: "bg-orange-50",
-    darkBgColor: "dark:bg-orange-950/20",
-    borderColor: "border-orange-200/80",
-    darkBorderColor: "dark:border-orange-800/40",
-    hoverBorder: "hover:border-orange-400",
-    darkHoverBorder: "dark:hover:border-orange-600",
+    surface: "bg-[#f2eadc]",
   },
 ]
 
 const campusImages = [
-  { src: "/images/campus-01.jpg", alt: "教学楼", title: "教学楼" },
-  { src: "/images/campus-02.jpg", alt: "图书馆", title: "图书馆" },
-  { src: "/images/campus-03.jpg", alt: "操场", title: "操场" },
-  { src: "/images/campus-04.jpg", alt: "实验室", title: "实验室" },
-  { src: "/images/campus-05.jpg", alt: "校园活动", title: "校园活动" },
-  { src: "/images/campus-06.jpg", alt: "校园一角", title: "校园一角" },
+  {
+    src: "/images/campus-02.jpg",
+    alt: "校园图书馆",
+    title: "放学后的图书馆",
+    meta: "AFTER CLASS / 01",
+    layout: "col-span-12 lg:col-span-7",
+    ratio: "aspect-[16/10]",
+  },
+  {
+    src: "/images/campus-03.jpg",
+    alt: "校园操场",
+    title: "今天也要跑起来",
+    meta: "RUNNING TRACK / 02",
+    layout: "col-span-6 lg:col-span-5",
+    ratio: "aspect-[4/3] lg:aspect-[10/9]",
+  },
+  {
+    src: "/images/campus-04.jpg",
+    alt: "校园实验室",
+    title: "好奇心发生的地方",
+    meta: "LAB / 03",
+    layout: "col-span-6 lg:col-span-5",
+    ratio: "aspect-[4/3]",
+  },
+  {
+    src: "/images/campus-05.jpg",
+    alt: "校园活动",
+    title: "热闹是青春的注脚",
+    meta: "CLUB DAY / 04",
+    layout: "col-span-6 lg:col-span-3",
+    ratio: "aspect-[4/3] lg:aspect-square",
+  },
+  {
+    src: "/images/campus-06.jpg",
+    alt: "校园一角",
+    title: "课间十分钟",
+    meta: "BETWEEN CLASSES / 05",
+    layout: "col-span-6 lg:col-span-4",
+    ratio: "aspect-[4/3] lg:aspect-square",
+  },
 ]
 
-// 噪点纹理 SVG data URL
-const noiseSvg = `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`
+const tickerItems = ["校园新鲜事", "学习搭子", "失物招领", "社团招新", "匿名心声", "二手好物"]
 
 export default async function HomePage() {
   const session = await auth()
@@ -154,399 +158,332 @@ export default async function HomePage() {
   ])
 
   const [totalPosts, totalUsers, totalComments] = stats
-  const countMap = new Map(categoryCounts.map((c) => [c.slug, c._count.posts]))
-  const pinnedIds = new Set(pinnedPosts.map((p) => p.id))
-  const regularPosts = posts.filter((p) => !pinnedIds.has(p.id))
+  const countMap = new Map(categoryCounts.map((category) => [category.slug, category._count.posts]))
+  const pinnedIds = new Set(pinnedPosts.map((post) => post.id))
+  const regularPosts = posts.filter((post) => !pinnedIds.has(post.id))
 
   return (
-    <div className="min-h-screen">
-      {/* ===== HERO ===== */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a0a0a]">
-        {/* Noise texture overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.035] pointer-events-none"
-          style={{ backgroundImage: noiseSvg }}
-        />
+    <div className="min-h-screen overflow-hidden bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5]">
+      <section className="campus-paper relative overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:min-h-[820px] lg:px-8 lg:pb-24 lg:pt-36">
+        <div aria-hidden className="absolute -left-12 top-44 h-28 w-28 rotate-12 border-2 border-[#191914] bg-[#d9ef61] dark:border-[#f5f0e5]" />
+        <div aria-hidden className="absolute -right-10 bottom-20 h-36 w-36 rounded-full border-2 border-[#191914] bg-[#ff6b43] dark:border-[#f5f0e5]" />
 
-        {/* Soft gold glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full bg-[#d4af37]/[0.04] blur-[140px]" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-[#8b7355]/[0.03] blur-[100px]" />
-
-        <AcademicParticles />
-
-        <div className="relative z-10 mx-auto max-w-5xl px-4 py-32 text-center">
-          {/* 校徽 */}
-          <ScrollReveal delay={0}>
-            <div className="flex justify-center mb-8">
-              <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/[0.08] shadow-2xl overflow-hidden">
-                <SafeImage
-                  src="/images/school-logo.png"
-                  alt="校徽"
-                  fill
-                  className="object-contain p-3"
-                />
-              </div>
-            </div>
-          </ScrollReveal>
-
-          {/* 学校名 */}
-          <ScrollReveal delay={0.1}>
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white tracking-[0.12em] mb-3">
-              北京二中经开区学校
-            </h1>
-          </ScrollReveal>
-
-          <ScrollReveal delay={0.2}>
-            <p className="text-base sm:text-lg text-white/30 tracking-[0.4em] uppercase mb-10">
-              校园论坛
-            </p>
-          </ScrollReveal>
-
-          {/* 校训 */}
-          <ScrollReveal delay={0.3}>
-            <div className="mb-12">
-              <MottoStream size="lg" animated={false} />
-            </div>
-          </ScrollReveal>
-
-          {/* 装饰线 */}
-          <ScrollReveal delay={0.35}>
-            <div className="flex items-center justify-center gap-4 mb-12">
-              <div className="h-px w-12 bg-white/10" />
-              <div className="h-1 w-1 rounded-full bg-[#d4af37]/40" />
-              <div className="h-px w-12 bg-white/10" />
-            </div>
-          </ScrollReveal>
-
-          {/* CTA */}
-          <ScrollReveal delay={0.4}>
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
-              {session?.user ? (
-                <Link
-                  href="/post/new"
-                  className="group inline-flex items-center gap-2 rounded-full bg-[#d4af37] hover:bg-[#e6c65c] text-[#0a0a0a] px-8 py-3.5 text-sm font-semibold shadow-lg shadow-[#d4af37]/10 hover:shadow-xl hover:shadow-[#d4af37]/15 hover:-translate-y-0.5 transition-all duration-300"
-                >
-                  <Plus className="h-4 w-4" />
-                  发布新帖
-                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              ) : (
-                <Link
-                  href="/auth/signin"
-                  className="group inline-flex items-center gap-2 rounded-full bg-[#d4af37] hover:bg-[#e6c65c] text-[#0a0a0a] px-8 py-3.5 text-sm font-semibold shadow-lg shadow-[#d4af37]/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
-                >
-                  加入社区
-                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              )}
-              <Link
-                href="/search"
-                className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm text-white/50 hover:text-white/80 hover:bg-white/[0.06] hover:border-white/[0.15] px-8 py-3.5 text-sm font-medium transition-all duration-300"
-              >
-                <Compass className="h-4 w-4" />
-                浏览帖子
-              </Link>
-            </div>
-          </ScrollReveal>
-
-          {/* 统计数据 */}
-          <ScrollReveal delay={0.5}>
-            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
-              <div className="text-center">
-                <div className="text-3xl sm:text-4xl font-mono text-[#d4af37]">
-                  <CountUp end={totalPosts} />
-                </div>
-                <div className="mt-1 text-[10px] text-white/25 tracking-[0.2em] uppercase">
-                  帖子
-                </div>
-              </div>
-              <div className="h-10 w-px bg-white/[0.06]" />
-              <div className="text-center">
-                <div className="text-3xl sm:text-4xl font-mono text-[#d4af37]">
-                  <CountUp end={totalUsers} />
-                </div>
-                <div className="mt-1 text-[10px] text-white/25 tracking-[0.2em] uppercase">
-                  成员
-                </div>
-              </div>
-              <div className="h-10 w-px bg-white/[0.06]" />
-              <div className="text-center">
-                <div className="text-3xl sm:text-4xl font-mono text-[#d4af37]">
-                  <CountUp end={totalComments} />
-                </div>
-                <div className="mt-1 text-[10px] text-white/25 tracking-[0.2em] uppercase">
-                  评论
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-          <ChevronDown className="h-5 w-5 text-white/15 animate-bounce-subtle" />
-        </div>
-      </section>
-
-      {/* ===== MOTTO BAR ===== */}
-      <section className="relative bg-[#f5f2ed] dark:bg-[#111111] border-y border-[#e8e4dc] dark:border-[#1c1c1c]">
-        <div className="mx-auto max-w-7xl px-4 py-14 sm:py-18 text-center">
-          <ScrollReveal>
-            <MottoStream size="md" />
-            <p className="mt-5 text-sm text-[#78716c] dark:text-[#737373] max-w-lg mx-auto leading-[1.8] tracking-wide">
-              根深则叶茂，本固则枝荣。学识渊博，方能报效国家。
-              愿每一位学子在此扎根成长，终成栋梁之材。
-            </p>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* ===== CATEGORY GRID ===== */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:py-24">
-        <ScrollReveal>
-          <div className="flex items-end justify-between mb-12">
-            <div>
-              <p className="text-[10px] text-[#a8a29e] dark:text-[#525252] tracking-[0.25em] uppercase mb-2">
-                Explore
-              </p>
-              <h2 className="font-serif text-2xl sm:text-3xl text-[#1c1917] dark:text-[#e8e6e3]">
-                探索版块
-              </h2>
-            </div>
-            <p className="hidden sm:block text-sm text-[#a8a29e] dark:text-[#525252]">
-              发现你感兴趣的内容
-            </p>
-          </div>
-        </ScrollReveal>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categoryEntries.map((entry, index) => {
-            const Icon = entry.icon
-            const href = entry.isPage ? "/confession" : `/category/${entry.slug}`
-            const postCount = countMap.get(entry.slug) ?? 0
-
-            return (
-              <ScrollReveal key={entry.slug} delay={index * 0.06}>
-                <Link href={href} className="group block">
-                  <div
-                    className={cn(
-                      "relative flex items-start gap-5 rounded-2xl border bg-white dark:bg-[#141414] p-6 transition-all duration-500",
-                      "hover:-translate-y-1 hover:shadow-lg",
-                      entry.borderColor,
-                      entry.darkBorderColor,
-                      entry.hoverBorder,
-                      entry.darkHoverBorder
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-105",
-                        entry.bgColor,
-                        entry.darkBgColor
-                      )}
-                    >
-                      <Icon className={cn("h-5 w-5", entry.color)} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-serif text-base font-semibold text-[#1c1917] dark:text-[#e8e6e3]">
-                          {entry.name}
-                        </h3>
-                        <ArrowRight className="h-4 w-4 text-[#d6d3d1] dark:text-[#404040] opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-1 group-hover:translate-x-0" />
-                      </div>
-                      <p className="text-sm text-[#a8a29e] dark:text-[#737373] mb-2">
-                        {entry.desc}
-                      </p>
-                      <p className="text-[11px] text-[#d6d3d1] dark:text-[#525252] tracking-wide">
-                        {postCount} 个帖子
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              </ScrollReveal>
-            )
-          })}
-        </div>
-      </section>
-
-      {/* ===== LATEST POSTS ===== */}
-      <section className="mx-auto max-w-2xl px-4 pb-16">
-        <ScrollReveal>
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <p className="text-[10px] text-[#a8a29e] dark:text-[#525252] tracking-[0.25em] uppercase mb-2">
-                Feed
-              </p>
-              <h2 className="font-serif text-2xl sm:text-3xl text-[#1c1917] dark:text-[#e8e6e3]">
-                校园新鲜事
-              </h2>
-            </div>
-            {session?.user ? (
-              <Link
-                href="/post/new"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-[#78716c] dark:text-[#a3a3a3] hover:text-[#d4af37] transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                发帖
-              </Link>
-            ) : (
-              <Link
-                href="/auth/signin"
-                className="text-sm text-[#a8a29e] dark:text-[#525252] hover:text-[#78716c] dark:hover:text-[#a3a3a3] transition-colors"
-              >
-                登录后发帖
-              </Link>
-            )}
-          </div>
-        </ScrollReveal>
-
-        {pinnedPosts.length > 0 && (
-          <div className="mb-8">
-            <PinnedPosts posts={pinnedPosts} />
-          </div>
-        )}
-
-        {regularPosts.length === 0 ? (
-          <ScrollReveal>
-            <div className="rounded-2xl border border-dashed border-[#e7e5e4] dark:border-[#262626] py-20 text-center bg-[#faf9f7] dark:bg-[#0f0f0f]">
-              <Users className="mx-auto h-10 w-10 text-[#e7e5e4] dark:text-[#262626]" />
-              <p className="mt-4 text-[#a8a29e] dark:text-[#525252] text-lg font-serif">
-                还没有帖子
-              </p>
-              {session?.user ? (
-                <Link
-                  href="/post/new"
-                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#1c1917] dark:bg-[#d4af37] text-white dark:text-[#0a0a0a] px-6 py-2.5 text-sm font-medium transition-all hover:shadow-lg hover:-translate-y-0.5"
-                >
-                  <Plus className="h-4 w-4" />
-                  发布第一条帖子
-                </Link>
-              ) : (
-                <Link
-                  href="/auth/signin"
-                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#1c1917] dark:bg-[#d4af37] text-white dark:text-[#0a0a0a] px-6 py-2.5 text-sm font-medium transition-all"
-                >
-                  登录后发帖
-                </Link>
-              )}
-            </div>
-          </ScrollReveal>
-        ) : (
-          <FeedLoader initialPosts={regularPosts} />
-        )}
-      </section>
-
-      {/* ===== COMMUNITY HUB ===== */}
-      <section className="mx-auto max-w-5xl px-4 pb-20">
-        <ScrollReveal>
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <p className="text-[10px] text-[#a8a29e] dark:text-[#525252] tracking-[0.25em] uppercase mb-2">
-                Community
-              </p>
-              <h2 className="font-serif text-2xl sm:text-3xl text-[#1c1917] dark:text-[#e8e6e3]">
-                社区动态
-              </h2>
-            </div>
-          </div>
-        </ScrollReveal>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ScrollReveal>
-            <TrendingPosts posts={trendingPosts} />
-          </ScrollReveal>
-          <ScrollReveal delay={0.1}>
-            <ActiveUsers users={activeUsers} />
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* ===== CAMPUS GALLERY ===== */}
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:py-24">
-        <ScrollReveal>
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <p className="text-[10px] text-[#a8a29e] dark:text-[#525252] tracking-[0.25em] uppercase mb-2">
-                Gallery
-              </p>
-              <h2 className="font-serif text-2xl sm:text-3xl text-[#1c1917] dark:text-[#e8e6e3]">
-                校园风采
-              </h2>
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-[#a8a29e] dark:text-[#525252]">
-              <MapPin className="h-3 w-3" />
-              北京二中经开区学校
-            </div>
-          </div>
-        </ScrollReveal>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {campusImages.map((img, index) => (
-            <ScrollReveal key={img.src} delay={index * 0.08}>
-              <div className={cn(
-                "group relative overflow-hidden rounded-xl bg-[#f0eeeb] dark:bg-[#1c1c1c]",
-                index === 0 ? "aspect-[4/3] md:col-span-2 md:row-span-2" : "aspect-[4/3]"
-              )}>
-                <SafeImage
-                  src={img.src}
-                  alt={img.alt}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                  <p className="text-white font-medium text-sm">{img.title}</p>
-                </div>
+        <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16">
+          <div className="relative z-10">
+            <ScrollReveal>
+              <div className="mb-7 inline-flex items-center gap-2 border border-[#191914] bg-[#fffaf0] px-3 py-1.5 font-mono text-[10px] font-semibold tracking-[0.2em] text-[#191914] shadow-[3px_3px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#1a1a16] dark:text-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-[#ff5b35]" />
+                CAMPUS IS LIVE
               </div>
             </ScrollReveal>
+
+            <ScrollReveal delay={0.08}>
+              <h1 className="font-serif text-[clamp(3.6rem,8vw,7.2rem)] font-bold leading-[0.88] tracking-[-0.07em] text-[#191914] dark:text-[#f5f0e5]">
+                把校园
+                <span className="relative mt-2 block w-fit px-2 tracking-[-0.09em]">
+                  <span className="relative z-10">说得更鲜活</span>
+                  <span aria-hidden className="absolute inset-x-0 bottom-[0.08em] h-[0.34em] -rotate-1 bg-[#d9ef61] dark:bg-[#ff6b43]" />
+                </span>
+              </h1>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.16}>
+              <p className="mt-8 max-w-xl text-base leading-8 text-[#5f5c54] dark:text-[#aaa69c] sm:text-lg">
+                一个属于同学们的线上校园广场。分享问题、找到同伴、交换消息，
+                也认真收藏那些只会发生一次的青春现场。
+              </p>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.24}>
+              <div className="mt-9 flex flex-wrap items-center gap-3">
+                <Link
+                  href={session?.user ? "/post/new" : "/auth/signin"}
+                  className="hard-shadow group inline-flex min-h-12 items-center gap-2 border-2 border-[#191914] bg-[#ff6b43] px-6 py-3 text-sm font-bold text-[#191914] transition-transform hover:-translate-y-1 dark:border-[#f5f0e5]"
+                >
+                  {session?.user ? <Plus className="h-4 w-4" /> : <MessageCircle className="h-4 w-4" />}
+                  {session?.user ? "发布新帖" : "加入校园社区"}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+                <Link
+                  href="#latest"
+                  className="inline-flex min-h-12 items-center gap-2 border-2 border-[#191914] bg-[#fffaf0] px-6 py-3 text-sm font-bold text-[#191914] transition-colors hover:bg-[#191914] hover:text-white dark:border-[#f5f0e5] dark:bg-[#191914] dark:text-[#f5f0e5] dark:hover:bg-[#f5f0e5] dark:hover:text-[#191914]"
+                >
+                  <Compass className="h-4 w-4" />
+                  逛逛新鲜事
+                </Link>
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.32}>
+              <div className="mt-12 grid max-w-xl grid-cols-3 border-y-2 border-[#191914] dark:border-[#f5f0e5]">
+                {[
+                  [totalPosts, "正在讨论"],
+                  [totalUsers, "校园成员"],
+                  [totalComments, "真诚回应"],
+                ].map(([value, label], index) => (
+                  <div
+                    key={label}
+                    className={cn(
+                      "py-4 text-center sm:py-5",
+                      index !== 0 && "border-l border-[#191914]/30 dark:border-[#f5f0e5]/30"
+                    )}
+                  >
+                    <div className="font-mono text-2xl font-bold tracking-tight sm:text-3xl">
+                      <CountUp end={Number(value)} />
+                    </div>
+                    <div className="mt-1 text-[10px] font-medium tracking-[0.14em] text-[#777268] dark:text-[#969187]">
+                      {label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollReveal>
+          </div>
+
+          <ScrollReveal delay={0.12} direction="left" className="relative mx-auto w-full max-w-2xl lg:mx-0">
+            <div aria-hidden className="absolute -right-5 -top-5 h-full w-[92%] rotate-2 border-2 border-[#191914] bg-[#ff6b43] dark:border-[#f5f0e5]" />
+            <figure className="relative overflow-hidden border-2 border-[#191914] bg-[#191914] shadow-[10px_10px_0_#191914] dark:border-[#f5f0e5] dark:shadow-[10px_10px_0_#f5f0e5]">
+              <div className="relative aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5] xl:aspect-[5/4]">
+                <SafeImage
+                  src="/images/campus-01.jpg"
+                  alt="北京二中经开区学校校园"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 52vw, 100vw"
+                  className="object-cover saturate-[0.92] transition-transform duration-700 hover:scale-[1.02]"
+                />
+              </div>
+              <figcaption className="flex items-center justify-between gap-4 bg-[#191914] px-4 py-3 text-white sm:px-5">
+                <div>
+                  <p className="font-mono text-[9px] tracking-[0.2em] text-white/50">TODAY AT SCHOOL</p>
+                  <p className="mt-1 text-sm font-medium">春日校园，故事正在发生</p>
+                </div>
+                <Camera className="h-5 w-5 text-[#d9ef61]" />
+              </figcaption>
+            </figure>
+
+            <div className="absolute -right-3 top-8 rotate-6 border-2 border-[#191914] bg-[#d9ef61] px-4 py-3 text-center text-[#191914] shadow-[4px_4px_0_#191914] sm:right-6 dark:border-[#f5f0e5] dark:shadow-[4px_4px_0_#f5f0e5]">
+              <span className="block font-mono text-[9px] font-bold tracking-[0.16em]">NO. 02</span>
+              <span className="mt-1 block font-serif text-lg font-bold">校园现场</span>
+            </div>
+
+            <div className="absolute -bottom-7 -left-2 max-w-[220px] -rotate-2 border-2 border-[#191914] bg-[#fffaf0] p-4 text-[#191914] shadow-[5px_5px_0_#191914] sm:left-8 dark:border-[#f5f0e5] dark:bg-[#22221d] dark:text-[#f5f0e5] dark:shadow-[5px_5px_0_#f5f0e5]">
+              <div className="flex items-center gap-2 font-mono text-[9px] font-bold tracking-[0.16em] text-[#e4532f]">
+                <CalendarDays className="h-3.5 w-3.5" /> THIS WEEK
+              </div>
+              <p className="mt-2 font-serif text-base font-semibold leading-snug">别错过正在招募的新社团与校园活动。</p>
+            </div>
+          </ScrollReveal>
+        </div>
+
+        <a
+          href="#categories"
+          aria-label="查看校园版块"
+          className="absolute bottom-5 left-1/2 hidden -translate-x-1/2 text-[#191914]/40 transition-colors hover:text-[#191914] lg:block dark:text-white/30 dark:hover:text-white"
+        >
+          <ChevronDown className="h-5 w-5 animate-bounce-subtle" />
+        </a>
+      </section>
+
+      <div className="ticker-rail border-y-2 border-[#191914] bg-[#191914] py-3 text-[#f8f0e3] dark:border-[#f5f0e5]">
+        <div className="ticker-track flex w-max items-center gap-7 whitespace-nowrap font-mono text-[11px] font-bold tracking-[0.18em]">
+          {[...tickerItems, ...tickerItems].map((item, index) => (
+            <span key={`${item}-${index}`} className="flex items-center gap-7">
+              {item}
+              <span className="h-2.5 w-2.5 rotate-45 bg-[#ff6b43]" />
+            </span>
           ))}
+        </div>
+      </div>
+
+      <section id="categories" className="bg-[#fffaf0] px-4 py-20 dark:bg-[#151512] sm:px-6 sm:py-24 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <ScrollReveal>
+            <div className="mb-10 flex flex-col justify-between gap-5 border-b-2 border-[#191914] pb-6 dark:border-[#f5f0e5] sm:flex-row sm:items-end">
+              <div>
+                <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-[#e4532f]">01 / FIND YOUR CORNER</p>
+                <h2 className="mt-3 font-serif text-4xl font-bold tracking-tight sm:text-5xl">今天想聊什么？</h2>
+              </div>
+              <p className="max-w-sm text-sm leading-6 text-[#777268] dark:text-[#989389]">
+                从一条通知到一道难题，每个版块都对应一段真实的校园生活。
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {categoryEntries.map((entry, index) => {
+              const Icon = entry.icon
+              const href = entry.isPage ? "/confession" : `/category/${entry.slug}`
+              const postCount = countMap.get(entry.slug) ?? 0
+
+              return (
+                <ScrollReveal key={entry.slug} delay={index * 0.05}>
+                  <Link
+                    href={href}
+                    className={cn(
+                      "category-block group relative flex min-h-48 flex-col justify-between overflow-hidden border-2 border-[#191914] p-5 text-[#191914] shadow-[6px_6px_0_#191914] transition-all duration-300 hover:-translate-y-1 hover:shadow-[10px_10px_0_#191914] sm:p-6",
+                      entry.surface
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center border-2 border-[#191914] bg-[#fffaf0]">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <span className="font-mono text-[10px] font-bold tracking-[0.15em]">
+                        {String(index + 1).padStart(2, "0")} / {entry.english}
+                      </span>
+                    </div>
+                    <div className="mt-8">
+                      <div className="flex items-end justify-between gap-4">
+                        <div>
+                          <h3 className="font-serif text-2xl font-bold">{entry.name}</h3>
+                          <p className="mt-1 text-sm text-[#191914]/65">{entry.desc}</p>
+                        </div>
+                        <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
+                      </div>
+                      <p className="mt-4 border-t border-[#191914]/25 pt-3 font-mono text-[10px] font-bold tracking-[0.12em]">
+                        {postCount} POSTS
+                      </p>
+                    </div>
+                  </Link>
+                </ScrollReveal>
+              )
+            })}
+          </div>
         </div>
       </section>
 
-      {/* ===== CTA ===== */}
-      <section className="mx-auto max-w-7xl px-4 pb-20">
-        <ScrollReveal>
-          <div className="relative overflow-hidden rounded-3xl bg-[#141414] dark:bg-[#111111] border border-[#1c1c1c] px-8 py-14 sm:px-12 sm:py-20">
-            {/* 装饰纹理 */}
-            <div
-              className="absolute inset-0 opacity-[0.03] pointer-events-none"
-              style={{ backgroundImage: noiseSvg }}
-            />
-            {/* 金色光晕 */}
-            <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-[#d4af37]/[0.04] blur-3xl" />
-            <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-[#d4af37]/[0.03] blur-3xl" />
-
-            <div className="relative text-center">
-              <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-[#d4af37]/10 border border-[#d4af37]/10 mb-6">
-                <Sparkles className="h-5 w-5 text-[#d4af37]" />
+      <section id="latest" className="campus-dot-grid bg-[#ece6da] px-4 py-20 dark:bg-[#10100e] sm:px-6 sm:py-24 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <ScrollReveal>
+            <div className="mb-10 flex flex-col justify-between gap-5 border-b-2 border-[#191914] pb-6 dark:border-[#f5f0e5] sm:flex-row sm:items-end">
+              <div>
+                <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-[#e4532f]">02 / CAMPUS FEED</p>
+                <h2 className="mt-3 font-serif text-4xl font-bold tracking-tight sm:text-5xl">校园正在发生</h2>
               </div>
-              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-white mb-4 tracking-wide">
-                成为校园故事的一部分
-              </h2>
-              <p className="text-sm sm:text-base text-white/30 max-w-md mx-auto mb-8 leading-relaxed">
-                与同学们分享学习心得、发布失物招领、参与校园活动，
-                让校园生活更加丰富多彩
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-4">
-                {!session?.user && (
-                  <Link
-                    href="/auth/register"
-                    className="inline-flex items-center gap-2 rounded-full bg-[#d4af37] hover:bg-[#e6c65c] text-[#0a0a0a] px-7 py-3 text-sm font-semibold shadow-lg shadow-[#d4af37]/10 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
-                  >
-                    立即注册
-                    <ArrowRight className="h-3.5 w-3.5" />
+              <Link
+                href={session?.user ? "/post/new" : "/auth/signin"}
+                className="group inline-flex items-center gap-2 self-start border-2 border-[#191914] bg-[#d9ef61] px-4 py-2.5 text-sm font-bold text-[#191914] shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-1 dark:border-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5] sm:self-auto"
+              >
+                <Plus className="h-4 w-4" />
+                {session?.user ? "写点新鲜的" : "登录后发帖"}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(300px,0.85fr)]">
+            <div className="min-w-0">
+              {pinnedPosts.length > 0 && (
+                <ScrollReveal className="mb-5">
+                  <PinnedPosts posts={pinnedPosts} />
+                </ScrollReveal>
+              )}
+
+              {regularPosts.length === 0 ? (
+                <ScrollReveal>
+                  <div className="border-2 border-dashed border-[#191914] bg-[#fffaf0] px-6 py-20 text-center dark:border-[#f5f0e5] dark:bg-[#191914]">
+                    <Users className="mx-auto h-10 w-10 text-[#ff6b43]" />
+                    <p className="mt-4 font-serif text-2xl font-bold">这里还很安静</p>
+                    <p className="mt-2 text-sm text-[#777268] dark:text-[#989389]">来发布第一条校园新鲜事吧。</p>
+                    <Link
+                      href={session?.user ? "/post/new" : "/auth/signin"}
+                      className="mt-6 inline-flex items-center gap-2 border-2 border-[#191914] bg-[#ff6b43] px-5 py-2.5 text-sm font-bold text-[#191914] shadow-[4px_4px_0_#191914] dark:border-[#f5f0e5] dark:shadow-[4px_4px_0_#f5f0e5]"
+                    >
+                      <Plus className="h-4 w-4" />
+                      {session?.user ? "发布第一条帖子" : "登录后发帖"}
+                    </Link>
+                  </div>
+                </ScrollReveal>
+              ) : (
+                <FeedLoader initialPosts={regularPosts} />
+              )}
+            </div>
+
+            <aside className="space-y-5 lg:sticky lg:top-24">
+              <ScrollReveal direction="left">
+                <TrendingPosts posts={trendingPosts} />
+              </ScrollReveal>
+              <ScrollReveal direction="left" delay={0.08}>
+                <ActiveUsers users={activeUsers} />
+              </ScrollReveal>
+              <ScrollReveal direction="left" delay={0.16}>
+                <div className="border-2 border-[#191914] bg-[#191914] p-6 text-[#f8f0e3] shadow-[6px_6px_0_#ff6b43] dark:border-[#f5f0e5]">
+                  <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-[#d9ef61]">COMMUNITY NOTE</p>
+                  <h3 className="mt-3 font-serif text-2xl font-bold">认真表达，也认真回应。</h3>
+                  <p className="mt-3 text-sm leading-6 text-white/55">
+                    尊重不同观点，保护个人隐私，让每一次讨论都给校园多一点善意。
+                  </p>
+                  <Link href="/search" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#ff8a68] hover:text-[#d9ef61]">
+                    <Search className="h-4 w-4" /> 搜索全部帖子
                   </Link>
-                )}
+                </div>
+              </ScrollReveal>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#191914] px-4 py-20 text-[#f8f0e3] sm:px-6 sm:py-24 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <ScrollReveal>
+            <div className="mb-10 flex flex-col justify-between gap-5 border-b border-white/30 pb-6 sm:flex-row sm:items-end">
+              <div>
+                <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-[#d9ef61]">03 / CAMPUS FRAME</p>
+                <h2 className="mt-3 font-serif text-4xl font-bold tracking-tight sm:text-5xl">在场的青春</h2>
+              </div>
+              <div className="flex items-center gap-2 font-mono text-[10px] tracking-[0.14em] text-white/45">
+                <MapPin className="h-3.5 w-3.5 text-[#ff6b43]" /> 北京二中经开区学校
+              </div>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-12 gap-3 sm:gap-4">
+            {campusImages.map((image, index) => (
+              <ScrollReveal key={image.src} delay={index * 0.05} className={image.layout}>
+                <figure className="group border border-white/40 bg-[#f8f0e3] p-1 text-[#191914] transition-transform duration-300 hover:-translate-y-1 sm:p-1.5">
+                  <div className={cn("relative overflow-hidden bg-[#2a2924]", image.ratio)}>
+                    <SafeImage
+                      src={image.src}
+                      alt={image.alt}
+                      fill
+                      sizes="(min-width: 1024px) 55vw, 100vw"
+                      className="object-cover transition duration-700 group-hover:scale-105 group-hover:saturate-[1.08]"
+                    />
+                  </div>
+                  <figcaption className="flex items-end justify-between gap-3 px-2 py-3 sm:px-3">
+                    <div>
+                      <p className="font-mono text-[8px] font-bold tracking-[0.13em] text-[#e4532f] sm:text-[9px]">{image.meta}</p>
+                      <p className="mt-1 font-serif text-sm font-bold sm:text-base">{image.title}</p>
+                    </div>
+                    <ArrowRight className="hidden h-4 w-4 transition-transform group-hover:translate-x-1 sm:block" />
+                  </figcaption>
+                </figure>
+              </ScrollReveal>
+            ))}
+          </div>
+
+          <ScrollReveal>
+            <div className="mt-16 grid gap-8 border-2 border-[#191914] bg-[#ff6b43] p-7 text-[#191914] shadow-[8px_8px_0_#d9ef61] sm:p-10 lg:grid-cols-[1.4fr_0.6fr] lg:items-end">
+              <div>
+                <p className="font-mono text-[10px] font-bold tracking-[0.18em]">YOUR STORY MATTERS</p>
+                <h2 className="mt-3 max-w-3xl font-serif text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+                  下一条校园故事，等你来写。
+                </h2>
+              </div>
+              <div className="lg:text-right">
+                <p className="mb-5 text-sm leading-6 text-[#191914]/65">分享见闻、提出问题，或者只是记录今天。</p>
                 <Link
-                  href="/search"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.02] text-white/40 hover:text-white/70 hover:bg-white/[0.04] hover:border-white/[0.12] px-7 py-3 text-sm font-medium transition-all duration-300"
+                  href={session?.user ? "/post/new" : "/auth/register"}
+                  className="inline-flex items-center gap-2 border-2 border-[#191914] bg-[#fffaf0] px-5 py-3 text-sm font-bold shadow-[4px_4px_0_#191914] transition-transform hover:-translate-y-1"
                 >
-                  搜索帖子
+                  {session?.user ? "现在发帖" : "加入我们"}
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </div>
-          </div>
-        </ScrollReveal>
+          </ScrollReveal>
+        </div>
       </section>
     </div>
   )

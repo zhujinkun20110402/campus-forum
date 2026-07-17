@@ -9,27 +9,63 @@
   --font-serif: var(--font-noto-serif-sc), "Songti SC", "SimSun", serif;
   --font-mono: var(--font-jetbrains-mono), "SF Mono", monospace;
 
-  /* 学院靛蓝 */
-  --color-indigo-50: #eef2ff;
-  --color-indigo-100: #e0e7ff;
-  --color-indigo-200: #c7d2fe;
-  --color-indigo-300: #a5b4fc;
-  --color-indigo-400: #818cf8;
-  --color-indigo-500: #6366f1;
-  --color-indigo-600: #4f46e5;
-  --color-indigo-700: #4338ca;
-  --color-indigo-800: #3730a3;
-  --color-indigo-900: #312e81;
-  --color-indigo-950: #1e1b4b;
+  /* 全站暖调色盘：保留语义色名，替换掉模板化蓝紫色 */
+  --color-indigo-50: #fff4ed;
+  --color-indigo-100: #ffe3d2;
+  --color-indigo-200: #ffc4a5;
+  --color-indigo-300: #ff9b70;
+  --color-indigo-400: #ff7245;
+  --color-indigo-500: #ef562f;
+  --color-indigo-600: #d44120;
+  --color-indigo-700: #ad3219;
+  --color-indigo-800: #772417;
+  --color-indigo-900: #4b1a12;
+  --color-indigo-950: #22110d;
 
-  /* 典雅暖金 */
-  --color-gold-50: #fdf8e8;
-  --color-gold-100: #f9edc0;
-  --color-gold-200: #f0d878;
-  --color-gold-300: #e6c65c;
-  --color-gold-400: #d4af37;
-  --color-gold-500: #b8941f;
-  --color-gold-600: #9a7b1a;
+  --color-violet-50: #f8f8e8;
+  --color-violet-100: #eef0c5;
+  --color-violet-200: #dce28d;
+  --color-violet-300: #cad45b;
+  --color-violet-400: #a9ba36;
+  --color-violet-500: #849326;
+  --color-violet-600: #68751f;
+  --color-violet-700: #505b1b;
+  --color-violet-800: #3c4519;
+  --color-violet-900: #2c3416;
+  --color-violet-950: #171c0b;
+
+  --color-purple-50: #f8f8e8;
+  --color-purple-100: #eef0c5;
+  --color-purple-200: #dce28d;
+  --color-purple-300: #cad45b;
+  --color-purple-400: #a9ba36;
+  --color-purple-500: #849326;
+  --color-purple-600: #68751f;
+  --color-purple-700: #505b1b;
+  --color-purple-800: #3c4519;
+  --color-purple-900: #2c3416;
+  --color-purple-950: #171c0b;
+
+  --color-sky-50: #eef8ef;
+  --color-sky-100: #d8edda;
+  --color-sky-200: #b6daba;
+  --color-sky-300: #89c091;
+  --color-sky-400: #5da36a;
+  --color-sky-500: #3f8450;
+  --color-sky-600: #306940;
+  --color-sky-700: #285336;
+  --color-sky-800: #22432e;
+  --color-sky-900: #1d3828;
+  --color-sky-950: #0e1f16;
+
+  /* 校刊橙黄 */
+  --color-gold-50: #fff8df;
+  --color-gold-100: #ffefb0;
+  --color-gold-200: #f8dc72;
+  --color-gold-300: #f3c84b;
+  --color-gold-400: #e9ad24;
+  --color-gold-500: #c98716;
+  --color-gold-600: #9f6513;
 
   /* 学术灰 - Slate */
   --color-slate-50: #f8fafc;
@@ -48,62 +84,63 @@
   --color-announcement-bg: #fffbeb;
   --color-lostfound: #059669;
   --color-lostfound-bg: #ecfdf5;
-  --color-study: #0369a1;
-  --color-study-bg: #f0f9ff;
+  --color-study: #6b741d;
+  --color-study-bg: #f7f8e8;
   --color-confession: #e11d48;
   --color-confession-bg: #fff1f2;
-  --color-activity: #7c3aed;
-  --color-activity-bg: #f5f3ff;
+  --color-activity: #326b42;
+  --color-activity-bg: #eef8ef;
   --color-secondhand: #ea580c;
   --color-secondhand-bg: #fff7ed;
-  --color-problem: #4f46e5;
-  --color-problem-bg: #eef2ff;
+  --color-problem: #d44120;
+  --color-problem-bg: #fff4ed;
 }
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --primary: #4338ca;
-  --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #1e293b;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #1e293b;
+  --background: #f4efe4;
+  --foreground: #191914;
+  --card: #fffaf0;
+  --card-foreground: #191914;
+  --primary: #e4532f;
+  --primary-foreground: #191914;
+  --secondary: #ece6da;
+  --secondary-foreground: #292821;
+  --muted: #ece6da;
+  --muted-foreground: #777268;
+  --accent: #d9ef61;
+  --accent-foreground: #191914;
   --destructive: #e11d48;
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #4338ca;
-  --radius: 0.625rem;
+  --border: #d2cabd;
+  --input: #d2cabd;
+  --ring: #e4532f;
+  --radius: 0.75rem;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #e8e6e3;
-  --card: #141414;
-  --card-foreground: #e8e6e3;
-  --primary: #d4af37;
-  --primary-foreground: #0a0a0a;
-  --secondary: #1c1c1c;
-  --secondary-foreground: #d4d4d4;
-  --muted: #1c1c1c;
-  --muted-foreground: #737373;
-  --accent: #1c1c1c;
-  --accent-foreground: #d4d4d4;
+  --background: #11110f;
+  --foreground: #f5f0e5;
+  --card: #191914;
+  --card-foreground: #f5f0e5;
+  --primary: #ff6b43;
+  --primary-foreground: #191914;
+  --secondary: #22221d;
+  --secondary-foreground: #e3ded3;
+  --muted: #22221d;
+  --muted-foreground: #989389;
+  --accent: #d9ef61;
+  --accent-foreground: #191914;
   --destructive: #e11d48;
   --destructive-foreground: #ffffff;
-  --border: #262626;
-  --input: #262626;
-  --ring: #d4af37;
-  --radius: 0.625rem;
+  --border: #38372f;
+  --input: #38372f;
+  --ring: #ff6b43;
+  --radius: 0.75rem;
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
 }
 
 body {
@@ -112,6 +149,7 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* 字体工具类 */
@@ -127,12 +165,9 @@ body {
   font-family: var(--font-mono);
 }
 
-/* 金色文字渐变 */
+/* 旧页面兼容：统一为鲜明橙色，避免模板化渐变文字 */
 .text-gold-gradient {
-  background: linear-gradient(135deg, #e6c65c, #d4af37, #b8941f);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #e4532f;
 }
 
 /* 动效缓动 */
@@ -215,7 +250,7 @@ body {
 
 .prose blockquote {
   border-left-width: 3px;
-  border-left-color: #d4af37;
+  border-left-color: #e4532f;
   padding-left: 1.25rem;
   font-style: italic;
 }
@@ -231,32 +266,32 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #b8afa2;
   border-radius: 3px;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #4a4940;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: #b8afa2 transparent;
 }
 
 .dark * {
-  scrollbar-color: #475569 transparent;
+  scrollbar-color: #4a4940 transparent;
 }
 
 /* 选中文本 */
 ::selection {
-  background: #f9edc0;
-  color: #5c4a15;
+  background: #d9ef61;
+  color: #191914;
 }
 
 .dark ::selection {
-  background: #3d3318;
-  color: #d4af37;
+  background: #ff6b43;
+  color: #191914;
 }
 
 /* 卡片光泽扫过效果 */
@@ -458,5 +493,78 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* 校园校刊视觉系统 */
+.campus-paper {
+  background-color: #f4efe4;
+  background-image:
+    radial-gradient(rgba(25, 25, 20, 0.12) 0.55px, transparent 0.55px),
+    linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2));
+  background-size: 7px 7px, auto;
+}
+
+.dark .campus-paper {
+  background-color: #11110f;
+  background-image: radial-gradient(rgba(245, 240, 229, 0.08) 0.55px, transparent 0.55px);
+}
+
+.campus-dot-grid {
+  background-image: radial-gradient(rgba(25, 25, 20, 0.12) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.dark .campus-dot-grid {
+  background-image: radial-gradient(rgba(245, 240, 229, 0.07) 1px, transparent 1px);
+}
+
+.hard-shadow {
+  box-shadow: 5px 5px 0 #191914;
+}
+
+.dark .hard-shadow {
+  box-shadow: 5px 5px 0 #f5f0e5;
+}
+
+.ticker-rail {
+  overflow: hidden;
+}
+
+.ticker-track {
+  animation: campus-ticker 28s linear infinite;
+  will-change: transform;
+}
+
+.ticker-rail:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+@keyframes campus-ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 3px solid #ff6b43;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

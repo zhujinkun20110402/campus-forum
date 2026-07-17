@@ -1,10 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import { Clock, Heart, MessageCircle } from "lucide-react"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { LevelBadge } from "@/components/reputation/level-badge"
-import { MessageCircle, Heart, Clock, MoreHorizontal } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import { formatRelativeTime } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 
@@ -33,129 +32,88 @@ interface PostCardProps {
   hideAuthor?: boolean
 }
 
-const categoryStyles: Record<string, { badge: string; dot: string }> = {
-  announcement: {
-    badge: "bg-amber-50/80 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200/60 dark:border-amber-800/60",
-    dot: "bg-amber-500",
-  },
-  lostfound: {
-    badge: "bg-emerald-50/80 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200/60 dark:border-emerald-800/60",
-    dot: "bg-emerald-500",
-  },
-  confession: {
-    badge: "bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-rose-200/60 dark:border-rose-800/60",
-    dot: "bg-rose-500",
-  },
-  study: {
-    badge: "bg-sky-50/80 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 border-sky-200/60 dark:border-sky-800/60",
-    dot: "bg-sky-500",
-  },
-  activity: {
-    badge: "bg-purple-50/80 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border-purple-200/60 dark:border-purple-800/60",
-    dot: "bg-purple-500",
-  },
-  secondhand: {
-    badge: "bg-orange-50/80 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border-orange-200/60 dark:border-orange-800/60",
-    dot: "bg-orange-500",
-  },
-  "problem-discussion": {
-    badge: "bg-stone-100 dark:bg-stone-900/50 text-stone-700 dark:text-stone-300 border-stone-200/60 dark:border-stone-700/60",
-    dot: "bg-stone-500",
-  },
+const categoryStyles: Record<string, { chip: string; accent: string }> = {
+  announcement: { chip: "bg-[#ff6b43]", accent: "bg-[#ff6b43]" },
+  lostfound: { chip: "bg-[#d9ef61]", accent: "bg-[#7a9130]" },
+  confession: { chip: "bg-[#ffb4aa]", accent: "bg-[#e86472]" },
+  study: { chip: "bg-[#f3c84b]", accent: "bg-[#c18f18]" },
+  activity: { chip: "bg-[#b9ddbd]", accent: "bg-[#3f8450]" },
+  secondhand: { chip: "bg-[#f2d0b2]", accent: "bg-[#d85d2f]" },
+  "problem-discussion": { chip: "bg-[#e5ded1]", accent: "bg-[#68645c]" },
 }
 
 function getCategoryStyle(slug: string) {
-  return categoryStyles[slug] ?? {
-    badge: "bg-stone-100 dark:bg-stone-900/50 text-stone-700 dark:text-stone-300 border-stone-200/60 dark:border-stone-700/60",
-    dot: "bg-stone-500",
-  }
+  return categoryStyles[slug] ?? { chip: "bg-[#e5ded1]", accent: "bg-[#68645c]" }
 }
 
 export function PostCard({ post, hideAuthor = false }: PostCardProps) {
-  const isConfession = post.category.slug === "confession"
-  const shouldHideAuthor = hideAuthor || isConfession
-  const truncatedContent =
-    post.content.length > 220 ? post.content.slice(0, 220) + "..." : post.content
+  const shouldHideAuthor = hideAuthor || post.category.slug === "confession"
+  const truncatedContent = post.content.length > 210 ? `${post.content.slice(0, 210)}...` : post.content
   const style = getCategoryStyle(post.category.slug)
 
   return (
-    <Link href={`/post/${post.id}`} className="group block">
-      <article className="relative bg-white dark:bg-[#141414] px-4 py-5 sm:px-5 sm:py-6 transition-colors hover:bg-stone-50/50 dark:hover:bg-[#171717]">
-        {/* Header: Avatar + Name + Meta */}
-        <div className="flex items-start gap-3 mb-3">
-          {shouldHideAuthor ? (
-            <div className="relative h-10 w-10 shrink-0 rounded-full overflow-hidden ring-2 ring-rose-100 dark:ring-rose-900/30 bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center">
-              <span className="text-sm text-rose-400">?</span>
-            </div>
-          ) : (
-            <Link
-              href={`/profile/${post.author.id}`}
-              onClick={(e) => e.stopPropagation()}
-              className="shrink-0"
-            >
-              <UserAvatar
-                name={post.author.name}
-                image={post.author.image}
-                role={post.author.role}
-              />
-            </Link>
-          )}
+    <article className="group relative overflow-hidden border-2 border-[#191914] bg-[#fffaf0] p-5 text-[#191914] shadow-[5px_5px_0_rgba(25,25,20,0.18)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[8px_8px_0_#ff6b43] dark:border-[#f5f0e5] dark:bg-[#191914] dark:text-[#f5f0e5] dark:shadow-[5px_5px_0_rgba(245,240,229,0.12)] sm:p-6">
+      <div aria-hidden className={cn("absolute inset-y-0 left-0 w-1.5", style.accent)} />
+      <Link href={`/post/${post.id}`} aria-label={`查看帖子：${post.title}`} className="absolute inset-0 z-0" />
 
-          <div className="flex-1 min-w-0 pt-0.5">
-            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-              <span className="font-semibold text-[15px] text-stone-800 dark:text-stone-100 truncate">
-                {shouldHideAuthor ? "匿名同学" : (post.author.name ?? "匿名用户")}
-              </span>
-              {!shouldHideAuthor && post.author.raputation != null && (
-                <LevelBadge raputation={post.author.raputation} role={post.author.role} size="xs" showTitle={false} />
-              )}
-              <Link
-                href={`/category/${post.category.slug}`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "text-[10px] font-normal cursor-pointer px-1.5 py-0 h-4 border rounded-full",
-                    style.badge
-                  )}
-                >
-                  <span className={cn("w-1 h-1 rounded-full mr-1", style.dot)} />
-                  {post.category.name}
-                </Badge>
+      <div className="pointer-events-none relative z-10">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <Link
+            href={`/category/${post.category.slug}`}
+            className={cn(
+              "pointer-events-auto inline-flex items-center border border-[#191914] px-2.5 py-1 font-mono text-[9px] font-bold tracking-[0.12em] text-[#191914] transition-transform hover:-rotate-1 dark:border-[#f5f0e5]",
+              style.chip
+            )}
+          >
+            {post.category.name}
+          </Link>
+          <span className="flex items-center gap-1.5 font-mono text-[9px] font-medium tracking-[0.08em] text-[#888277] dark:text-[#918c82]">
+            <Clock className="h-3 w-3" />
+            {formatRelativeTime(post.createdAt)}
+          </span>
+        </div>
+
+        <h3 className="max-w-2xl font-serif text-xl font-bold leading-snug tracking-tight transition-colors group-hover:text-[#d94d2a] sm:text-2xl">
+          {post.title}
+        </h3>
+        <p className="mt-3 line-clamp-3 text-sm leading-7 text-[#69655d] dark:text-[#aaa69c] sm:text-[15px]">
+          {truncatedContent}
+        </p>
+
+        <div className="mt-5 flex items-center justify-between gap-4 border-t border-[#191914]/15 pt-4 dark:border-white/15">
+          <div className="flex min-w-0 items-center gap-2.5">
+            {shouldHideAuthor ? (
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#191914] bg-[#ffb4aa] text-sm font-bold text-[#191914] dark:border-[#f5f0e5]">
+                ?
+              </div>
+            ) : (
+              <Link href={`/profile/${post.author.id}`} className="pointer-events-auto shrink-0" aria-label={`查看${post.author.name ?? "用户"}的主页`}>
+                <UserAvatar name={post.author.name} image={post.author.image} role={post.author.role} size="sm" />
               </Link>
+            )}
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="truncate text-xs font-bold">
+                  {shouldHideAuthor ? "匿名同学" : (post.author.name ?? "匿名用户")}
+                </span>
+                {!shouldHideAuthor && post.author.raputation != null && (
+                  <LevelBadge raputation={post.author.raputation} role={post.author.role} size="xs" showTitle={false} />
+                )}
+              </div>
+              <span className="mt-0.5 block font-mono text-[8px] tracking-[0.12em] text-[#9a9489]">CAMPUS MEMBER</span>
             </div>
-            <span className="flex items-center gap-1 text-xs text-stone-400 dark:text-stone-500">
-              <Clock className="h-3 w-3" />
-              {formatRelativeTime(post.createdAt)}
-            </span>
           </div>
 
-          <MoreHorizontal className="h-4 w-4 text-stone-300 dark:text-stone-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-2" />
-        </div>
-
-        {/* Content */}
-        <div className="pl-[52px]">
-          <h3 className="font-serif text-lg sm:text-xl font-semibold text-stone-800 dark:text-stone-100 group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors mb-2 leading-snug">
-            {post.title}
-          </h3>
-          <p className="text-[15px] leading-[1.7] text-stone-600 dark:text-stone-400 line-clamp-3 mb-4">
-            {truncatedContent}
-          </p>
-
-          {/* Action bar */}
-          <div className="flex items-center gap-6 text-sm text-stone-400 dark:text-stone-500">
-            <span className="flex items-center gap-1.5 transition-colors group-hover:text-stone-500 dark:group-hover:text-stone-400">
-              <MessageCircle className="h-4 w-4" />
-              {post._count.comments}
+          <div className="flex shrink-0 items-center gap-4 font-mono text-[10px] font-bold text-[#777268] dark:text-[#aaa69c]">
+            <span className="flex items-center gap-1.5">
+              <MessageCircle className="h-4 w-4" /> {post._count.comments}
             </span>
-            <span className="flex items-center gap-1.5 transition-colors group-hover:text-stone-500 dark:group-hover:text-stone-400">
-              <Heart className="h-4 w-4" />
-              {post._count.likes}
+            <span className="flex items-center gap-1.5">
+              <Heart className="h-4 w-4" /> {post._count.likes}
             </span>
           </div>
         </div>
-      </article>
-    </Link>
+      </div>
+    </article>
   )
 }

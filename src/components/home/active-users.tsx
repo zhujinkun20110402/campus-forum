@@ -21,34 +21,22 @@ export function ActiveUsers({ users }: ActiveUsersProps) {
   if (users.length === 0) return null
 
   return (
-    <div className="h-full rounded-3xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#141414] p-6 shadow-sm">
-      <div className="flex items-center gap-2 mb-5">
-        <div className="h-8 w-8 rounded-lg bg-sky-50 dark:bg-sky-950/30 flex items-center justify-center">
-          <Users className="h-4 w-4 text-sky-500" />
-        </div>
+    <div className="border-2 border-[#191914] bg-[#b9ddbd] p-5 text-[#191914] shadow-[5px_5px_0_#191914] dark:border-[#f5f0e5] dark:shadow-[5px_5px_0_#f5f0e5] sm:p-6">
+      <div className="mb-5 flex items-center justify-between border-b border-[#191914]/20 pb-4">
         <div>
-          <h3 className="font-semibold text-stone-800 dark:text-stone-100">新面孔</h3>
-          <p className="text-[11px] text-stone-400 dark:text-stone-500">最近加入的同学</p>
+          <p className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#326b42]">NEW MEMBERS</p>
+          <h3 className="mt-1 font-serif text-xl font-bold">新面孔</h3>
         </div>
+        <Users className="h-5 w-5" />
       </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-x-3 gap-y-5">
         {users.map((user) => (
-          <Link
-            key={user.id}
-            href={`/profile/${user.id}`}
-            className="group flex flex-col items-center gap-2 text-center"
-          >
-            <UserAvatar
-              name={user.name}
-              image={user.image}
-              role={user.role}
-              size="md"
-              className="group-hover:scale-110 transition-transform"
-            />
-            <span className="text-[11px] text-stone-500 dark:text-stone-400 truncate w-full group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
-              {user.name ?? "匿名用户"}
-            </span>
+          <Link key={user.id} href={`/profile/${user.id}`} className="group flex min-w-0 flex-col items-center text-center">
+            <div className="border-2 border-[#191914] bg-[#fffaf0] p-0.5 transition-transform group-hover:-rotate-3 group-hover:scale-105">
+              <UserAvatar name={user.name} image={user.image} role={user.role} size="md" />
+            </div>
+            <span className="mt-2 w-full truncate text-[11px] font-bold">{user.name ?? "匿名用户"}</span>
             {user.raputation != null && (
               <LevelBadge raputation={user.raputation} role={user.role} size="xs" showTitle={false} />
             )}

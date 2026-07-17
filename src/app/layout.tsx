@@ -28,9 +28,9 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "北京二中经开区学校 · 校园论坛",
+  title: "北京二中经开区学校 · 鲜活校园论坛",
   description:
-    "北京二中经开区学校校园论坛，本固枝盛，学富国强。为师生提供学习交流、失物招领、校园公告、表白墙的平台",
+    "属于北京二中经开区学校同学们的鲜活校园社区，分享学习、活动、失物招领与每一个值得记录的校园故事。",
   icons: {
     icon: "/images/school-logo.png",
     apple: "/images/school-logo.png",
@@ -66,7 +66,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[#faf9f7] dark:bg-[#0a0a0a] text-[#1c1917] dark:text-[#e8e6e3]">
+      <body className="min-h-full flex flex-col bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5]">
         <Providers>
           <NavigationProgress />
           <HeaderWrapper />

@@ -43,10 +43,10 @@ export function AcademicParticles() {
       const height = canvas?.offsetHeight ?? 600
 
       const colors = [
-        "rgba(212, 175, 55, ",   // gold
-        "rgba(230, 198, 92, ",   // gold light
+        "rgba(255, 107, 67, ",   // campus orange
+        "rgba(217, 239, 97, ",   // acid green
         "rgba(255, 255, 255, ",  // white
-        "rgba(129, 140, 248, ",  // indigo light
+        "rgba(185, 221, 189, ",  // sage green
       ]
 
       for (let i = 0; i < particleCount; i++) {
@@ -101,7 +101,7 @@ export function AcademicParticles() {
             ctx.beginPath()
             ctx.moveTo(particles[i].x, particles[i].y)
             ctx.lineTo(particles[j].x, particles[j].y)
-            ctx.strokeStyle = `rgba(212, 175, 55, ${opacity})`
+            ctx.strokeStyle = `rgba(255, 107, 67, ${opacity})`
             ctx.lineWidth = 0.5
             ctx.stroke()
             connections++
