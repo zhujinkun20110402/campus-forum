@@ -5,6 +5,7 @@ import { Providers } from "@/components/layout/providers"
 import { HeaderWrapper } from "@/components/layout/header-wrapper"
 import { FooterWrapper } from "@/components/layout/footer-wrapper"
 import { NavigationProgress } from "@/components/layout/navigation-progress"
+import { auth } from "@/lib/auth"
 
 const notoSerif = Noto_Serif_SC({
   variable: "--font-noto-serif-sc",
@@ -37,11 +38,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const session = await auth()
+
   return (
     <html
       lang="zh-CN"
@@ -67,7 +70,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5]">
-        <Providers>
+        <Providers session={session}>
           <NavigationProgress />
           <HeaderWrapper />
           <main className="flex-1">{children}</main>

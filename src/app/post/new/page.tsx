@@ -1,21 +1,17 @@
-import { redirect } from "next/navigation"
 import { Lightbulb, PenLine, Sparkles } from "lucide-react"
 import { PostForm } from "@/components/post/post-form"
 import { EditorialHero, EditorialPanel } from "@/components/ui/editorial"
-import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { requireUser } from "@/lib/session"
 
 export default async function NewPostPage({
   searchParams,
 }: {
   searchParams: Promise<{ category?: string }>
 }) {
-  const session = await auth()
-
-  if (!session?.user?.id) redirect("/auth/signin")
-
   const { category: categorySlug } = await searchParams
-  const isAdmin = session.user.role === "ADMIN"
+  const user = await requireUser(`/post/new${categorySlug ? `?category=${encodeURIComponent(categorySlug)}` : ""}`)
+  const isAdmin = user.role === "ADMIN"
   const allCategories = await prisma.category.findMany()
 
   const categories = allCategories.filter((category) => {

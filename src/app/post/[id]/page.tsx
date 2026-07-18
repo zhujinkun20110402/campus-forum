@@ -14,9 +14,9 @@ import { ShareButton } from "@/components/post/share-button"
 import { LevelBadge } from "@/components/reputation/level-badge"
 import { EditorialHeading, EditorialPanel } from "@/components/ui/editorial"
 import { UserAvatar } from "@/components/user/user-avatar"
-import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { cn, formatRelativeTime } from "@/lib/utils"
+import { requireUser } from "@/lib/session"
 
 const categoryStyles: Record<string, string> = {
   announcement: "bg-[#ff6b43]",
@@ -29,28 +29,25 @@ const categoryStyles: Record<string, string> = {
 
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const [post, session] = await Promise.all([
-    prisma.post.findUnique({
-      where: { id },
-      include: {
-        author: { select: { id: true, name: true, image: true, role: true, raputation: true } },
-        category: { select: { name: true, slug: true } },
-        comments: {
-          orderBy: { createdAt: "asc" },
-          include: { author: { select: { id: true, name: true, image: true, role: true, raputation: true } } },
-        },
-        likes: true,
-        _count: { select: { comments: true, likes: true } },
+  const currentUser = await requireUser(`/post/${id}`)
+  const post = await prisma.post.findUnique({
+    where: { id },
+    include: {
+      author: { select: { id: true, name: true, image: true, role: true, raputation: true } },
+      category: { select: { name: true, slug: true } },
+      comments: {
+        orderBy: { createdAt: "asc" },
+        include: { author: { select: { id: true, name: true, image: true, role: true, raputation: true } } },
       },
-    }),
-    auth(),
-  ])
+      likes: true,
+      _count: { select: { comments: true, likes: true } },
+    },
+  })
 
   if (!post) notFound()
 
-  const currentUser = session?.user
-  const isAuthor = currentUser?.id === post.author.id
-  const isAdmin = currentUser?.role === "ADMIN"
+  const isAuthor = currentUser.id === post.author.id
+  const isAdmin = currentUser.role === "ADMIN"
   const isConfession = post.category.slug === "confession"
   const pinned = post.pinned
 
@@ -106,7 +103,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
               </article>
 
               <div className="mt-10 flex flex-wrap items-center gap-2 border-t-2 border-[#191914] pt-6 dark:border-[#f5f0e5]">
-                <LikeButton postId={post.id} likeCount={post._count.likes} isLiked={post.likes.some((like) => like.userId === currentUser?.id)} />
+                <LikeButton postId={post.id} likeCount={post._count.likes} isLiked={post.likes.some((like) => like.userId === currentUser.id)} />
                 <span className="inline-flex h-9 items-center gap-2 border border-[#191914] bg-[#fffaf0] px-3 text-sm font-bold dark:border-[#f5f0e5] dark:bg-[#191914]">
                   <MessageSquare className="h-4 w-4 text-[#e4532f]" /> {post._count.comments} 条评论
                 </span>
@@ -120,7 +117,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
           <section className="mt-14">
             <EditorialHeading index="02" eyebrow="DISCUSSION" title="讨论区" meta={`${post._count.comments} 条回应`} />
             <div className="mt-7">
-              <CommentList comments={post.comments} currentUserId={currentUser?.id} isAdmin={isAdmin} postId={post.id} />
+              <CommentList comments={post.comments} currentUserId={currentUser.id} isAdmin={isAdmin} postId={post.id} />
             </div>
             <EditorialPanel className="mt-7 p-5 sm:p-7">
               <p className="mb-4 font-mono text-[9px] font-bold tracking-[0.16em] text-[#e4532f]">LEAVE A RESPONSE</p>

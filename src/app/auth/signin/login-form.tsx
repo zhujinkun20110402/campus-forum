@@ -5,12 +5,17 @@ import { signIn } from "next-auth/react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Loader2, LogIn } from "lucide-react"
+import { Loader2, LockKeyhole, LogIn } from "lucide-react"
 
 function LoginFormInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const registered = searchParams.get("registered")
+  const membersOnly = searchParams.get("reason") === "members-only"
+  const requestedCallbackUrl = searchParams.get("callbackUrl")
+  const callbackUrl = requestedCallbackUrl?.startsWith("/") && !requestedCallbackUrl.startsWith("//")
+    ? requestedCallbackUrl
+    : "/"
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -36,7 +41,7 @@ function LoginFormInner() {
         return
       }
 
-      router.push("/")
+      router.push(callbackUrl)
       router.refresh()
     } catch {
       setError("登录失败，请稍后重试")
@@ -49,6 +54,12 @@ function LoginFormInner() {
       {registered === "true" && (
         <div className="border-2 border-[#326b42] bg-[#b9ddbd]/45 p-3 text-sm font-bold text-[#275836] dark:text-[#b9ddbd]" role="status">
           注册成功，请登录
+        </div>
+      )}
+      {membersOnly && (
+        <div className="flex gap-3 border-2 border-[#191914] bg-[#f3c84b]/40 p-3 text-sm text-[#191914] dark:border-[#f5f0e5] dark:bg-[#292821] dark:text-[#f5f0e5]" role="status">
+          <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-[#e4532f]" />
+          <span>这里是成员专属区域，登录后将回到刚才的页面。</span>
         </div>
       )}
       {error && (

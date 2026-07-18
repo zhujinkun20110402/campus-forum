@@ -6,6 +6,11 @@ export const loginSchema = z.object({
 })
 
 export const registerSchema = z.object({
+  inviteCode: z
+    .string()
+    .trim()
+    .min(1, "请输入邀请码")
+    .max(32, "邀请码格式不正确"),
   name: z
     .string()
     .min(2, "用户名至少 2 个字符")

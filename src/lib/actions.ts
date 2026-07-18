@@ -12,6 +12,8 @@ import {
   adjustRaputation,
   hasPostedToday,
 } from "@/lib/reputation.server"
+import { createUserWithInvite } from "@/lib/invitations"
+import { requireUser } from "@/lib/session"
 
 async function checkBanned(userId: string) {
   const user = await prisma.user.findUnique({
@@ -28,6 +30,7 @@ export async function registerUser(
   formData: FormData
 ) {
   const validated = registerSchema.safeParse({
+    inviteCode: formData.get("inviteCode"),
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
@@ -40,31 +43,25 @@ export async function registerUser(
     }
   }
 
-  const { name, email, password } = validated.data
-
-  const existingByName = await prisma.user.findFirst({
-    where: { name },
-  })
-  if (existingByName) {
-    return { message: "该用户名已被使用" }
-  }
-
-  const existingByEmail = await prisma.user.findUnique({
-    where: { email },
-  })
-  if (existingByEmail) {
-    return { message: "该邮箱已被注册" }
-  }
+  const { inviteCode, name, email, password } = validated.data
 
   const hashedPassword = await bcrypt.hash(password, 10)
-
-  await prisma.user.create({
-    data: {
-      name,
-      email,
-      password: hashedPassword,
-    },
+  const result = await createUserWithInvite({
+    inviteCode,
+    name,
+    email: email.toLowerCase(),
+    passwordHash: hashedPassword,
   })
+
+  if (!result.ok) {
+    const messages = {
+      INVALID_INVITE: "邀请码无效或已被使用",
+      NAME_TAKEN: "该用户名已被使用",
+      EMAIL_TAKEN: "该邮箱已被注册",
+      RETRY_REQUIRED: "注册请求发生冲突，请重新提交",
+    } as const
+    return { message: messages[result.reason] }
+  }
 
   redirect("/auth/signin?registered=true")
 }
@@ -370,6 +367,8 @@ export async function updateProfile(_prevState: unknown, formData: FormData) {
 }
 
 export async function getMorePosts(page: number, pageSize = 12) {
+  await requireUser("/")
+
   const posts = await prisma.post.findMany({
     skip: page * pageSize,
     take: pageSize,
@@ -391,6 +390,8 @@ export async function getMorePosts(page: number, pageSize = 12) {
 }
 
 export async function getTrendingPosts() {
+  await requireUser("/")
+
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
   return prisma.post.findMany({
@@ -409,6 +410,8 @@ export async function getTrendingPosts() {
 }
 
 export async function getPinnedPosts() {
+  await requireUser("/")
+
   const posts = await prisma.post.findMany({
     where: { pinned: true },
     orderBy: { updatedAt: "desc" },

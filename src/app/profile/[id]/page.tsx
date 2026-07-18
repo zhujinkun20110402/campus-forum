@@ -18,9 +18,10 @@ import { ReputationBar } from "@/components/reputation/reputation-bar"
 import { UserBadges } from "@/components/reputation/user-badges"
 import { EditorialHeading, EditorialPanel } from "@/components/ui/editorial"
 import { SafeImage } from "@/components/ui/safe-image"
-import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { cn, formatDate, formatRelativeTime } from "@/lib/utils"
+import { requireUser } from "@/lib/session"
+import { getSuccessfulInviteCount } from "@/lib/invitations"
 
 const categoryStyles: Record<string, string> = {
   announcement: "bg-[#ff6b43]",
@@ -33,22 +34,20 @@ const categoryStyles: Record<string, string> = {
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const session = await auth()
-  const isOwnProfile = session?.user?.id === id
+  const currentUser = await requireUser(`/profile/${id}`)
+  const isOwnProfile = currentUser.id === id
 
-  const [user] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id },
-      include: { _count: { select: { posts: true, comments: true, likes: true } } },
-    }),
-  ])
+  const user = await prisma.user.findUnique({
+    where: { id },
+    include: { _count: { select: { posts: true, comments: true, likes: true } } },
+  })
 
   if (!user) notFound()
 
-  const likeReceivedCount = await prisma.like.count({ where: { post: { authorId: id } } })
-  const hasPinnedPost = await prisma.post.count({ where: { authorId: id, pinned: true } }) > 0
-
-  const [posts, comments] = await Promise.all([
+  const [likeReceivedCount, pinnedPostCount, successfulInviteCount, posts, comments] = await Promise.all([
+    prisma.like.count({ where: { post: { authorId: id } } }),
+    prisma.post.count({ where: { authorId: id, pinned: true } }),
+    getSuccessfulInviteCount(id),
     prisma.post.findMany({
       where: { authorId: id },
       include: { category: true, _count: { select: { comments: true, likes: true } } },
@@ -62,6 +61,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
       take: 10,
     }),
   ])
+  const hasPinnedPost = pinnedPostCount > 0
 
   const stats = [
     { label: "帖子", value: user._count.posts, icon: FileText },
@@ -73,6 +73,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     postCount: user._count.posts,
     commentCount: user._count.comments,
     likeReceivedCount,
+    successfulInviteCount,
     hasPinnedPost,
     role: user.role,
   }

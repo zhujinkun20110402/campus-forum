@@ -15,6 +15,7 @@ import { CountUp } from "@/components/effects/count-up"
 import { PostList } from "@/components/post/post-list"
 import { EditorialHeading, EditorialHero, EditorialPanel } from "@/components/ui/editorial"
 import { prisma } from "@/lib/prisma"
+import { requireUser } from "@/lib/session"
 
 const categoryConfig: Record<string, {
   name: string
@@ -34,6 +35,7 @@ const categoryConfig: Record<string, {
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
+  await requireUser(`/category/${slug}`)
   const config = categoryConfig[slug]
   if (!config) notFound()
 

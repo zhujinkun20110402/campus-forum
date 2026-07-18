@@ -1,13 +1,12 @@
-import Link from "next/link"
-import { Heart, MessageCircle, Sparkles } from "lucide-react"
+import { Heart, Sparkles } from "lucide-react"
 import { ConfessionForm } from "@/components/confession/confession-form"
 import { PostList } from "@/components/post/post-list"
 import { EditorialHeading, EditorialHero, EditorialPanel } from "@/components/ui/editorial"
-import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { requireUser } from "@/lib/session"
 
 export default async function ConfessionPage() {
-  const session = await auth()
+  await requireUser("/confession")
   const posts = await prisma.post.findMany({
     where: { category: { slug: "confession" } },
     take: 20,
@@ -32,15 +31,7 @@ export default async function ConfessionPage() {
 
       <main className="campus-dot-grid px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="mx-auto max-w-4xl">
-          {session?.user ? (
-            <div className="mb-12"><ConfessionForm /></div>
-          ) : (
-            <EditorialPanel className="mb-12 p-8 text-center">
-              <MessageCircle className="mx-auto h-9 w-9 text-[#e4532f]" />
-              <p className="mt-3 font-serif text-xl font-bold">登录后即可匿名发布</p>
-              <Link href="/auth/signin" className="mt-5 inline-flex border-2 border-[#191914] bg-[#ffb4aa] px-5 py-2.5 text-sm font-bold text-[#191914] shadow-[3px_3px_0_#191914] dark:border-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]">前往登录</Link>
-            </EditorialPanel>
-          )}
+          <div className="mb-12"><ConfessionForm /></div>
 
           <EditorialHeading
             index="01"

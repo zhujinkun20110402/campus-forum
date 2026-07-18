@@ -20,6 +20,7 @@ model User {
   role          String    @default("USER")
   bio           String?   @db.Text
   raputation    Int       @default(0)
+  inviteGrantClaimedAt DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -28,6 +29,25 @@ model User {
   likes    Like[]
   accounts Account[]
   sessions Session[]
+  createdInviteCodes InviteCode[] @relation("InviteCodeCreator")
+  redeemedInviteCode InviteCode?  @relation("InviteCodeRedeemer")
+}
+
+model InviteCode {
+  id          String    @id @default(cuid())
+  code        String    @unique @db.VarChar(32)
+  source      String    @default("MEMBER_GRANT") @db.VarChar(32)
+  createdById String?
+  usedById    String?   @unique
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  createdBy User? @relation("InviteCodeCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  usedBy    User? @relation("InviteCodeRedeemer", fields: [usedById], references: [id], onDelete: SetNull)
+
+  @@index([createdById, createdAt])
+  @@index([source])
+  @@index([usedAt])
 }
 
 model Account {

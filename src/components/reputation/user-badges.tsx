@@ -8,6 +8,7 @@ import {
   Users,
   Pin,
   Shield,
+  TicketCheck,
   Lock,
 } from "lucide-react"
 
@@ -19,6 +20,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Users,
   Pin,
   Shield,
+  TicketCheck,
 }
 
 interface UserBadgesProps {

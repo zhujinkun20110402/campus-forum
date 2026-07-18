@@ -1,5 +1,5 @@
+import Link from "next/link"
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
 import { formatDate, formatRelativeTime } from "@/lib/utils"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -11,6 +11,7 @@ import { LevelBadge } from "@/components/reputation/level-badge"
 import { getPhotosPreview } from "@/lib/album-store"
 import { EditorialHero } from "@/components/ui/editorial"
 import { SafeImage } from "@/components/ui/safe-image"
+import { requireUser } from "@/lib/session"
 import {
   Users,
   FileText,
@@ -23,14 +24,15 @@ import {
   Server,
   CheckCircle2,
   Award,
+  TicketPlus,
 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
 export default async function AdminPage() {
-  const session = await auth()
+  const currentUser = await requireUser("/admin")
 
-  if (!session?.user?.id || session.user.role !== "ADMIN") {
+  if (currentUser.role !== "ADMIN") {
     return (
       <div className="campus-paper flex min-h-screen items-center justify-center bg-[#f4efe4] px-4 dark:bg-[#11110f]">
         <div className="border-2 border-[#191914] bg-[#fffaf0] px-8 py-12 text-center shadow-[7px_7px_0_#ff6b43] dark:border-[#f5f0e5] dark:bg-[#191914]">
@@ -152,9 +154,14 @@ export default async function AdminPage() {
         accentClass="bg-[#f3c84b]"
         compact
       >
-        <span className="inline-flex items-center gap-2 border border-[#191914] bg-[#fffaf0] px-3 py-2 font-mono text-[9px] font-bold tracking-[0.14em] dark:border-[#f5f0e5] dark:bg-[#191914]">
-          <CheckCircle2 className="h-3.5 w-3.5 text-[#326b42]" /> SYSTEM ONLINE
-        </span>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="inline-flex items-center gap-2 border border-[#191914] bg-[#fffaf0] px-3 py-2 font-mono text-[9px] font-bold tracking-[0.14em] dark:border-[#f5f0e5] dark:bg-[#191914]">
+            <CheckCircle2 className="h-3.5 w-3.5 text-[#326b42]" /> SYSTEM ONLINE
+          </span>
+          <Link href="/invites" className="inline-flex items-center gap-2 border-2 border-[#191914] bg-[#d9ef61] px-3 py-2 text-xs font-bold text-[#191914] shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]">
+            <TicketPlus className="h-4 w-4" /> 管理邀请码
+          </Link>
+        </div>
       </EditorialHero>
 
       <div className="campus-dot-grid mx-auto max-w-7xl space-y-8 px-4 py-12 sm:px-6 sm:py-16 lg:px-8">

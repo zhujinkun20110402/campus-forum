@@ -3,15 +3,15 @@ import { PhotowallAdmin } from "@/components/album/photowall-admin"
 import { PhotowallGrid } from "@/components/album/photowall-grid"
 import { PhotowallUploader } from "@/components/album/photowall-uploader"
 import { EditorialHeading, EditorialHero, EditorialPanel } from "@/components/ui/editorial"
-import { auth } from "@/lib/auth"
 import { getPhotos } from "@/lib/album-store"
+import { requireUser } from "@/lib/session"
 
 export const dynamic = "force-dynamic"
 
 export default async function PhotowallPage() {
-  const [photos, session] = await Promise.all([getPhotos(), auth()])
-  const isAdmin = session?.user?.role === "ADMIN"
-  const isLoggedIn = !!session?.user?.id
+  const user = await requireUser("/album")
+  const photos = await getPhotos()
+  const isAdmin = user.role === "ADMIN"
 
   return (
     <div className="min-h-screen bg-[#ece6da] dark:bg-[#10100e]">
@@ -52,7 +52,7 @@ export default async function PhotowallPage() {
             )}
           </div>
 
-          {isLoggedIn && !isAdmin && <PhotowallUploader />}
+          {!isAdmin && <PhotowallUploader />}
           {isAdmin && <PhotowallAdmin />}
         </div>
       </main>

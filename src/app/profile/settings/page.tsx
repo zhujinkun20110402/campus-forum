@@ -5,15 +5,14 @@ import { LevelBadge } from "@/components/reputation/level-badge"
 import { ReputationBar } from "@/components/reputation/reputation-bar"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { EditorialHero, EditorialPanel } from "@/components/ui/editorial"
-import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { requireUser } from "@/lib/session"
 
 export default async function ProfileSettingsPage() {
-  const session = await auth()
-  if (!session?.user?.id) redirect("/auth/signin")
+  const sessionUser = await requireUser("/profile/settings")
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: sessionUser.id },
     select: { name: true, email: true, image: true, bio: true, role: true, raputation: true },
   })
 

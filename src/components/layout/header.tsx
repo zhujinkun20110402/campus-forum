@@ -12,6 +12,7 @@ import {
   Search,
   Settings,
   Shield,
+  Ticket,
   User,
   X,
 } from "lucide-react"
@@ -36,7 +37,7 @@ export function Header() {
   const { scrollDirection, scrollY } = useScrollDirection()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const user = session?.user
   const isScrolled = scrollY > 18
   const isHidden = scrollDirection === "down" && scrollY > 120 && !mobileMenuOpen && !dropdownOpen
@@ -77,7 +78,7 @@ export function Header() {
             </Link>
 
             <nav className="hidden items-center gap-0.5 lg:flex" aria-label="主导航">
-              {navLinks.map((link) => {
+              {user ? navLinks.map((link) => {
                 const isActive = pathname === link.href || pathname?.startsWith(`${link.href}/`)
                 return (
                   <Link
@@ -93,19 +94,24 @@ export function Header() {
                     {link.label}
                   </Link>
                 )
-              })}
+              }) : (
+                <span className="border border-[#191914]/25 bg-[#d9ef61] px-3 py-2 font-mono text-[9px] font-bold tracking-[0.14em] text-[#191914] dark:border-white/25">INVITE ONLY</span>
+              )}
             </nav>
 
             <div className="flex items-center gap-1.5">
               <ThemeToggle />
 
-              <Link
-                href="/search"
-                aria-label="搜索帖子"
-                className="hidden h-9 w-9 items-center justify-center border border-transparent transition-colors hover:border-[#191914] hover:bg-[#f3c84b] dark:hover:border-[#f5f0e5] sm:flex"
-              >
-                <Search className="h-4 w-4" />
-              </Link>
+              {user && (
+                <>
+                  <Link href="/invites" aria-label="我的邀请码" className="hidden h-9 w-9 items-center justify-center border border-transparent transition-colors hover:border-[#191914] hover:bg-[#d9ef61] hover:text-[#191914] dark:hover:border-[#f5f0e5] sm:flex">
+                    <Ticket className="h-4 w-4" />
+                  </Link>
+                  <Link href="/search" aria-label="搜索帖子" className="hidden h-9 w-9 items-center justify-center border border-transparent transition-colors hover:border-[#191914] hover:bg-[#f3c84b] dark:hover:border-[#f5f0e5] sm:flex">
+                    <Search className="h-4 w-4" />
+                  </Link>
+                </>
+              )}
 
               {user ? (
                 <>
@@ -152,6 +158,9 @@ export function Header() {
                             <Link href="/profile/settings" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#d9ef61] hover:text-[#191914]">
                               <Settings className="h-4 w-4" /> 账号设置
                             </Link>
+                            <Link href="/invites" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#d9ef61] hover:text-[#191914]">
+                              <Ticket className="h-4 w-4" /> 邀请码中心
+                            </Link>
                             {user.role === "ADMIN" && (
                               <Link href="/admin" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 text-[#d44120] hover:bg-[#f3c84b] hover:text-[#191914]">
                                 <Shield className="h-4 w-4" /> 管理后台
@@ -170,14 +179,12 @@ export function Header() {
                     )}
                   </div>
                 </>
-              ) : (
-                <Link
-                  href="/auth/signin"
-                  className="inline-flex h-9 items-center border-2 border-[#191914] bg-[#ff6b43] px-4 text-xs font-bold text-[#191914] shadow-[2px_2px_0_#191914] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:shadow-[2px_2px_0_#f5f0e5]"
-                >
-                  登录
-                </Link>
-              )}
+              ) : status === "unauthenticated" ? (
+                <div className="flex items-center gap-1.5">
+                  <Link href="/auth/register" className="hidden h-9 items-center px-3 text-xs font-bold hover:bg-[#d9ef61] hover:text-[#191914] sm:inline-flex">邀请码注册</Link>
+                  <Link href="/auth/signin" className="inline-flex h-9 items-center border-2 border-[#191914] bg-[#ff6b43] px-4 text-xs font-bold text-[#191914] shadow-[2px_2px_0_#191914] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:shadow-[2px_2px_0_#f5f0e5]">登录</Link>
+                </div>
+              ) : null}
 
               <Button
                 variant="ghost"
@@ -206,8 +213,10 @@ export function Header() {
             onClick={() => setMobileMenuOpen(false)}
           />
           <div className="absolute inset-x-3 top-[82px] border-2 border-[#191914] bg-[#fffaf0] p-3 text-[#191914] shadow-[6px_6px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#171713] dark:text-[#f5f0e5] dark:shadow-[6px_6px_0_#f5f0e5] sm:inset-x-5">
-            <nav className="grid grid-cols-2 gap-2" aria-label="移动端导航">
-              {navLinks.map((link, index) => {
+            {user ? (
+              <>
+                <nav className="grid grid-cols-2 gap-2" aria-label="移动端导航">
+              {[...navLinks, { href: "/invites", label: "邀请" }].map((link, index) => {
                 const isActive = pathname === link.href || pathname?.startsWith(`${link.href}/`)
                 return (
                   <Link
@@ -224,17 +233,27 @@ export function Header() {
                   </Link>
                 )
               })}
-            </nav>
-            <div className="mt-3 flex items-center gap-2 border-t border-[#191914]/20 pt-3 dark:border-white/20">
+                </nav>
+                <div className="mt-3 flex items-center gap-2 border-t border-[#191914]/20 pt-3 dark:border-white/20">
               <Link href="/search" onClick={() => setMobileMenuOpen(false)} className="flex h-11 flex-1 items-center justify-center gap-2 border border-[#191914] text-sm font-bold hover:bg-[#f3c84b] dark:border-[#f5f0e5]">
                 <Search className="h-4 w-4" /> 搜索
               </Link>
-              {user && (
-                <Link href="/post/new" onClick={() => setMobileMenuOpen(false)} className="flex h-11 flex-1 items-center justify-center gap-2 border border-[#191914] bg-[#ff6b43] text-sm font-bold text-[#191914] dark:border-[#f5f0e5]">
+              <Link href="/post/new" onClick={() => setMobileMenuOpen(false)} className="flex h-11 flex-1 items-center justify-center gap-2 border border-[#191914] bg-[#ff6b43] text-sm font-bold text-[#191914] dark:border-[#f5f0e5]">
                   <PenLine className="h-4 w-4" /> 发帖
-                </Link>
-              )}
-            </div>
+              </Link>
+                </div>
+              </>
+            ) : (
+              <div className="p-2">
+                <p className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#e4532f]">PRIVATE CAMPUS COMMUNITY</p>
+                <h2 className="mt-2 font-serif text-2xl font-bold">论坛仅向注册成员开放</h2>
+                <p className="mt-2 text-sm leading-6 text-[#777268] dark:text-[#989389]">已有账号可直接登录；新成员需要使用一枚有效邀请码。</p>
+                <div className="mt-5 grid grid-cols-2 gap-2">
+                  <Link href="/auth/signin" onClick={() => setMobileMenuOpen(false)} className="flex h-11 items-center justify-center border-2 border-[#191914] bg-[#fffaf0] text-sm font-bold dark:border-[#f5f0e5] dark:bg-[#191914]">登录</Link>
+                  <Link href="/auth/register" onClick={() => setMobileMenuOpen(false)} className="flex h-11 items-center justify-center border-2 border-[#191914] bg-[#ff6b43] text-sm font-bold text-[#191914] dark:border-[#f5f0e5]">邀请码注册</Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

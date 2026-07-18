@@ -64,6 +64,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ account }) {
+      if (!account || account.provider === "credentials") return true
+
+      // Invitation registration is the only account-creation path. OAuth may
+      // authenticate an account that was linked previously, but never create one.
+      const linkedAccount = await prisma.account.findUnique({
+        where: {
+          provider_providerAccountId: {
+            provider: account.provider,
+            providerAccountId: account.providerAccountId,
+          },
+        },
+        select: { user: { select: { role: true } } },
+      })
+
+      return !!linkedAccount && linkedAccount.user.role !== "BANNED"
+    },
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id!

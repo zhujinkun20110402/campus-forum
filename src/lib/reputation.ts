@@ -218,6 +218,7 @@ export interface UserStatsForBadges {
   postCount: number
   commentCount: number
   likeReceivedCount: number
+  successfulInviteCount: number
   hasPinnedPost?: boolean
   role?: string | null
 }
@@ -237,6 +238,15 @@ export function getUserBadges(stats: UserStatsForBadges): BadgeInfo[] {
       color: "text-sky-600 dark:text-sky-400",
       bgColor: "bg-sky-50 dark:bg-sky-950/30",
       earned: stats.postCount >= 1,
+    },
+    {
+      id: "campus-guide",
+      name: "校园引路人",
+      description: "成功邀请一位新成员加入校园社区",
+      icon: "TicketCheck",
+      color: "text-[#326b42] dark:text-[#b9ddbd]",
+      bgColor: "bg-[#b9ddbd]/45 dark:bg-[#213426]",
+      earned: stats.successfulInviteCount >= 1,
     },
     {
       id: "chatterbox",
@@ -289,7 +299,7 @@ export function getUserBadges(stats: UserStatsForBadges): BadgeInfo[] {
       description: "论坛管理员专属徽章",
       icon: "Shield",
       color: "text-amber-600 dark:text-amber-400",
-      bgColor: "bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30",
+      bgColor: "bg-amber-50 dark:bg-amber-950/30",
       earned: isAdmin,
     },
   ]

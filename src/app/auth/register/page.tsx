@@ -10,7 +10,7 @@ import { registerUser } from "@/lib/actions"
 
 export default function RegisterPage() {
   const [state, formAction, isPending] = useActionState(registerUser, null)
-  const benefits = ["与校园同学互动交流", "发布帖子并参与讨论", "使用失物招领与表白墙", "收藏属于自己的校园轨迹"]
+  const benefits = ["凭一次性邀请码加入社区", "与校园同学互动交流", "发布帖子并参与讨论", "注册满三天可获得 3 枚邀请码"]
 
   return (
     <div className="grid min-h-screen bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5] lg:grid-cols-[1.08fr_0.92fr]">
@@ -61,16 +61,20 @@ export default function RegisterPage() {
           <div className="border-2 border-[#191914] bg-[#fffaf0] p-6 shadow-[7px_7px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[7px_7px_0_#f5f0e5] sm:p-8">
             <p className="font-mono text-[9px] font-bold tracking-[0.18em] text-[#e4532f]">CREATE ACCOUNT</p>
             <h1 className="mt-3 font-serif text-4xl font-bold tracking-tight">加入校园社区</h1>
-            <p className="mt-2 text-sm text-[#777268] dark:text-[#989389]">创建账号，开始记录与回应。</p>
+            <p className="mt-2 text-sm text-[#777268] dark:text-[#989389]">使用有效邀请码创建校园账号。</p>
 
             <form action={formAction} className="mt-8 space-y-5">
               {state && "message" in state && state.message && (
                 <div className="border-2 border-[#d44120] bg-[#ffb4aa]/35 p-3 text-sm text-[#b52f1e]" role="alert">{state.message}</div>
               )}
 
-              <AuthField index="01" label="用户名" id="name" type="text" placeholder="中英文、数字、下划线" error={state && "errors" in state ? state.errors?.name?.[0] : undefined} />
-              <AuthField index="02" label="邮箱" id="email" type="email" placeholder="用于登录和找回密码" error={state && "errors" in state ? state.errors?.email?.[0] : undefined} />
-              <AuthField index="03" label="密码" id="password" type="password" placeholder="至少 6 位字符" error={state && "errors" in state ? state.errors?.password?.[0] : undefined} />
+              <div className="border-2 border-[#191914] bg-[#f3c84b]/35 p-4 dark:border-[#f5f0e5] dark:bg-[#292821]">
+                <AuthField index="01" label="邀请码" id="inviteCode" type="text" placeholder="CF-XXXX-XXXX-XXXX" error={state && "errors" in state ? state.errors?.inviteCode?.[0] : undefined} mono />
+                <p className="mt-2 text-xs leading-5 text-[#69655d] dark:text-[#aaa69c]">每枚邀请码仅可使用一次，不设有效期。</p>
+              </div>
+              <AuthField index="02" label="用户名" id="name" type="text" placeholder="中英文、数字、下划线" error={state && "errors" in state ? state.errors?.name?.[0] : undefined} />
+              <AuthField index="03" label="邮箱" id="email" type="email" placeholder="用于登录和找回密码" error={state && "errors" in state ? state.errors?.email?.[0] : undefined} />
+              <AuthField index="04" label="密码" id="password" type="password" placeholder="至少 6 位字符" error={state && "errors" in state ? state.errors?.password?.[0] : undefined} />
 
               <Button type="submit" disabled={isPending} className="h-12 w-full rounded-none border-2 border-[#191914] bg-[#d9ef61] font-bold text-[#191914] shadow-[4px_4px_0_#191914] transition-transform hover:-translate-y-1 hover:bg-[#d9ef61] dark:border-[#f5f0e5] dark:bg-[#d9ef61] dark:text-[#191914] dark:shadow-[4px_4px_0_#f5f0e5]">
                 {isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />注册中...</> : <><UserPlus className="mr-2 h-4 w-4" />创建账号</>}
@@ -90,11 +94,11 @@ export default function RegisterPage() {
   )
 }
 
-function AuthField({ index, label, id, type, placeholder, error }: { index: string; label: string; id: string; type: string; placeholder: string; error?: string }) {
+function AuthField({ index, label, id, type, placeholder, error, mono = false }: { index: string; label: string; id: string; type: string; placeholder: string; error?: string; mono?: boolean }) {
   return (
     <div>
       <label htmlFor={id} className="mb-2 block text-sm font-bold"><span className="mr-2 font-mono text-[9px] text-[#e4532f]">{index}</span>{label}</label>
-      <Input id={id} name={id} type={type} placeholder={placeholder} required className="h-12 rounded-none border-2 border-[#191914] bg-white px-4 text-[#191914] focus-visible:ring-[#ff6b43] dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5]" />
+      <Input id={id} name={id} type={type} placeholder={placeholder} required autoCapitalize={mono ? "characters" : undefined} autoComplete={id === "password" ? "new-password" : id === "email" ? "email" : "off"} className={`h-12 rounded-none border-2 border-[#191914] bg-white px-4 text-[#191914] focus-visible:ring-[#ff6b43] dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5] ${mono ? "font-mono uppercase tracking-[0.08em]" : ""}`} />
       {error && <p className="mt-2 border-l-4 border-[#d44120] bg-[#ffb4aa]/30 px-3 py-2 text-sm text-[#b52f1e]" role="alert">{error}</p>}
     </div>
   )

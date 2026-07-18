@@ -2,9 +2,11 @@ import { BookOpen, Search, Sparkles } from "lucide-react"
 import { PostList } from "@/components/post/post-list"
 import { EditorialHeading, EditorialHero, EditorialPanel } from "@/components/ui/editorial"
 import { prisma } from "@/lib/prisma"
+import { requireUser } from "@/lib/session"
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams
+  await requireUser(`/search${q ? `?q=${encodeURIComponent(q)}` : ""}`)
   const query = q?.trim() ?? ""
 
   let posts: {
