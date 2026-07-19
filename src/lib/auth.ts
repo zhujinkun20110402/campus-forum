@@ -87,11 +87,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = (user as { role?: string }).role ?? "USER"
         token.picture = user.image
         token.name = user.name
+        token.avatarSynced = true
       }
+
+      // Older JWTs may not contain profile changes that already exist in the
+      // database. Hydrate a missing avatar once; proxy responses persist the
+      // refreshed token so this does not add a query to every future request.
+      if (!user && token.id && !token.picture && token.avatarSynced !== true) {
+        try {
+          const currentUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { image: true },
+          })
+          token.picture = currentUser?.image ?? null
+          token.avatarSynced = true
+        } catch {
+          // Keep the session valid when the profile database is temporarily unavailable.
+        }
+      }
+
       if (trigger === "update" && session) {
         token.name = session.name ?? token.name
         token.picture = session.image ?? token.picture
         token.bio = session.bio
+        token.avatarSynced = true
       }
       return token
     },

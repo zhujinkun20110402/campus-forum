@@ -18,7 +18,8 @@ interface SafeImageProps {
 }
 
 export function SafeImage({ src, alt, fill, width, height, sizes, className, priority, fallback, onLoad, onError }: SafeImageProps) {
-  const [error, setError] = useState(false)
+  const [failedSrc, setFailedSrc] = useState<string | null>(null)
+  const error = failedSrc === src
 
   if (error) {
     if (fallback) {
@@ -45,7 +46,7 @@ export function SafeImage({ src, alt, fill, width, height, sizes, className, pri
       priority={priority}
       onLoad={onLoad}
       onError={() => {
-        setError(true)
+        setFailedSrc(src)
         onError?.()
       }}
     />

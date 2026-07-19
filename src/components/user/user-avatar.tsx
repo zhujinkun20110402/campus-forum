@@ -24,6 +24,13 @@ const crownSizeMap = {
   xl: "h-6 w-6 -top-1.5 -right-1.5",
 }
 
+const imageSizeMap = {
+  sm: "28px",
+  md: "40px",
+  lg: "44px",
+  xl: "96px",
+}
+
 export function UserAvatar({
   name,
   image,
@@ -43,7 +50,14 @@ export function UserAvatar({
         )}
       >
         {image ? (
-          <SafeImage src={image} alt={name ?? ""} fill className="object-cover" />
+          <SafeImage
+            src={image}
+            alt={name ?? "用户头像"}
+            fill
+            sizes={imageSizeMap[size]}
+            fallback={initials}
+            className="object-cover"
+          />
         ) : (
           <span>{initials}</span>
         )}
