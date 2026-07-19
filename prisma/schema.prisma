@@ -11,26 +11,28 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          String    @default("USER")
-  bio           String?   @db.Text
-  raputation    Int       @default(0)
+  id                   String    @id @default(cuid())
+  name                 String?
+  email                String    @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String?
+  role                 String    @default("USER")
+  bio                  String?   @db.Text
+  raputation           Int       @default(0)
   inviteGrantClaimedAt DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
-  posts    Post[]
-  comments Comment[]
-  likes    Like[]
-  accounts Account[]
-  sessions Session[]
+  posts              Post[]
+  comments           Comment[]
+  likes              Like[]
+  accounts           Account[]
+  sessions           Session[]
   createdInviteCodes InviteCode[] @relation("InviteCodeCreator")
   redeemedInviteCode InviteCode?  @relation("InviteCodeRedeemer")
+  following          Follow[]     @relation("FollowingUser")
+  followers          Follow[]     @relation("FollowedUser")
 }
 
 model InviteCode {
@@ -87,14 +89,14 @@ model VerificationToken {
 }
 
 model Post {
-  id         String    @id @default(cuid())
+  id         String   @id @default(cuid())
   title      String
-  content    String    @db.Text
+  content    String   @db.Text
   authorId   String
   categoryId String
-  pinned     Boolean   @default(false)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  pinned     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   category Category  @relation(fields: [categoryId], references: [id])
@@ -107,10 +109,15 @@ model Comment {
   content   String   @db.Text
   postId    String
   authorId  String
+  parentId  String?
   createdAt DateTime @default(now())
 
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author  User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([parentId])
 }
 
 model Category {
@@ -130,4 +137,16 @@ model Like {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("FollowingUser", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("FollowedUser", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId])
 }

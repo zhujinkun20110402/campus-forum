@@ -28,6 +28,7 @@ export const postSchema = z.object({
 
 export const commentSchema = z.object({
   content: z.string().min(1, "评论不能为空").max(5000, "评论最多 5000 个字符"),
+  parentId: z.string().cuid("回复目标无效").optional().or(z.literal("")),
 })
 
 export const confessionSchema = z.object({

@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { notFound } from "next/navigation"
 import {
   BookOpen,
@@ -9,6 +10,7 @@ import {
   PartyPopper,
   Search,
   ShoppingBag,
+  MessageSquareWarning,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { CountUp } from "@/components/effects/count-up"
@@ -31,6 +33,7 @@ const categoryConfig: Record<string, {
   activity: { name: "校园活动", description: "社团活动、比赛通知、招募与校园邀约。", english: "CAMPUS EVENTS", icon: PartyPopper, accentClass: "bg-[#b9ddbd]" },
   secondhand: { name: "二手交易", description: "闲置物品流转、书籍交换与好物推荐。", english: "CAMPUS MARKET", icon: ShoppingBag, accentClass: "bg-[#f2d0b2]" },
   "problem-discussion": { name: "难题讨论", description: "学科难题、竞赛题目与知识探讨。", english: "PROBLEM LAB", icon: MessageCircle, accentClass: "bg-[#e5ded1]" },
+  feedback: { name: "问题反馈", description: "提交功能问题、使用建议与社区改进意见，让每一次反馈都有迹可循。", english: "FEEDBACK DESK", icon: MessageSquareWarning, accentClass: "bg-[#c8d7ef]" },
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -69,21 +72,24 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         icon={config.icon}
         accentClass={config.accentClass}
       >
-        <div className="inline-grid grid-cols-3 border-2 border-[#191914] bg-[#fffaf0] dark:border-[#f5f0e5] dark:bg-[#191914]">
-          {[
-            [FileText, category.posts.length, "帖子"],
-            [MessageCircle, totalComments, "评论"],
-            [Heart, totalLikes, "点赞"],
-          ].map(([Icon, value, label], index) => {
-            const StatIcon = Icon as React.ComponentType<{ className?: string }>
-            return (
-              <div key={String(label)} className={index > 0 ? "border-l border-[#191914]/25 px-4 py-3 text-center dark:border-white/25 sm:px-6" : "px-4 py-3 text-center sm:px-6"}>
-                <StatIcon className="mx-auto h-3.5 w-3.5 text-[#e4532f]" />
-                <p className="mt-1 font-mono text-lg font-bold"><CountUp end={Number(value)} duration={1200} /></p>
-                <p className="text-[10px] text-[#777268] dark:text-[#989389]">{label as string}</p>
-              </div>
-            )
-          })}
+        <div className="flex flex-wrap items-stretch gap-3">
+          <div className="inline-grid grid-cols-3 border-2 border-[#191914] bg-[#fffaf0] dark:border-[#f5f0e5] dark:bg-[#191914]">
+            {[
+              [FileText, category.posts.length, "帖子"],
+              [MessageCircle, totalComments, "评论"],
+              [Heart, totalLikes, "点赞"],
+            ].map(([Icon, value, label], index) => {
+              const StatIcon = Icon as React.ComponentType<{ className?: string }>
+              return (
+                <div key={String(label)} className={index > 0 ? "border-l border-[#191914]/25 px-4 py-3 text-center dark:border-white/25 sm:px-6" : "px-4 py-3 text-center sm:px-6"}>
+                  <StatIcon className="mx-auto h-3.5 w-3.5 text-[#e4532f]" />
+                  <p className="mt-1 font-mono text-lg font-bold"><CountUp end={Number(value)} duration={1200} /></p>
+                  <p className="text-[10px] text-[#777268] dark:text-[#989389]">{label as string}</p>
+                </div>
+              )
+            })}
+          </div>
+          {slug === "feedback" && <Link href="/post/new?category=feedback" className="inline-flex items-center justify-center border-2 border-[#191914] bg-[#ff6b43] px-5 text-sm font-bold text-[#191914] shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]">提交反馈</Link>}
         </div>
       </EditorialHero>
 

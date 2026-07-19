@@ -10,18 +10,24 @@ import {
   Heart,
   MessageSquare,
   Settings,
+  Trophy,
+  UserPlus,
+  Users,
 } from "lucide-react"
 import { CountUp } from "@/components/effects/count-up"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { LevelBadge } from "@/components/reputation/level-badge"
 import { ReputationBar } from "@/components/reputation/reputation-bar"
 import { UserBadges } from "@/components/reputation/user-badges"
+import { ChampionCrown } from "@/components/reputation/champion-crown"
+import { FollowButton } from "@/components/social/follow-button"
 import { EditorialHeading, EditorialPanel } from "@/components/ui/editorial"
 import { SafeImage } from "@/components/ui/safe-image"
 import { prisma } from "@/lib/prisma"
 import { cn, formatDate, formatRelativeTime } from "@/lib/utils"
 import { requireUser } from "@/lib/session"
 import { getSuccessfulInviteCount } from "@/lib/invitations"
+import { getCompetitiveRank, getFollowSummary } from "@/lib/social"
 
 const categoryStyles: Record<string, string> = {
   announcement: "bg-[#ff6b43]",
@@ -30,6 +36,7 @@ const categoryStyles: Record<string, string> = {
   confession: "bg-[#ffb4aa]",
   activity: "bg-[#b9ddbd]",
   secondhand: "bg-[#f2d0b2]",
+  feedback: "bg-[#c8d7ef]",
 }
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -44,10 +51,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   if (!user) notFound()
 
-  const [likeReceivedCount, pinnedPostCount, successfulInviteCount, posts, comments] = await Promise.all([
+  const [likeReceivedCount, pinnedPostCount, successfulInviteCount, followSummary, competitiveRank, posts, comments] = await Promise.all([
     prisma.like.count({ where: { post: { authorId: id } } }),
     prisma.post.count({ where: { authorId: id, pinned: true } }),
     getSuccessfulInviteCount(id),
+    getFollowSummary(currentUser.id, id),
+    getCompetitiveRank(id),
     prisma.post.findMany({
       where: { authorId: id },
       include: { category: true, _count: { select: { comments: true, likes: true } } },
@@ -62,10 +71,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     }),
   ])
   const hasPinnedPost = pinnedPostCount > 0
+  const isChampion = competitiveRank === 1
 
   const stats = [
     { label: "帖子", value: user._count.posts, icon: FileText },
     { label: "评论", value: user._count.comments, icon: MessageSquare },
+    { label: "关注者", value: followSummary.followers, icon: Users, href: `/profile/${id}/connections?tab=followers` },
+    { label: "正在关注", value: followSummary.following, icon: UserPlus, href: `/profile/${id}/connections?tab=following` },
     { label: "获赞", value: likeReceivedCount, icon: Heart },
     { label: "声望", value: user.role === "ADMIN" ? null : user.raputation, icon: Crown },
   ]
@@ -80,14 +92,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="min-h-screen bg-[#ece6da] dark:bg-[#10100e]">
-      <section className="campus-paper relative overflow-hidden border-b-2 border-[#191914] px-4 pb-14 pt-28 dark:border-[#f5f0e5] sm:px-6 sm:pb-18 lg:px-8">
-        <div aria-hidden className="absolute -right-12 top-24 h-40 w-40 rotate-12 border-2 border-[#191914] bg-[#d9ef61] dark:border-[#f5f0e5]" />
+      <section className={cn("campus-paper relative overflow-hidden border-b-2 border-[#191914] px-4 pb-14 pt-28 dark:border-[#f5f0e5] sm:px-6 sm:pb-18 lg:px-8", isChampion && "bg-[#fff7dc] dark:bg-[#171713]")}>
+        <div aria-hidden className={cn("absolute -right-12 top-24 h-40 w-40 rotate-12 border-2 border-[#191914] dark:border-[#f5f0e5]", isChampion ? "bg-[#f3c84b]" : "bg-[#d9ef61]")} />
+        {isChampion && <div aria-hidden className="champion-spark absolute left-[8%] top-36 h-5 w-5 rotate-12 border-2 border-[#191914] bg-[#ffb4aa] dark:border-[#f5f0e5]" />}
         <div className="relative mx-auto max-w-6xl">
           <ScrollReveal>
             <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-[#e4532f]">PROFILE / CAMPUS MEMBER</p>
             <div className="mt-6 grid items-center gap-7 md:grid-cols-[auto_minmax(0,1fr)]">
               <div className="relative mx-auto md:mx-0">
-                <div className="relative h-28 w-28 overflow-hidden border-2 border-[#191914] bg-[#191914] shadow-[7px_7px_0_#ff6b43] dark:border-[#f5f0e5] sm:h-32 sm:w-32">
+                <div className={cn("relative h-28 w-28 overflow-hidden border-2 border-[#191914] bg-[#191914] shadow-[7px_7px_0_#ff6b43] dark:border-[#f5f0e5] sm:h-32 sm:w-32", isChampion && "champion-frame")}>
                   {user.image ? (
                     <SafeImage src={user.image} alt={user.name ?? "用户头像"} fill sizes="128px" className="object-cover" />
                   ) : (
@@ -96,6 +109,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     </div>
                   )}
                 </div>
+                {isChampion && <ChampionCrown className="absolute -right-8 -top-10" />}
                 {user.role === "ADMIN" && (
                   <div className="absolute -bottom-3 -right-3 flex h-9 w-9 items-center justify-center border-2 border-[#191914] bg-[#f3c84b] text-[#191914] dark:border-[#f5f0e5]">
                     <Crown className="h-4 w-4" />
@@ -107,6 +121,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                 <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
                   <h1 className="font-serif text-4xl font-bold tracking-tight sm:text-5xl">{user.name ?? "未命名用户"}</h1>
                   {user.role === "ADMIN" && <span className="border border-[#191914] bg-[#f3c84b] px-2 py-1 font-mono text-[9px] font-bold text-[#191914] dark:border-[#f5f0e5]">ADMIN</span>}
+                  {isChampion && <span className="inline-flex items-center gap-1.5 border-2 border-[#191914] bg-[#191914] px-2.5 py-1 font-mono text-[9px] font-bold text-[#d9ef61] dark:border-[#f5f0e5]"><Trophy className="h-3.5 w-3.5" />RANK #01</span>}
                   <LevelBadge raputation={user.raputation} role={user.role} size="sm" />
                 </div>
                 <p className="mt-3 flex items-center justify-center gap-1.5 font-mono text-[10px] tracking-[0.1em] text-[#777268] dark:text-[#989389] md:justify-start">
@@ -115,30 +130,22 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                 <p className="mt-5 max-w-2xl text-sm leading-7 text-[#5f5c54] dark:text-[#aaa69c]">
                   {user.bio || "还没有写个人简介，也许一句话就能让大家更了解你。"}
                 </p>
-                {isOwnProfile && (
-                  <Link href="/profile/settings" className="mt-5 inline-flex items-center gap-2 border-2 border-[#191914] bg-[#fffaf0] px-4 py-2.5 text-sm font-bold shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-1 dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[3px_3px_0_#f5f0e5]">
-                    <Settings className="h-4 w-4 text-[#e4532f]" /> 编辑个人资料
-                  </Link>
-                )}
+                <div className="mt-5 flex flex-wrap items-start justify-center gap-3 md:justify-start">
+                  {isOwnProfile ? (
+                    <>
+                      <Link href="/profile/settings" className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#fffaf0] px-4 text-sm font-bold shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-1 dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[3px_3px_0_#f5f0e5]"><Settings className="h-4 w-4 text-[#e4532f]" /> 编辑个人资料</Link>
+                      <Link href={`/profile/${id}/connections`} className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#b9ddbd] px-4 text-sm font-bold text-[#191914] dark:border-[#f5f0e5]"><Users className="h-4 w-4" /> 我的关注</Link>
+                    </>
+                  ) : <FollowButton targetUserId={id} initialFollowing={followSummary.isFollowing} />}
+                </div>
               </div>
             </div>
           </ScrollReveal>
 
           <ScrollReveal delay={0.1}>
-            <div className="mt-10 grid grid-cols-2 border-2 border-[#191914] bg-[#fffaf0] dark:border-[#f5f0e5] dark:bg-[#191914] sm:grid-cols-4">
+            <div className="mt-10 grid grid-cols-2 gap-px border-2 border-[#191914] bg-[#191914] dark:border-[#f5f0e5] dark:bg-[#f5f0e5] sm:grid-cols-3 lg:grid-cols-6">
               {stats.map((stat, index) => (
-                <div key={stat.label} className={cn(
-                  "p-4 text-center sm:p-5",
-                  index % 2 === 1 && "border-l border-[#191914]/20 dark:border-white/20",
-                  index >= 2 && "border-t border-[#191914]/20 dark:border-white/20 sm:border-t-0",
-                  index > 0 && "sm:border-l sm:border-[#191914]/20 dark:sm:border-white/20"
-                )}>
-                  <stat.icon className="mx-auto h-4 w-4 text-[#e4532f]" />
-                  <div className="mt-2 font-mono text-2xl font-bold">
-                    {stat.value === null ? "MAX" : <CountUp end={stat.value} duration={1500} />}
-                  </div>
-                  <div className="mt-1 text-xs text-[#777268] dark:text-[#989389]">{stat.label}</div>
-                </div>
+                <ProfileStat key={stat.label} stat={stat} index={index} />
               ))}
             </div>
           </ScrollReveal>
@@ -216,4 +223,16 @@ function EmptyState({ icon: Icon, text }: { icon: React.ComponentType<{ classNam
       <p className="mt-3 text-sm text-[#777268] dark:text-[#989389]">{text}</p>
     </div>
   )
+}
+
+function ProfileStat({ stat, index }: { stat: { label: string; value: number | null; icon: React.ComponentType<{ className?: string }>; href?: string }; index: number }) {
+  const content = (
+    <>
+      <stat.icon className="mx-auto h-4 w-4 text-[#e4532f]" />
+      <div className="mt-2 font-mono text-2xl font-bold">{stat.value === null ? "MAX" : <CountUp end={stat.value} duration={1500} />}</div>
+      <div className="mt-1 text-xs text-[#777268] dark:text-[#989389]">{stat.label}</div>
+    </>
+  )
+  const className = cn("bg-[#fffaf0] p-4 text-center dark:bg-[#191914] sm:p-5", stat.href && "transition-colors hover:bg-[#d9ef61] hover:text-[#191914] dark:hover:bg-[#d9ef61] dark:hover:text-[#191914]", index === 0 && "")
+  return stat.href ? <Link href={stat.href} className={className}>{content}</Link> : <div className={className}>{content}</div>
 }

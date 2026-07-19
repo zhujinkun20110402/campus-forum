@@ -180,6 +180,7 @@ export async function createComment(postId: string, _prevState: unknown, formDat
 
   const validated = commentSchema.safeParse({
     content: formData.get("content"),
+    parentId: formData.get("parentId") ?? "",
   })
 
   if (!validated.success) {
@@ -189,11 +190,21 @@ export async function createComment(postId: string, _prevState: unknown, formDat
     }
   }
 
+  const parentId = validated.data.parentId || null
+  if (parentId) {
+    const parent = await prisma.comment.findFirst({
+      where: { id: parentId, postId },
+      select: { id: true },
+    })
+    if (!parent) return { message: "被回复的评论不存在或已被删除" }
+  }
+
   await prisma.comment.create({
     data: {
       content: validated.data.content,
       postId,
       authorId: session.user.id,
+      parentId,
     },
   })
 

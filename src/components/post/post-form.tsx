@@ -13,9 +13,10 @@ import { Loader2, Send } from "lucide-react"
 
 interface PostFormProps {
   categories: { id: string; name: string }[]
+  defaultCategoryId?: string
 }
 
-export function PostForm({ categories }: PostFormProps) {
+export function PostForm({ categories, defaultCategoryId = "" }: PostFormProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [isPending, startTransition] = useTransition()
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
@@ -31,7 +32,7 @@ export function PostForm({ categories }: PostFormProps) {
     defaultValues: {
       title: "",
       content: "",
-      categoryId: "",
+      categoryId: defaultCategoryId,
     },
   })
 

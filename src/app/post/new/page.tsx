@@ -17,12 +17,13 @@ export default async function NewPostPage({
   const categories = allCategories.filter((category) => {
     if (category.slug === "confession") return false
     if (category.slug === "announcement" && !isAdmin) return false
-    if (category.slug === "lostfound" && !categorySlug) return false
-    if (categorySlug === "lostfound" && category.slug !== "lostfound") return false
+    if (categorySlug && category.slug !== categorySlug) return false
+    if (!categorySlug && category.slug === "lostfound") return false
     return true
   })
 
   const isLostFound = categorySlug === "lostfound"
+  const isFeedback = categorySlug === "feedback"
   const tips = [
     "用一句清晰的标题说明帖子重点",
     "选择准确分类，方便同学快速找到",
@@ -35,8 +36,8 @@ export default async function NewPostPage({
       <EditorialHero
         index="05"
         eyebrow="START A CONVERSATION"
-        title={isLostFound ? "发布寻物启事" : "写下校园新鲜事"}
-        description={isLostFound ? "把物品特征、丢失时间与地点描述清楚，让更多同学帮助你找到它。" : "一个问题、一段见闻或一次认真分享，都可能成为校园里一场有价值的讨论。"}
+        title={isLostFound ? "发布寻物启事" : isFeedback ? "提交问题与建议" : "写下校园新鲜事"}
+        description={isLostFound ? "把物品特征、丢失时间与地点描述清楚，让更多同学帮助你找到它。" : isFeedback ? "说明你遇到的问题、复现步骤或改进想法，让反馈可以被理解、讨论和持续跟进。" : "一个问题、一段见闻或一次认真分享，都可能成为校园里一场有价值的讨论。"}
         icon={PenLine}
         accentClass="bg-[#ff6b43]"
         compact
@@ -53,7 +54,7 @@ export default async function NewPostPage({
               <p className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#e4532f]">EDITOR / NEW POST</p>
               <h2 className="mt-2 font-serif text-2xl font-bold">整理你的表达</h2>
             </div>
-            <PostForm categories={categories} />
+            <PostForm categories={categories} defaultCategoryId={categories.length === 1 ? categories[0].id : ""} />
           </EditorialPanel>
 
           <aside className="space-y-5 lg:sticky lg:top-24">

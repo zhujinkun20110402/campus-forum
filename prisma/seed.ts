@@ -14,6 +14,7 @@ async function main() {
     { name: "校园公告", slug: "announcement" },
     { name: "难题讨论", slug: "problem-discussion" },
     { name: "表白墙", slug: "confession" },
+    { name: "问题反馈", slug: "feedback" },
   ]
 
   for (const cat of categories) {

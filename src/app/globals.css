@@ -96,6 +96,36 @@
   --color-problem-bg: #fff4ed;
 }
 
+@keyframes champion-spectrum {
+  0%, 100% { color: #ff6b43; filter: drop-shadow(0 0 5px rgba(255, 107, 67, 0.7)); transform: translateY(0) rotate(-3deg); }
+  25% { color: #f3c84b; filter: drop-shadow(0 0 7px rgba(243, 200, 75, 0.8)); transform: translateY(-2px) rotate(2deg); }
+  50% { color: #79b98a; filter: drop-shadow(0 0 7px rgba(121, 185, 138, 0.8)); transform: translateY(0) rotate(3deg); }
+  75% { color: #ed7aa5; filter: drop-shadow(0 0 7px rgba(237, 122, 165, 0.8)); transform: translateY(-2px) rotate(-1deg); }
+}
+
+@keyframes champion-glint {
+  0%, 100% { opacity: 0.35; transform: scale(0.75) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.15) rotate(20deg); }
+}
+
+@keyframes champion-frame-pulse {
+  0%, 100% { box-shadow: 7px 7px 0 #ff6b43, -5px -5px 0 #d9ef61; }
+  33% { box-shadow: 7px 7px 0 #f3c84b, -5px -5px 0 #ffb4aa; }
+  66% { box-shadow: 7px 7px 0 #79b98a, -5px -5px 0 #f3c84b; }
+}
+
+.champion-crown { animation: champion-spectrum 4s ease-in-out infinite; }
+.champion-spark { animation: champion-glint 2s ease-in-out infinite; }
+.champion-spark-one { color: #f3c84b; }
+.champion-spark-two { color: #ed7aa5; animation-delay: 0.8s; }
+.champion-frame { animation: champion-frame-pulse 5s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .champion-crown,
+  .champion-spark,
+  .champion-frame { animation: none; }
+}
+
 :root {
   --background: #f4efe4;
   --foreground: #191914;

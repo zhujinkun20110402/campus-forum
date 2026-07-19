@@ -11,6 +11,7 @@ import {
   MapPin,
   Megaphone,
   MessageCircle,
+  MessageSquareWarning,
   Plus,
   Search,
   Sparkles,
@@ -80,6 +81,14 @@ const categoryEntries = [
     english: "MARKET",
     icon: TrendingUp,
     surface: "bg-[#f2eadc]",
+  },
+  {
+    slug: "feedback",
+    name: "问题反馈",
+    desc: "问题提交、建议与改进",
+    english: "FEEDBACK",
+    icon: MessageSquareWarning,
+    surface: "bg-[#c8d7ef]",
   },
 ]
 
@@ -420,7 +429,7 @@ export default async function HomePage() {
                     尊重不同观点，保护个人隐私，让每一次讨论都给校园多一点善意。
                   </p>
                   <Link href="/search" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#ff8a68] hover:text-[#d9ef61]">
-                    <Search className="h-4 w-4" /> 搜索全部帖子
+                    <Search className="h-4 w-4" /> 搜索帖子与同学
                   </Link>
                 </div>
               </ScrollReveal>

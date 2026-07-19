@@ -13,6 +13,7 @@ import {
   Settings,
   Shield,
   Ticket,
+  Trophy,
   User,
   X,
 } from "lucide-react"
@@ -28,8 +29,14 @@ const navLinks = [
   { href: "/category/lostfound", label: "寻物" },
   { href: "/confession", label: "表白墙" },
   { href: "/category/study", label: "学习" },
+  { href: "/category/feedback", label: "反馈" },
+  { href: "/leaderboard", label: "排行" },
+]
+
+const mobileExtraLinks = [
   { href: "/category/activity", label: "活动" },
   { href: "/album", label: "相册" },
+  { href: "/invites", label: "邀请" },
 ]
 
 export function Header() {
@@ -161,6 +168,9 @@ export function Header() {
                             <Link href="/invites" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#d9ef61] hover:text-[#191914]">
                               <Ticket className="h-4 w-4" /> 邀请码中心
                             </Link>
+                            <Link href="/leaderboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#f3c84b] hover:text-[#191914]">
+                              <Trophy className="h-4 w-4" /> 声望排行榜
+                            </Link>
                             {user.role === "ADMIN" && (
                               <Link href="/admin" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 text-[#d44120] hover:bg-[#f3c84b] hover:text-[#191914]">
                                 <Shield className="h-4 w-4" /> 管理后台
@@ -216,7 +226,7 @@ export function Header() {
             {user ? (
               <>
                 <nav className="grid grid-cols-2 gap-2" aria-label="移动端导航">
-              {[...navLinks, { href: "/invites", label: "邀请" }].map((link, index) => {
+              {[...navLinks, ...mobileExtraLinks].map((link, index) => {
                 const isActive = pathname === link.href || pathname?.startsWith(`${link.href}/`)
                 return (
                   <Link

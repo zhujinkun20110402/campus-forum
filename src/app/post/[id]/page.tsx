@@ -4,7 +4,6 @@ import { ArrowLeft, Clock, MessageSquare } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import rehypeHighlight from "rehype-highlight"
 import remarkGfm from "remark-gfm"
-import { CommentForm } from "@/components/comment/comment-form"
 import { CommentList } from "@/components/comment/comment-list"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { DeleteButton } from "@/components/post/delete-button"
@@ -25,6 +24,7 @@ const categoryStyles: Record<string, string> = {
   study: "bg-[#f3c84b]",
   activity: "bg-[#b9ddbd]",
   secondhand: "bg-[#f2d0b2]",
+  feedback: "bg-[#c8d7ef]",
 }
 
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
@@ -37,7 +37,10 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
       category: { select: { name: true, slug: true } },
       comments: {
         orderBy: { createdAt: "asc" },
-        include: { author: { select: { id: true, name: true, image: true, role: true, raputation: true } } },
+        include: {
+          author: { select: { id: true, name: true, image: true, role: true, raputation: true } },
+          parent: { select: { id: true, content: true, author: { select: { id: true, name: true } } } },
+        },
       },
       likes: true,
       _count: { select: { comments: true, likes: true } },
@@ -119,10 +122,6 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
             <div className="mt-7">
               <CommentList comments={post.comments} currentUserId={currentUser.id} isAdmin={isAdmin} postId={post.id} />
             </div>
-            <EditorialPanel className="mt-7 p-5 sm:p-7">
-              <p className="mb-4 font-mono text-[9px] font-bold tracking-[0.16em] text-[#e4532f]">LEAVE A RESPONSE</p>
-              <CommentForm postId={post.id} />
-            </EditorialPanel>
           </section>
         </div>
       </main>

@@ -40,6 +40,7 @@ const categoryStyles: Record<string, { chip: string; accent: string }> = {
   activity: { chip: "bg-[#b9ddbd]", accent: "bg-[#3f8450]" },
   secondhand: { chip: "bg-[#f2d0b2]", accent: "bg-[#d85d2f]" },
   "problem-discussion": { chip: "bg-[#e5ded1]", accent: "bg-[#68645c]" },
+  feedback: { chip: "bg-[#c8d7ef]", accent: "bg-[#52729d]" },
 }
 
 function getCategoryStyle(slug: string) {

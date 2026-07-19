@@ -11,12 +11,14 @@ const footerLinks = [
       { href: "/category/study", label: "学习交流" },
       { href: "/confession", label: "表白墙" },
       { href: "/category/activity", label: "校园活动" },
+      { href: "/category/feedback", label: "问题反馈" },
     ],
   },
   {
     title: "快速到达",
     links: [
-      { href: "/search", label: "搜索帖子" },
+      { href: "/search", label: "搜索帖子与成员" },
+      { href: "/leaderboard", label: "声望排行榜" },
       { href: "/album", label: "校园相册" },
       { href: "/post/new", label: "发布新帖" },
       { href: "/auth/signin", label: "登录账号" },
