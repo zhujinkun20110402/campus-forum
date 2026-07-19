@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { signOut, useSession } from "next-auth/react"
 import {
+  Bell,
   ChevronDown,
   LogOut,
   Menu,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react"
 import { useScrollDirection } from "@/hooks/use-scroll-direction"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { SafeImage } from "@/components/ui/safe-image"
 import { Button } from "@/components/ui/button"
@@ -111,6 +113,7 @@ export function Header() {
 
               {user && (
                 <>
+                  <NotificationBell />
                   <Link href="/invites" aria-label="我的邀请码" className="hidden h-9 w-9 items-center justify-center border border-transparent transition-colors hover:border-[#191914] hover:bg-[#d9ef61] hover:text-[#191914] dark:hover:border-[#f5f0e5] sm:flex">
                     <Ticket className="h-4 w-4" />
                   </Link>
@@ -159,6 +162,9 @@ export function Header() {
                             </p>
                           </div>
                           <div className="p-1.5 text-sm">
+                            <Link href="/notifications" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#ffb4aa] hover:text-[#191914]">
+                              <Bell className="h-4 w-4" /> 通知中心
+                            </Link>
                             <Link href={`/profile/${user.id}`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#d9ef61] hover:text-[#191914]">
                               <User className="h-4 w-4" /> 我的主页
                             </Link>

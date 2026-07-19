@@ -82,7 +82,7 @@ export function CommentList({ comments, currentUserId, isAdmin, postId }: Commen
           const authorName = comment.author.name ?? "未命名用户"
 
           return (
-            <div key={comment.id} className={cn("flex items-start gap-2.5", mine && "flex-row-reverse")}>
+            <div id={`comment-${comment.id}`} key={comment.id} className={cn("scroll-mt-28 flex items-start gap-2.5", mine && "flex-row-reverse")}>
               <Link href={`/profile/${comment.author.id}`} className="shrink-0" aria-label={`查看 ${authorName} 的主页`}>
                 <UserAvatar name={comment.author.name} image={comment.author.image} role={comment.author.role} size="md" />
               </Link>

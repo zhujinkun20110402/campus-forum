@@ -39,6 +39,8 @@ export const profileSchema = z.object({
   name: z.string().min(2, "用户名至少 2 个字符").max(30, "用户名最多 30 个字符"),
   bio: z.string().max(200, "个人简介最多 200 个字符").optional().or(z.literal("")),
   image: z.string().optional().or(z.literal("")),
+  hideFollowers: z.boolean().optional(),
+  hideFollowing: z.boolean().optional(),
 })
 
 export type LoginInput = z.infer<typeof loginSchema>

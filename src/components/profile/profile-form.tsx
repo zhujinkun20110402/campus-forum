@@ -11,7 +11,7 @@ import { AvatarUploader } from "@/components/profile/avatar-uploader"
 import { AvatarSelector } from "@/components/profile/avatar-selector"
 import { updateProfile } from "@/lib/actions"
 import { profileSchema, type ProfileInput } from "@/lib/validations"
-import { Loader2, Save } from "lucide-react"
+import { Loader2, LockKeyhole, Save, UserPlus, Users } from "lucide-react"
 
 interface ProfileFormProps {
   user: {
@@ -20,6 +20,8 @@ interface ProfileFormProps {
     image: string | null
     bio: string | null
     role?: string | null
+    hideFollowers: boolean
+    hideFollowing: boolean
   }
 }
 
@@ -28,6 +30,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState("")
   const [avatarUrl, setAvatarUrl] = useState(user.image ?? "")
+  const [hideFollowers, setHideFollowers] = useState(user.hideFollowers)
+  const [hideFollowing, setHideFollowing] = useState(user.hideFollowing)
 
   const {
     register,
@@ -47,6 +51,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
     formData.append("name", data.name)
     formData.append("bio", data.bio ?? "")
     formData.append("image", avatarUrl)
+    formData.append("hideFollowers", String(hideFollowers))
+    formData.append("hideFollowing", String(hideFollowing))
 
     startTransition(async () => {
       const result = await updateProfile(null, formData)
@@ -74,6 +80,20 @@ export function ProfileForm({ user }: ProfileFormProps) {
           <AvatarSelector value={avatarUrl} onChange={setAvatarUrl} />
         </div>
       </div>
+
+      <section className="border-2 border-[#191914] bg-[#fffaf0] p-5 dark:border-[#f5f0e5] dark:bg-[#191914] sm:p-6">
+        <div className="flex items-center gap-3 border-b border-[#191914]/20 pb-4 dark:border-white/20">
+          <div className="flex h-10 w-10 items-center justify-center border border-[#191914] bg-[#b9ddbd] text-[#191914] dark:border-[#f5f0e5]"><LockKeyhole className="h-5 w-5" /></div>
+          <div>
+            <p className="font-mono text-[9px] font-bold tracking-[0.14em] text-[#e4532f]">SOCIAL PRIVACY</p>
+            <h3 className="mt-1 font-serif text-lg font-bold">关注关系隐私</h3>
+          </div>
+        </div>
+        <div className="divide-y divide-[#191914]/15 dark:divide-white/15">
+          <PrivacyToggle icon={Users} label="隐藏关注者列表" description="其他成员无法查看有哪些人关注了你。" checked={hideFollowers} onChange={setHideFollowers} />
+          <PrivacyToggle icon={UserPlus} label="隐藏正在关注列表" description="其他成员无法查看你正在关注哪些人。" checked={hideFollowing} onChange={setHideFollowing} />
+        </div>
+      </section>
 
       <div className="space-y-2">
         <label htmlFor="email" className="flex items-center justify-between text-sm font-bold">
@@ -134,5 +154,20 @@ export function ProfileForm({ user }: ProfileFormProps) {
         {isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />保存中...</> : <><Save className="mr-2 h-4 w-4" />保存修改</>}
       </Button>
     </form>
+  )
+}
+
+function PrivacyToggle({ icon: Icon, label, description, checked, onChange }: { icon: React.ComponentType<{ className?: string }>; label: string; description: string; checked: boolean; onChange: (checked: boolean) => void }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-4">
+      <div className="flex min-w-0 items-start gap-3">
+        <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#e4532f]" />
+        <div><p className="text-sm font-bold">{label}</p><p className="mt-1 text-xs leading-5 text-[#777268] dark:text-[#aaa69c]">{description}</p></div>
+      </div>
+      <button type="button" role="switch" aria-checked={checked} onClick={() => onChange(!checked)} className={`relative h-7 w-12 shrink-0 border-2 border-[#191914] transition-colors dark:border-[#f5f0e5] ${checked ? "bg-[#ff6b43]" : "bg-[#e5ded1] dark:bg-[#292821]"}`}>
+        <span className={`absolute top-0.5 h-5 w-5 border border-[#191914] bg-[#fffaf0] transition-transform dark:border-[#f5f0e5] ${checked ? "translate-x-[22px]" : "translate-x-0.5"}`} />
+        <span className="sr-only">{checked ? "已隐藏" : "公开"}</span>
+      </button>
+    </div>
   )
 }

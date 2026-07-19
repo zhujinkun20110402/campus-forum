@@ -137,14 +137,24 @@ const campusImages = [
 
 const tickerItems = ["校园新鲜事", "学习搭子", "失物招领", "社团招新", "匿名心声", "二手好物"]
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ feed?: string | string[] }>
+}) {
   const session = await auth()
 
   if (!session?.user?.id) return <GuestHome />
 
+  const params = await searchParams
+  const feedMode = params.feed === "following" ? "following" : "latest"
+
   const [pinnedPosts, posts, trendingPosts, activeUsers, stats, categoryCounts] = await Promise.all([
     getPinnedPosts(),
     prisma.post.findMany({
+      where: feedMode === "following"
+        ? { author: { followers: { some: { followerId: session.user.id } } } }
+        : { pinned: false },
       take: 12,
       orderBy: { createdAt: "desc" },
       include: {
@@ -173,8 +183,7 @@ export default async function HomePage() {
 
   const [totalPosts, totalUsers, totalComments] = stats
   const countMap = new Map(categoryCounts.map((category) => [category.slug, category._count.posts]))
-  const pinnedIds = new Set(pinnedPosts.map((post) => post.id))
-  const regularPosts = posts.filter((post) => !pinnedIds.has(post.id))
+  const regularPosts = posts
 
   return (
     <div className="min-h-screen overflow-hidden bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5]">
@@ -285,7 +294,7 @@ export default async function HomePage() {
               <div className="flex items-center gap-2 font-mono text-[9px] font-bold tracking-[0.16em] text-[#e4532f]">
                 <CalendarDays className="h-3.5 w-3.5" /> THIS WEEK
               </div>
-              <p className="mt-2 font-serif text-base font-semibold leading-snug">别错过正在招募的新社团与校园活动。</p>
+              <p className="mt-2 font-serif text-base font-semibold leading-snug">和大家聊聊~</p>
             </div>
           </ScrollReveal>
         </div>
@@ -374,6 +383,28 @@ export default async function HomePage() {
               <div>
                 <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-[#e4532f]">02 / CAMPUS FEED</p>
                 <h2 className="mt-3 font-serif text-4xl font-bold tracking-tight sm:text-5xl">校园正在发生</h2>
+                <div className="mt-5 inline-flex border-2 border-[#191914] bg-[#fffaf0] p-1 dark:border-[#f5f0e5] dark:bg-[#191914]" aria-label="动态范围">
+                  <Link
+                    href="/?feed=latest#latest"
+                    aria-current={feedMode === "latest" ? "page" : undefined}
+                    className={cn(
+                      "px-4 py-2 text-xs font-bold transition-colors",
+                      feedMode === "latest" ? "bg-[#191914] text-[#fffaf0] dark:bg-[#f5f0e5] dark:text-[#191914]" : "hover:bg-[#f3c84b] hover:text-[#191914]"
+                    )}
+                  >
+                    最新动态
+                  </Link>
+                  <Link
+                    href="/?feed=following#latest"
+                    aria-current={feedMode === "following" ? "page" : undefined}
+                    className={cn(
+                      "px-4 py-2 text-xs font-bold transition-colors",
+                      feedMode === "following" ? "bg-[#191914] text-[#fffaf0] dark:bg-[#f5f0e5] dark:text-[#191914]" : "hover:bg-[#d9ef61] hover:text-[#191914]"
+                    )}
+                  >
+                    我的关注
+                  </Link>
+                </div>
               </div>
               <Link
                 href={session?.user ? "/post/new" : "/auth/signin"}
@@ -388,7 +419,7 @@ export default async function HomePage() {
 
           <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(300px,0.85fr)]">
             <div className="min-w-0">
-              {pinnedPosts.length > 0 && (
+              {feedMode === "latest" && pinnedPosts.length > 0 && (
                 <ScrollReveal className="mb-5">
                   <PinnedPosts posts={pinnedPosts} />
                 </ScrollReveal>
@@ -398,19 +429,21 @@ export default async function HomePage() {
                 <ScrollReveal>
                   <div className="border-2 border-dashed border-[#191914] bg-[#fffaf0] px-6 py-20 text-center dark:border-[#f5f0e5] dark:bg-[#191914]">
                     <Users className="mx-auto h-10 w-10 text-[#ff6b43]" />
-                    <p className="mt-4 font-serif text-2xl font-bold">这里还很安静</p>
-                    <p className="mt-2 text-sm text-[#777268] dark:text-[#989389]">来发布第一条校园新鲜事吧。</p>
+                    <p className="mt-4 font-serif text-2xl font-bold">{feedMode === "following" ? "关注动态还是空的" : "这里还很安静"}</p>
+                    <p className="mt-2 text-sm text-[#777268] dark:text-[#989389]">
+                      {feedMode === "following" ? "去发现值得关注的同学，他们的新帖子会出现在这里。" : "来发布第一条校园新鲜事吧。"}
+                    </p>
                     <Link
-                      href={session?.user ? "/post/new" : "/auth/signin"}
+                      href={feedMode === "following" ? "/leaderboard" : "/post/new"}
                       className="mt-6 inline-flex items-center gap-2 border-2 border-[#191914] bg-[#ff6b43] px-5 py-2.5 text-sm font-bold text-[#191914] shadow-[4px_4px_0_#191914] dark:border-[#f5f0e5] dark:shadow-[4px_4px_0_#f5f0e5]"
                     >
-                      <Plus className="h-4 w-4" />
-                      {session?.user ? "发布第一条帖子" : "登录后发帖"}
+                      {feedMode === "following" ? <Users className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                      {feedMode === "following" ? "发现校园同学" : "发布第一条帖子"}
                     </Link>
                   </div>
                 </ScrollReveal>
               ) : (
-                <FeedLoader initialPosts={regularPosts} />
+                <FeedLoader key={feedMode} initialPosts={regularPosts} feed={feedMode} />
               )}
             </div>
 

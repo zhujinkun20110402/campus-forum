@@ -18,7 +18,6 @@ export default async function NewPostPage({
     if (category.slug === "confession") return false
     if (category.slug === "announcement" && !isAdmin) return false
     if (categorySlug && category.slug !== categorySlug) return false
-    if (!categorySlug && category.slug === "lostfound") return false
     return true
   })
 

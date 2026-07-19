@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
+import { NOTIFICATION_TYPES } from "@/lib/notifications"
 import { prisma } from "@/lib/prisma"
 
 export async function toggleFollowUser(targetUserId: string) {
@@ -27,9 +28,27 @@ export async function toggleFollowUser(targetUserId: string) {
   const existing = await prisma.follow.findUnique({ where: key, select: { followerId: true } })
 
   if (existing) {
-    await prisma.follow.delete({ where: key })
+    await prisma.$transaction([
+      prisma.follow.delete({ where: key }),
+      prisma.notification.deleteMany({
+        where: {
+          type: NOTIFICATION_TYPES.USER_FOLLOWED,
+          actorId: viewerId,
+          userId: targetUserId,
+        },
+      }),
+    ])
   } else {
-    await prisma.follow.create({ data: { followerId: viewerId, followingId: targetUserId } })
+    await prisma.$transaction([
+      prisma.follow.create({ data: { followerId: viewerId, followingId: targetUserId } }),
+      prisma.notification.create({
+        data: {
+          userId: targetUserId,
+          actorId: viewerId,
+          type: NOTIFICATION_TYPES.USER_FOLLOWED,
+        },
+      }),
+    ])
   }
 
   revalidatePath(`/profile/${targetUserId}`)
@@ -38,6 +57,7 @@ export async function toggleFollowUser(targetUserId: string) {
   revalidatePath(`/profile/${viewerId}/connections`)
   revalidatePath("/leaderboard")
   revalidatePath("/search")
+  revalidatePath("/")
 
   return { success: true as const, following: !existing }
 }

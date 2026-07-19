@@ -6,13 +6,13 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { postSchema, commentSchema, registerSchema, confessionSchema, profileSchema } from "@/lib/validations"
-import { pinPost, unpinPost } from "@/lib/pinned-posts"
 import {
   REP_POINTS,
   adjustRaputation,
   hasPostedToday,
 } from "@/lib/reputation.server"
 import { createUserWithInvite } from "@/lib/invitations"
+import { NOTIFICATION_TYPES } from "@/lib/notifications"
 import { requireUser } from "@/lib/session"
 
 async function checkBanned(userId: string) {
@@ -191,12 +191,21 @@ export async function createComment(postId: string, _prevState: unknown, formDat
   }
 
   const parentId = validated.data.parentId || null
+  let notificationUserId: string | null = null
   if (parentId) {
     const parent = await prisma.comment.findFirst({
       where: { id: parentId, postId },
-      select: { id: true },
+      select: { id: true, authorId: true },
     })
     if (!parent) return { message: "被回复的评论不存在或已被删除" }
+    notificationUserId = parent.authorId
+  } else {
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { authorId: true },
+    })
+    if (!post) return { message: "帖子不存在或已被删除" }
+    notificationUserId = post.authorId
   }
 
   await prisma.comment.create({
@@ -205,6 +214,14 @@ export async function createComment(postId: string, _prevState: unknown, formDat
       postId,
       authorId: session.user.id,
       parentId,
+      notifications: notificationUserId && notificationUserId !== session.user.id ? {
+        create: {
+          userId: notificationUserId,
+          actorId: session.user.id,
+          postId,
+          type: parentId ? NOTIFICATION_TYPES.COMMENT_REPLIED : NOTIFICATION_TYPES.COMMENT_CREATED,
+        },
+      } : undefined,
     },
   })
 
@@ -241,17 +258,32 @@ export async function toggleLike(postId: string) {
   })
 
   if (existingLike) {
-    await prisma.like.delete({
-      where: { id: existingLike.id },
-    })
+    await prisma.$transaction([
+      prisma.like.delete({ where: { id: existingLike.id } }),
+      prisma.notification.deleteMany({
+        where: {
+          type: NOTIFICATION_TYPES.POST_LIKED,
+          actorId: userId,
+          postId,
+        },
+      }),
+    ])
     // 取消点赞：扣除帖子作者的声望
     if (post && post.authorId !== userId) {
       await adjustRaputation(post.authorId, -REP_POINTS.POST_LIKED)
     }
   } else {
-    await prisma.like.create({
-      data: { postId, userId },
-    })
+    await prisma.$transaction([
+      prisma.like.create({ data: { postId, userId } }),
+      ...(post && post.authorId !== userId ? [prisma.notification.create({
+        data: {
+          userId: post.authorId,
+          actorId: userId,
+          postId,
+          type: NOTIFICATION_TYPES.POST_LIKED,
+        },
+      })] : []),
+    ])
     // 点赞：给帖子作者增加声望（不给自己点赞加分）
     if (post && post.authorId !== userId) {
       await adjustRaputation(post.authorId, REP_POINTS.POST_LIKED)
@@ -356,6 +388,8 @@ export async function updateProfile(_prevState: unknown, formData: FormData) {
     name: formData.get("name"),
     bio: formData.get("bio"),
     image: formData.get("image"),
+    hideFollowers: formData.get("hideFollowers") === "true",
+    hideFollowing: formData.get("hideFollowing") === "true",
   })
 
   if (!validated.success) {
@@ -365,22 +399,26 @@ export async function updateProfile(_prevState: unknown, formData: FormData) {
     }
   }
 
-  const { name, bio, image } = validated.data
+  const { name, bio, image, hideFollowers = false, hideFollowing = false } = validated.data
 
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { name, bio, image: image || null },
+    data: { name, bio, image: image || null, hideFollowers, hideFollowing },
   })
 
   revalidatePath("/profile/" + session.user.id)
+  revalidatePath(`/profile/${session.user.id}/connections`)
   revalidatePath("/profile/settings")
   return { success: true, message: "资料已更新" }
 }
 
-export async function getMorePosts(page: number, pageSize = 12) {
-  await requireUser("/")
+export async function getMorePosts(page: number, pageSize = 12, feed: "latest" | "following" = "latest") {
+  const user = await requireUser("/")
 
   const posts = await prisma.post.findMany({
+    where: feed === "following"
+      ? { author: { followers: { some: { followerId: user.id } } } }
+      : { pinned: false },
     skip: page * pageSize,
     take: pageSize,
     orderBy: { createdAt: "desc" },
@@ -458,11 +496,26 @@ export async function togglePinPost(postId: string, pinned: boolean) {
   }
 
   if (pinned) {
-    await unpinPost(postId)
+    await prisma.$transaction([
+      prisma.post.update({ where: { id: postId }, data: { pinned: false } }),
+      prisma.notification.deleteMany({
+        where: { type: NOTIFICATION_TYPES.POST_PINNED, postId },
+      }),
+    ])
     // 取消置顶：扣除声望
     await adjustRaputation(post.authorId, -REP_POINTS.POST_PINNED)
   } else {
-    await pinPost(postId)
+    await prisma.$transaction([
+      prisma.post.update({ where: { id: postId }, data: { pinned: true } }),
+      ...(post.authorId !== session.user.id ? [prisma.notification.create({
+        data: {
+          userId: post.authorId,
+          actorId: session.user.id,
+          postId,
+          type: NOTIFICATION_TYPES.POST_PINNED,
+        },
+      })] : []),
+    ])
     // 置顶：奖励声望
     await adjustRaputation(post.authorId, REP_POINTS.POST_PINNED)
   }

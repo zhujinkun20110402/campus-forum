@@ -13,7 +13,7 @@ export default async function ProfileSettingsPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: sessionUser.id },
-    select: { name: true, email: true, image: true, bio: true, role: true, raputation: true },
+    select: { name: true, email: true, image: true, bio: true, role: true, raputation: true, hideFollowers: true, hideFollowing: true },
   })
 
   if (!user) redirect("/auth/signin")
@@ -24,6 +24,8 @@ export default async function ProfileSettingsPage() {
     image: user.image,
     bio: user.bio,
     role: user.role,
+    hideFollowers: user.hideFollowers,
+    hideFollowing: user.hideFollowing,
   }
 
   return (

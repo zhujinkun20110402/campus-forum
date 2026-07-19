@@ -18,9 +18,10 @@ interface PostType {
 interface FeedLoaderProps {
   initialPosts: PostType[]
   pageSize?: number
+  feed?: "latest" | "following"
 }
 
-export function FeedLoader({ initialPosts, pageSize = 12 }: FeedLoaderProps) {
+export function FeedLoader({ initialPosts, pageSize = 12, feed = "latest" }: FeedLoaderProps) {
   const [posts, setPosts] = useState<PostType[]>(initialPosts)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -31,7 +32,7 @@ export function FeedLoader({ initialPosts, pageSize = 12 }: FeedLoaderProps) {
     if (loading || !hasMore) return
     setLoading(true)
     try {
-      const newPosts = await getMorePosts(page, pageSize)
+      const newPosts = await getMorePosts(page, pageSize, feed)
       if (newPosts.length < pageSize) {
         setHasMore(false)
       }
@@ -44,7 +45,7 @@ export function FeedLoader({ initialPosts, pageSize = 12 }: FeedLoaderProps) {
     } finally {
       setLoading(false)
     }
-  }, [page, pageSize, loading, hasMore])
+  }, [page, pageSize, feed, loading, hasMore])
 
   useEffect(() => {
     const sentinel = sentinelRef.current

@@ -8,6 +8,7 @@ import {
   Crown,
   FileText,
   Heart,
+  LockKeyhole,
   MessageSquare,
   Settings,
   Trophy,
@@ -76,8 +77,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const stats = [
     { label: "帖子", value: user._count.posts, icon: FileText },
     { label: "评论", value: user._count.comments, icon: MessageSquare },
-    { label: "关注者", value: followSummary.followers, icon: Users, href: `/profile/${id}/connections?tab=followers` },
-    { label: "正在关注", value: followSummary.following, icon: UserPlus, href: `/profile/${id}/connections?tab=following` },
+    { label: "关注者", value: followSummary.followers, icon: !isOwnProfile && user.hideFollowers ? LockKeyhole : Users, href: `/profile/${id}/connections?tab=followers` },
+    { label: "正在关注", value: followSummary.following, icon: !isOwnProfile && user.hideFollowing ? LockKeyhole : UserPlus, href: `/profile/${id}/connections?tab=following` },
     { label: "获赞", value: likeReceivedCount, icon: Heart },
     { label: "声望", value: user.role === "ADMIN" ? null : user.raputation, icon: Crown },
   ]
