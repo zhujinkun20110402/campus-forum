@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 
-const PUBLIC_PATHS = ["/", "/auth/signin", "/auth/register"]
+const PUBLIC_PATHS = ["/", "/about", "/auth/signin", "/auth/register"]
 
 export default auth((request) => {
   const { pathname, search } = request.nextUrl

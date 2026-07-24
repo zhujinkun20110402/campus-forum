@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation"
 import { Footer } from "./footer"
 
-const HIDDEN_PATHS = ["/auth/signin", "/auth/register"]
+const HIDDEN_PATHS = ["/auth/signin", "/auth/register", "/about"]
 
 export function FooterWrapper() {
   const pathname = usePathname()

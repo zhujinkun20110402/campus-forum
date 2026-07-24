@@ -96,7 +96,16 @@ export function Footer() {
 
         <div className="flex flex-col gap-3 border-t border-white/20 pt-6 font-mono text-[9px] font-bold tracking-[0.12em] text-white/25 sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} BEIJING NO.2 SCHOOL BDA CAMPUS FORUM</p>
-          <p>MADE FOR EVERY CAMPUS STORY</p>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/about"
+              className="text-[8px] font-medium lowercase tracking-[0.08em] text-white/10 transition-colors duration-500 hover:text-white/35 focus-visible:text-white/60 focus-visible:outline-none"
+            >
+              about
+            </Link>
+            <span aria-hidden className="h-0.5 w-0.5 rounded-full bg-white/15" />
+            <p>MADE FOR EVERY CAMPUS STORY</p>
+          </div>
         </div>
       </div>
     </footer>

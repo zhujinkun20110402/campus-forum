@@ -126,6 +126,40 @@
   .champion-frame { animation: none; }
 }
 
+@keyframes easter-reveal {
+  from { opacity: 0; transform: translateY(18px); clip-path: inset(0 0 100% 0); }
+  to { opacity: 1; transform: translateY(0); clip-path: inset(0); }
+}
+
+@keyframes easter-seal-pulse {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(-2deg) scale(1.025); }
+}
+
+@keyframes easter-fault {
+  0%, 100% { background-color: transparent; }
+  35% { background-color: rgba(255, 107, 67, 0.3); }
+}
+
+.easter-paper {
+  background-image:
+    linear-gradient(rgba(112, 92, 59, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(112, 92, 59, 0.035) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.easter-reveal { animation: easter-reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.easter-seal-pulse { animation: easter-seal-pulse 0.38s ease-out; }
+.easter-fault { animation: easter-fault 0.6s ease-out; }
+.easter-fault-dark { animation: easter-fault 0.6s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .easter-reveal,
+  .easter-seal-pulse,
+  .easter-fault,
+  .easter-fault-dark { animation: none; }
+}
+
 :root {
   --background: #f4efe4;
   --foreground: #191914;
