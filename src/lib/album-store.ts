@@ -130,8 +130,11 @@ function resolvePageUrl(albumId: string, cursor?: string | null) {
     throw new Error("无效的相册分页游标")
   }
 
-  const withinAlbum = pageUrl.pathname === firstPageUrl.pathname
-    || pageUrl.pathname.startsWith(`${firstPageUrl.pathname}/`)
+  const albumSegment = decodeURIComponent(pageUrl.pathname)
+    .split("/")
+    .filter(Boolean)
+    .at(-1)
+  const withinAlbum = albumSegment === albumId || albumSegment?.endsWith(`.${albumId}`) === true
   if (pageUrl.origin !== firstPageUrl.origin || !withinAlbum) {
     throw new Error("相册分页游标超出允许范围")
   }
