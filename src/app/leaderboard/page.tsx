@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { ArrowUpRight, Crown, Medal, MessageSquare, NotebookPen, Trophy, Users } from "lucide-react"
-import { ChampionCrown } from "@/components/reputation/champion-crown"
+import { ChampionArchiveClue } from "@/components/about/champion-archive-clue"
 import { LevelBadge } from "@/components/reputation/level-badge"
 import { FollowButton } from "@/components/social/follow-button"
 import { UserAvatar } from "@/components/user/user-avatar"
@@ -60,7 +60,7 @@ export default async function LeaderboardPage() {
                     )}>
                       <div className="flex items-start justify-between gap-4">
                         <span className={cn("font-mono text-4xl font-bold", champion ? "text-[#d9ef61]" : "text-[#d44120]")}>#{String(rank).padStart(2, "0")}</span>
-                        {champion ? <ChampionCrown /> : <Medal className={cn("h-8 w-8", rank === 2 ? "text-[#777268] dark:text-[#c0bbb1]" : "text-[#d44120]")} />}
+                        {champion ? <ChampionArchiveClue /> : <Medal className={cn("h-8 w-8", rank === 2 ? "text-[#777268] dark:text-[#c0bbb1]" : "text-[#d44120]")} />}
                       </div>
                       <Link href={`/profile/${user.id}`} className="mt-6 flex w-fit items-center gap-3">
                         <div className={cn(champion && "champion-frame rounded-full")}><UserAvatar name={user.name} image={user.image} size="xl" /></div>

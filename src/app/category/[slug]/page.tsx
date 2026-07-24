@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { CountUp } from "@/components/effects/count-up"
+import { ArchiveTrailEvidence } from "@/components/about/archive-trail-evidence"
 import { PostList } from "@/components/post/post-list"
 import { EditorialHeading, EditorialHero, EditorialPanel } from "@/components/ui/editorial"
 import { prisma } from "@/lib/prisma"
@@ -109,6 +110,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
               <PostList posts={category.posts} />
             )}
           </div>
+          {slug === "lostfound" && <ArchiveTrailEvidence kind="lostfound" />}
+          {slug === "announcement" && <ArchiveTrailEvidence kind="announcement" />}
         </div>
       </main>
     </div>

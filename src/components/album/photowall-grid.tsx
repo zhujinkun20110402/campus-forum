@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { X, ChevronLeft, ChevronRight, Trash2, Loader2, ImageIcon, ArrowDown, ArrowUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SafeImage } from "@/components/ui/safe-image"
+import { ArchiveFrameMark } from "@/components/about/archive-frame-mark"
 
 interface Photo {
   url: string
@@ -234,6 +235,8 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
                   </p>
                 </div>
               )}
+
+              {index === 3 && <ArchiveFrameMark />}
 
               {/* Admin delete button */}
               {isAdmin && (

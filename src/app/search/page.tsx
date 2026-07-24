@@ -1,5 +1,6 @@
 import { BookOpen, Search, Sparkles, UserRoundSearch } from "lucide-react"
 import { PostList } from "@/components/post/post-list"
+import { ArchiveTrailEvidence } from "@/components/about/archive-trail-evidence"
 import { UserResultCard } from "@/components/social/user-result-card"
 import { EditorialHeading, EditorialHero, EditorialPanel } from "@/components/ui/editorial"
 import { prisma } from "@/lib/prisma"
@@ -67,6 +68,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             </div>
             <button type="submit" className="mt-3 flex h-12 w-full items-center justify-center gap-2 border-2 border-[#191914] bg-[#ff6b43] px-6 text-sm font-bold text-[#191914] transition-transform hover:-translate-y-0.5 sm:mt-0 sm:h-14 sm:w-auto dark:border-[#f5f0e5]">搜索 <span aria-hidden>↗</span></button>
           </form>
+          <ArchiveTrailEvidence kind="search" />
 
           {query ? (
             <div className="mt-12 space-y-14">

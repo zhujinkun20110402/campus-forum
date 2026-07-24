@@ -131,11 +131,6 @@
   to { opacity: 1; transform: translateY(0); clip-path: inset(0); }
 }
 
-@keyframes easter-seal-pulse {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(-2deg) scale(1.025); }
-}
-
 @keyframes easter-fault {
   0%, 100% { background-color: transparent; }
   35% { background-color: rgba(255, 107, 67, 0.3); }
@@ -149,15 +144,11 @@
 }
 
 .easter-reveal { animation: easter-reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.easter-seal-pulse { animation: easter-seal-pulse 0.38s ease-out; }
 .easter-fault { animation: easter-fault 0.6s ease-out; }
-.easter-fault-dark { animation: easter-fault 0.6s ease-out; }
 
 @media (prefers-reduced-motion: reduce) {
   .easter-reveal,
-  .easter-seal-pulse,
-  .easter-fault,
-  .easter-fault-dark { animation: none; }
+  .easter-fault { animation: none; }
 }
 
 :root {
