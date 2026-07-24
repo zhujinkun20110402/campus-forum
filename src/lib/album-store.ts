@@ -1,9 +1,16 @@
+import { revalidateTag } from "next/cache"
+
 export interface WallPhoto {
   url: string
   thumb: string
   caption?: string
   uploadedAt: string
   uploadedBy: string
+}
+
+export interface WallPhotoPage {
+  photos: WallPhoto[]
+  nextCursor: string | null
 }
 
 const CHEVERETO_URL = process.env.CHEVERETO_API_URL || "https://www.picgo.net"
@@ -95,12 +102,114 @@ function extractNextPageUrl(html: string): string | null {
     const m = html.match(p)
     if (m && m[1] && !m[1].includes("javascript:")) {
       // 确保 URL 是完整的
-      const url = m[1]
-      if (url.startsWith("http")) return url
-      return `${CHEVERETO_URL}${url}`
+      const url = m[1].replace(/&amp;/g, "&")
+      return new URL(url, CHEVERETO_URL).toString()
     }
   }
   return null
+}
+
+const albumPageCache = new Map<string, { value: WallPhotoPage; cachedAt: number }>()
+const albumPageRequests = new Map<string, Promise<WallPhotoPage>>()
+const ALBUM_PAGE_CACHE_TTL = 10 * 60 * 1000
+const ALBUM_FETCH_TIMEOUT = 12_000
+const PUBLIC_ALBUM_CACHE_TAG = "public-photowall-pages"
+
+function encodePageCursor(url: string) {
+  return Buffer.from(url, "utf8").toString("base64url")
+}
+
+function resolvePageUrl(albumId: string, cursor?: string | null) {
+  const firstPageUrl = new URL(`/album/${albumId}`, CHEVERETO_URL)
+  if (!cursor) return firstPageUrl.toString()
+
+  let pageUrl: URL
+  try {
+    pageUrl = new URL(Buffer.from(cursor, "base64url").toString("utf8"))
+  } catch {
+    throw new Error("无效的相册分页游标")
+  }
+
+  const withinAlbum = pageUrl.pathname === firstPageUrl.pathname
+    || pageUrl.pathname.startsWith(`${firstPageUrl.pathname}/`)
+  if (pageUrl.origin !== firstPageUrl.origin || !withinAlbum) {
+    throw new Error("相册分页游标超出允许范围")
+  }
+  return pageUrl.toString()
+}
+
+function mapParsedPhotos(photos: ParsedPhoto[]): WallPhoto[] {
+  const fetchedAt = new Date().toISOString()
+  return photos.map((photo) => ({
+    url: photo.fullUrl,
+    thumb: photo.thumbUrl,
+    caption: photo.title || undefined,
+    uploadedAt: fetchedAt,
+    uploadedBy: "管理员",
+  }))
+}
+
+async function fetchPhotoPage(albumId: string, cursor?: string | null): Promise<WallPhotoPage> {
+  const pageUrl = resolvePageUrl(albumId, cursor)
+  const response = await fetch(pageUrl, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    },
+    signal: AbortSignal.timeout(ALBUM_FETCH_TIMEOUT),
+    next: {
+      revalidate: 600,
+      tags: [PUBLIC_ALBUM_CACHE_TAG],
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`图床返回 ${response.status}`)
+  }
+
+  const html = await response.text()
+  const parsed = await parseAlbumPage(html)
+  const nextPageUrl = extractNextPageUrl(html)
+
+  return {
+    photos: mapParsedPhotos(parsed),
+    nextCursor: nextPageUrl ? encodePageCursor(nextPageUrl) : null,
+  }
+}
+
+/**
+ * 只读取相册的一个远程分页。首屏不再等待整个图床相册遍历完成。
+ * 相同分页的并发请求会复用同一个 Promise，避免快速滚动导致重复抓取。
+ */
+export async function getPhotoPage(cursor?: string | null): Promise<WallPhotoPage> {
+  const cacheKey = `${CHEVERETO_ALBUM}:${cursor ?? "first"}`
+  const cached = albumPageCache.get(cacheKey)
+  if (cached && Date.now() - cached.cachedAt < ALBUM_PAGE_CACHE_TTL) return cached.value
+
+  const inFlight = albumPageRequests.get(cacheKey)
+  if (inFlight) return inFlight
+
+  const request = fetchPhotoPage(CHEVERETO_ALBUM, cursor)
+    .then((value) => {
+      albumPageCache.set(cacheKey, { value, cachedAt: Date.now() })
+      return value
+    })
+    .catch((error) => {
+      if (cached) return cached.value
+      throw error
+    })
+    .finally(() => albumPageRequests.delete(cacheKey))
+
+  albumPageRequests.set(cacheKey, request)
+  return request
+}
+
+function invalidatePublicAlbumCache() {
+  for (const key of albumPageCache.keys()) {
+    if (key.startsWith(`${CHEVERETO_ALBUM}:`)) albumPageCache.delete(key)
+  }
+  photosCache = null
+  previewCache = null
+  revalidateTag(PUBLIC_ALBUM_CACHE_TAG, { expire: 0 })
 }
 
 /**
@@ -207,21 +316,7 @@ export async function getPhotosPreview(limit = 16): Promise<WallPhoto[]> {
   }
 
   try {
-    // 只抓取第一页
-    const res = await fetch(`${CHEVERETO_URL}/album/${CHEVERETO_ALBUM}`, {
-      headers: { "User-Agent": "Mozilla/5.0" },
-    })
-    if (!res.ok) return previewCache ?? []
-
-    const html = await res.text()
-    const pagePhotos = await parseAlbumPage(html)
-    const result = pagePhotos.map((p) => ({
-      url: p.fullUrl,
-      thumb: p.thumbUrl,
-      caption: p.title || undefined,
-      uploadedAt: new Date().toISOString(),
-      uploadedBy: "管理员",
-    }))
+    const result = (await getPhotoPage()).photos
 
     previewCache = result
     previewCacheTime = now
@@ -325,7 +420,8 @@ async function deleteCheveretoImage(
  */
 export async function removePhoto(url: string): Promise<WallPhoto[]> {
   await deleteCheveretoImage(url, CHEVERETO_ALBUM)
-  return getPhotos()
+  invalidatePublicAlbumCache()
+  return (await getPhotoPage()).photos
 }
 
 /**
@@ -378,6 +474,7 @@ export async function approvePendingPhoto(url: string): Promise<WallPhoto[]> {
 
   // 删除待审核照片
   await deleteCheveretoImage(url, CHEVERETO_PENDING_ALBUM)
+  invalidatePublicAlbumCache()
 
   return getPendingPhotos()
 }

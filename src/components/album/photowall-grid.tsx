@@ -16,7 +16,13 @@ interface Photo {
 
 interface PhotowallGridProps {
   photos: Photo[]
+  initialCursor: string | null
   isAdmin: boolean
+}
+
+interface PhotoPageResponse {
+  photos: Photo[]
+  nextCursor: string | null
 }
 
 // 瀑布流跨度模式：row-span-2 为高图，空字符串为标准图
@@ -31,26 +37,28 @@ const spanPattern = [
   "row-span-2",
 ]
 
-const PAGE_SIZE = 24
+const ANIMATION_BATCH_SIZE = 24
 const SCROLL_KEY = "photowall-scroll-y"
 const MIN_RESTORE_OFFSET = 120
 
-export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
+export function PhotowallGrid({ photos, initialCursor, isAdmin }: PhotowallGridProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const [deletingUrl, setDeletingUrl] = useState<string | null>(null)
   const [localPhotos, setLocalPhotos] = useState(photos)
   const [lightboxLoading, setLightboxLoading] = useState(true)
   const [lightboxError, setLightboxError] = useState(false)
 
-  // 分批渲染
-  const [visibleCount, setVisibleCount] = useState(Math.min(PAGE_SIZE, photos.length))
+  const [nextCursor, setNextCursor] = useState(initialCursor)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [loadError, setLoadError] = useState(false)
   const sentinelRef = useRef<HTMLDivElement>(null)
+  const loadingMoreRef = useRef(false)
 
   // 上次浏览位置
   const [restoredY, setRestoredY] = useState<number | null>(null)
   const [showRestoreToast, setShowRestoreToast] = useState(false)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const restoreTargetRef = useRef<number | null>(null)
 
   const closeLightbox = useCallback(() => setLightboxIndex(null), [])
   const openLightbox = useCallback((index: number) => {
@@ -88,7 +96,34 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
     }
   }, [lightboxIndex, closeLightbox, prevPhoto, nextPhoto])
 
-  // 恢复上次浏览位置
+  const loadMore = useCallback(async () => {
+    if (!nextCursor || loadingMoreRef.current) return
+    loadingMoreRef.current = true
+    setLoadingMore(true)
+    setLoadError(false)
+
+    try {
+      const response = await fetch(`/api/photowall?cursor=${encodeURIComponent(nextCursor)}`, {
+        cache: "no-store",
+      })
+      if (!response.ok) throw new Error("照片分页读取失败")
+      const page = (await response.json()) as PhotoPageResponse
+
+      setLocalPhotos((current) => {
+        const existing = new Set(current.map((photo) => photo.url))
+        const incoming = page.photos.filter((photo) => !existing.has(photo.url))
+        return incoming.length ? [...current, ...incoming] : current
+      })
+      setNextCursor(page.nextCursor)
+    } catch {
+      setLoadError(true)
+    } finally {
+      loadingMoreRef.current = false
+      setLoadingMore(false)
+    }
+  }, [nextCursor])
+
+  // 只记录上次位置，不在打开页面时强制抓取大量远程分页。
   useEffect(() => {
     const raw = localStorage.getItem(SCROLL_KEY)
     if (!raw) return
@@ -96,48 +131,55 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
     const savedY = parseInt(raw, 10)
     if (Number.isNaN(savedY) || savedY <= MIN_RESTORE_OFFSET) return
 
-    // 等待照片渲染和动画完成后再恢复
-    let hideTimer: ReturnType<typeof setTimeout> | undefined
-    const estimatedCount = Math.min(Math.ceil((savedY / 300) * 4) + PAGE_SIZE, photos.length)
-    const expandTimer = setTimeout(() => {
-      setVisibleCount((current) => Math.max(current, estimatedCount))
-    }, 0)
-    const restoreTimer = setTimeout(() => {
-      window.scrollTo({ top: savedY, behavior: "smooth" })
+    const revealTimer = setTimeout(() => {
       setRestoredY(savedY)
       setShowRestoreToast(true)
-      hideTimer = setTimeout(() => setShowRestoreToast(false), 3000)
-    }, 600)
+    }, 0)
+    const hideTimer = setTimeout(() => setShowRestoreToast(false), 3000)
 
     return () => {
-      clearTimeout(expandTimer)
-      clearTimeout(restoreTimer)
-      if (hideTimer) clearTimeout(hideTimer)
+      clearTimeout(revealTimer)
+      clearTimeout(hideTimer)
     }
-  }, [photos.length])
+  }, [])
 
-  // 无限滚动：观察哨兵元素
+  // 无限滚动：只有哨兵接近视口时才向服务端索取下一个远程分页。
   useEffect(() => {
     const sentinel = sentinelRef.current
-    if (!sentinel) return
+    if (!sentinel || !nextCursor || loadError) return
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && visibleCount < localPhotos.length) {
-          setLoadingMore(true)
-          // 小延迟，让加载动画可见
-          setTimeout(() => {
-            setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, localPhotos.length))
-            setLoadingMore(false)
-          }, 300)
-        }
+        if (entries[0].isIntersecting) void loadMore()
       },
-      { rootMargin: "300px" }
+      { rootMargin: "600px" }
     )
 
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [visibleCount, localPhotos.length])
+  }, [loadError, loadMore, nextCursor])
+
+  // 点击“上次位置”后按需补齐分页，达到目标高度再滚动。
+  useEffect(() => {
+    const target = restoreTargetRef.current
+    if (target === null || loadingMore) return
+    const enoughContent = document.documentElement.scrollHeight >= target + window.innerHeight * 0.7
+
+    if (enoughContent || !nextCursor || loadError) {
+      window.scrollTo({ top: target, behavior: "smooth" })
+      restoreTargetRef.current = null
+      return
+    }
+    const loadTimer = window.setTimeout(() => void loadMore(), 0)
+    return () => window.clearTimeout(loadTimer)
+  }, [loadError, loadMore, loadingMore, localPhotos.length, nextCursor])
+
+  // 在灯箱接近当前批次末尾时静默预取下一页，保证左右切换连续。
+  useEffect(() => {
+    if (lightboxIndex === null || lightboxIndex < localPhotos.length - 5 || !nextCursor || loadError) return
+    const prefetchTimer = window.setTimeout(() => void loadMore(), 0)
+    return () => window.clearTimeout(prefetchTimer)
+  }, [lightboxIndex, loadError, loadMore, localPhotos.length, nextCursor])
 
   // 滚动时保存位置（防抖）
   useEffect(() => {
@@ -163,14 +205,22 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
   // 返回上次位置
   const handleReturnToSaved = useCallback(() => {
     if (restoredY && restoredY > 0) {
-      window.scrollTo({ top: restoredY, behavior: "smooth" })
+      restoreTargetRef.current = restoredY
+      const enoughContent = document.documentElement.scrollHeight >= restoredY + window.innerHeight * 0.7
+      if (enoughContent) {
+        window.scrollTo({ top: restoredY, behavior: "smooth" })
+        restoreTargetRef.current = null
+      } else {
+        void loadMore()
+      }
     }
-  }, [restoredY])
+  }, [loadMore, restoredY])
 
   // 清除记录并返回顶部
   const handleClearAndGoTop = useCallback(() => {
     localStorage.removeItem(SCROLL_KEY)
     setRestoredY(null)
+    restoreTargetRef.current = null
     window.scrollTo({ top: 0, behavior: "smooth" })
   }, [])
 
@@ -201,7 +251,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
           gridAutoFlow: "dense",
         }}
       >
-        {localPhotos.slice(0, visibleCount).map((photo, index) => {
+        {localPhotos.map((photo, index) => {
           const span = spanPattern[index % spanPattern.length]
           return (
             <div
@@ -212,7 +262,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
                 span
               )}
               style={{
-                animationDelay: `${Math.min((index % PAGE_SIZE) * 0.03, 0.3)}s`,
+                animationDelay: `${Math.min((index % ANIMATION_BATCH_SIZE) * 0.03, 0.3)}s`,
               }}
               onClick={() => openLightbox(index)}
             >
@@ -261,17 +311,25 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
         })}
       </div>
 
-      {/* Infinite scroll sentinel & loading indicator */}
-      {visibleCount < localPhotos.length && (
+      {/* Remote pagination sentinel & loading indicator */}
+      {(nextCursor || loadingMore || loadError) && (
         <div ref={sentinelRef} className="flex flex-col items-center justify-center py-12 font-mono text-[10px] font-bold tracking-[0.12em]">
           {loadingMore ? (
             <>
               <Loader2 className="mb-2 h-6 w-6 animate-spin text-[#e4532f]" />
               <p className="text-[#777268] dark:text-[#989389]">LOADING MORE FRAMES</p>
             </>
+          ) : loadError ? (
+            <button
+              type="button"
+              onClick={() => void loadMore()}
+              className="border-2 border-[#191914] bg-[#fffaf0] px-4 py-2.5 text-[#191914] shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:bg-[#191914] dark:text-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]"
+            >
+              读取失败 · 点击重试
+            </button>
           ) : (
             <p className="border border-[#191914]/25 bg-[#fffaf0] px-3 py-2 text-[#777268] dark:border-white/25 dark:bg-[#191914] dark:text-[#989389]">
-              LOADED {visibleCount} / {localPhotos.length}
+              MORE FRAMES AHEAD
             </p>
           )}
         </div>
@@ -310,6 +368,16 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative flex h-[70vh] w-[82vw] max-w-6xl items-center justify-center sm:h-[78vh] sm:w-[86vw]">
+              <SafeImage
+                src={localPhotos[lightboxIndex].thumb || localPhotos[lightboxIndex].url}
+                alt=""
+                fill
+                sizes="90vw"
+                className={cn(
+                  "object-contain opacity-35 blur-md transition-opacity duration-300",
+                  !lightboxLoading && !lightboxError && "opacity-0"
+                )}
+              />
               {lightboxLoading && !lightboxError && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
                   <Loader2 className="h-10 w-10 text-white/60 animate-spin mb-3" />
@@ -374,7 +442,7 @@ export function PhotowallGrid({ photos, isAdmin }: PhotowallGridProps) {
       >
         <ArrowDown className="h-3.5 w-3.5 text-[#e4532f]" />
         <span className="text-xs font-bold">
-          已恢复上次浏览位置
+          已找到上次浏览记录
         </span>
       </div>
 
