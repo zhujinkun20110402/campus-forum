@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
   PenLine,
+  Radio,
   Search,
   Settings,
   Shield,
@@ -36,6 +37,7 @@ const navLinks = [
 ]
 
 const mobileExtraLinks = [
+  { href: "/status", label: "状态" },
   { href: "/category/activity", label: "活动" },
   { href: "/album", label: "相册" },
   { href: "/invites", label: "邀请" },
@@ -162,6 +164,9 @@ export function Header() {
                             </p>
                           </div>
                           <div className="p-1.5 text-sm">
+                            <Link href="/status" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#b9ddbd] hover:text-[#191914]">
+                              <Radio className="h-4 w-4" /> 今日在场
+                            </Link>
                             <Link href="/notifications" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#ffb4aa] hover:text-[#191914]">
                               <Bell className="h-4 w-4" /> 通知中心
                             </Link>

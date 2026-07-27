@@ -25,6 +25,7 @@ export const REP_POINTS = {
   POST_LIKED: 3, // 帖子被点赞时，帖子作者获得的声望
   POST_PINNED: 20,
   DAILY_FIRST_POST: 3,
+  DAILY_CHECK_IN: 1,
   POST_DELETED: -5,
   COMMENT_DELETED: -2,
   BANNED: -50,
@@ -219,6 +220,7 @@ export interface UserStatsForBadges {
   commentCount: number
   likeReceivedCount: number
   successfulInviteCount: number
+  totalCheckIns?: number
   hasPinnedPost?: boolean
   role?: string | null
 }
@@ -247,6 +249,15 @@ export function getUserBadges(stats: UserStatsForBadges): BadgeInfo[] {
       color: "text-[#326b42] dark:text-[#b9ddbd]",
       bgColor: "bg-[#b9ddbd]/45 dark:bg-[#213426]",
       earned: stats.successfulInviteCount >= 1,
+    },
+    {
+      id: "seven-day-check-in",
+      name: "七日留名",
+      description: "累计签到 7 天",
+      icon: "CalendarCheck",
+      color: "text-[#68751f] dark:text-[#d9ef61]",
+      bgColor: "bg-[#d9ef61]/45 dark:bg-[#293019]",
+      earned: (stats.totalCheckIns ?? 0) >= 7,
     },
     {
       id: "chatterbox",

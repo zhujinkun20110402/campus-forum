@@ -24,12 +24,16 @@ import { ActiveUsers } from "@/components/home/active-users"
 import { FeedLoader } from "@/components/home/feed-loader"
 import { PinnedPosts } from "@/components/home/pinned-posts"
 import { TrendingPosts } from "@/components/home/trending-posts"
+import { CampusStatusMiniBoard } from "@/components/presence/campus-status-mini-board"
+import { DailyCheckInCard } from "@/components/presence/daily-check-in-card"
 import { CountUp } from "@/components/effects/count-up"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { SafeImage } from "@/components/ui/safe-image"
 import { auth } from "@/lib/auth"
 import { getPinnedPosts, getTrendingPosts } from "@/lib/actions"
 import { prisma } from "@/lib/prisma"
+import { getVisibleCampusStatuses } from "@/lib/campus-status"
+import { getCheckInStatus } from "@/lib/daily-check-in"
 import { cn } from "@/lib/utils"
 
 const categoryEntries = [
@@ -149,7 +153,7 @@ export default async function HomePage({
   const params = await searchParams
   const feedMode = params.feed === "following" ? "following" : "latest"
 
-  const [pinnedPosts, posts, trendingPosts, activeUsers, stats, categoryCounts] = await Promise.all([
+  const [pinnedPosts, posts, trendingPosts, activeUsers, stats, categoryCounts, checkInStatus, campusStatuses] = await Promise.all([
     getPinnedPosts(),
     prisma.post.findMany({
       where: feedMode === "following"
@@ -179,6 +183,8 @@ export default async function HomePage({
         _count: { select: { posts: true } },
       },
     }),
+    getCheckInStatus(session.user.id),
+    getVisibleCampusStatuses(session.user.id, 5),
   ])
 
   const [totalPosts, totalUsers, totalComments] = stats
@@ -448,6 +454,12 @@ export default async function HomePage({
             </div>
 
             <aside className="space-y-5 lg:sticky lg:top-24">
+              <ScrollReveal direction="left">
+                <DailyCheckInCard initialStatus={checkInStatus} compact />
+              </ScrollReveal>
+              <ScrollReveal direction="left" delay={0.04}>
+                <CampusStatusMiniBoard statuses={campusStatuses} viewerId={session.user.id} />
+              </ScrollReveal>
               <ScrollReveal direction="left">
                 <TrendingPosts posts={trendingPosts} />
               </ScrollReveal>

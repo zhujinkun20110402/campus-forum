@@ -22,6 +22,7 @@ import { ReputationBar } from "@/components/reputation/reputation-bar"
 import { UserBadges } from "@/components/reputation/user-badges"
 import { ChampionCrown } from "@/components/reputation/champion-crown"
 import { FollowButton } from "@/components/social/follow-button"
+import { ProfileStatus } from "@/components/presence/profile-status"
 import { EditorialHeading, EditorialPanel } from "@/components/ui/editorial"
 import { SafeImage } from "@/components/ui/safe-image"
 import { prisma } from "@/lib/prisma"
@@ -29,6 +30,7 @@ import { cn, formatDate, formatRelativeTime } from "@/lib/utils"
 import { requireUser } from "@/lib/session"
 import { getSuccessfulInviteCount } from "@/lib/invitations"
 import { getCompetitiveRank, getFollowSummary } from "@/lib/social"
+import { getVisibleCampusStatusByUser } from "@/lib/campus-status"
 
 const categoryStyles: Record<string, string> = {
   announcement: "bg-[#ff6b43]",
@@ -52,12 +54,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   if (!user) notFound()
 
-  const [likeReceivedCount, pinnedPostCount, successfulInviteCount, followSummary, competitiveRank, posts, comments] = await Promise.all([
+  const [likeReceivedCount, pinnedPostCount, successfulInviteCount, followSummary, competitiveRank, campusStatus, posts, comments] = await Promise.all([
     prisma.like.count({ where: { post: { authorId: id } } }),
     prisma.post.count({ where: { authorId: id, pinned: true } }),
     getSuccessfulInviteCount(id),
     getFollowSummary(currentUser.id, id),
     getCompetitiveRank(id),
+    getVisibleCampusStatusByUser(currentUser.id, id),
     prisma.post.findMany({
       where: { authorId: id },
       include: { category: true, _count: { select: { comments: true, likes: true } } },
@@ -87,6 +90,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     commentCount: user._count.comments,
     likeReceivedCount,
     successfulInviteCount,
+    totalCheckIns: user.totalCheckIns,
     hasPinnedPost,
     role: user.role,
   }
@@ -131,6 +135,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                 <p className="mt-5 max-w-2xl text-sm leading-7 text-[#5f5c54] dark:text-[#aaa69c]">
                   {user.bio || "还没有写个人简介，也许一句话就能让大家更了解你。"}
                 </p>
+                {campusStatus && <ProfileStatus status={campusStatus} isOwnProfile={isOwnProfile} />}
                 <div className="mt-5 flex flex-wrap items-start justify-center gap-3 md:justify-start">
                   {isOwnProfile ? (
                     <>
