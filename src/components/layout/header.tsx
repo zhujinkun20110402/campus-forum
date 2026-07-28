@@ -8,6 +8,7 @@ import {
   Bell,
   ChevronDown,
   LogOut,
+  Mail,
   Menu,
   PenLine,
   Radio,
@@ -38,12 +39,13 @@ const navLinks = [
 
 const mobileExtraLinks = [
   { href: "/status", label: "状态" },
+  { href: "/postcards", label: "明信片" },
   { href: "/category/activity", label: "活动" },
   { href: "/album", label: "相册" },
   { href: "/invites", label: "邀请" },
 ]
 
-export function Header() {
+export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: string | null } | null }) {
   const pathname = usePathname()
   const { scrollDirection, scrollY } = useScrollDirection()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -119,6 +121,9 @@ export function Header() {
                   <Link href="/invites" aria-label="我的邀请码" className="hidden h-9 w-9 items-center justify-center border border-transparent transition-colors hover:border-[#191914] hover:bg-[#d9ef61] hover:text-[#191914] dark:hover:border-[#f5f0e5] sm:flex">
                     <Ticket className="h-4 w-4" />
                   </Link>
+                  <Link href="/postcards" aria-label="我的明信片" className="hidden h-9 w-9 items-center justify-center border border-transparent transition-colors hover:border-[#191914] hover:bg-[#ffb4aa] hover:text-[#191914] dark:hover:border-[#f5f0e5] sm:flex">
+                    <Mail className="h-4 w-4" />
+                  </Link>
                   <Link href="/search" aria-label="搜索帖子" className="hidden h-9 w-9 items-center justify-center border border-transparent transition-colors hover:border-[#191914] hover:bg-[#f3c84b] dark:hover:border-[#f5f0e5] sm:flex">
                     <Search className="h-4 w-4" />
                   </Link>
@@ -144,7 +149,7 @@ export function Header() {
                       className="h-9 gap-1 border border-transparent px-1.5 hover:border-[#191914] hover:bg-[#ece6da] dark:hover:border-[#f5f0e5] dark:hover:bg-[#2a2924]"
                       onClick={() => setDropdownOpen((open) => !open)}
                     >
-                      <UserAvatar name={user.name} image={user.image} role={user.role} size="sm" />
+                      <UserAvatar name={user.name} image={user.image} role={user.role} size="sm" status={ownStatus} />
                       <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", dropdownOpen && "rotate-180")} />
                     </Button>
 
@@ -166,6 +171,9 @@ export function Header() {
                           <div className="p-1.5 text-sm">
                             <Link href="/status" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#b9ddbd] hover:text-[#191914]">
                               <Radio className="h-4 w-4" /> 今日在场
+                            </Link>
+                            <Link href="/postcards" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#ffb4aa] hover:text-[#191914]">
+                              <Mail className="h-4 w-4" /> 校园明信片
                             </Link>
                             <Link href="/notifications" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#ffb4aa] hover:text-[#191914]">
                               <Bell className="h-4 w-4" /> 通知中心
@@ -233,7 +241,7 @@ export function Header() {
             className="absolute inset-0 bg-[#191914]/45 backdrop-blur-sm"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="absolute inset-x-3 top-[82px] border-2 border-[#191914] bg-[#fffaf0] p-3 text-[#191914] shadow-[6px_6px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#171713] dark:text-[#f5f0e5] dark:shadow-[6px_6px_0_#f5f0e5] sm:inset-x-5">
+          <div className="absolute inset-x-3 top-[82px] max-h-[calc(100dvh-96px)] overflow-y-auto border-2 border-[#191914] bg-[#fffaf0] p-3 text-[#191914] shadow-[6px_6px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#171713] dark:text-[#f5f0e5] dark:shadow-[6px_6px_0_#f5f0e5] sm:inset-x-5">
             {user ? (
               <>
                 <nav className="grid grid-cols-2 gap-2" aria-label="移动端导航">

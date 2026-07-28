@@ -11,6 +11,9 @@ import { STATUS_MOODS, STATUS_VISIBILITIES } from "@/lib/status-constants"
 const statusSchema = z.object({
   content: z.string().trim().min(1, "写下一句话再发布").max(120, "状态最多 120 个字"),
   mood: z.enum(STATUS_MOODS.map((mood) => mood.value)),
+  tag: z.string().trim().max(12, "自定义标签最多 12 个字").optional(),
+  emoji: z.string().trim().max(16, "Emoji 太长了").optional(),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "请选择有效的状态颜色"),
   visibility: z.enum(STATUS_VISIBILITIES.map((item) => item.value)),
 })
 
@@ -72,6 +75,9 @@ export async function publishCampusStatus(_previousState: unknown, formData: For
   const parsed = statusSchema.safeParse({
     content: formData.get("content"),
     mood: formData.get("mood"),
+    tag: formData.get("tag"),
+    emoji: formData.get("emoji"),
+    color: formData.get("color"),
     visibility: formData.get("visibility"),
   })
 
@@ -81,10 +87,16 @@ export async function publishCampusStatus(_previousState: unknown, formData: For
 
   const now = new Date()
   const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+  const statusData = {
+    ...parsed.data,
+    tag: parsed.data.tag || null,
+    emoji: parsed.data.emoji || null,
+    color: parsed.data.color.toLowerCase(),
+  }
   await prisma.campusStatus.upsert({
     where: { userId: user.id },
-    create: { userId: user.id, ...parsed.data, expiresAt },
-    update: { ...parsed.data, expiresAt, createdAt: now },
+    create: { userId: user.id, ...statusData, expiresAt },
+    update: { ...statusData, expiresAt, createdAt: now },
   })
 
   revalidatePath("/")

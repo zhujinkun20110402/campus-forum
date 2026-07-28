@@ -33,6 +33,9 @@ export function getVisibleCampusStatuses(viewerId: string, take = 30) {
       id: true,
       content: true,
       mood: true,
+      tag: true,
+      emoji: true,
+      color: true,
       visibility: true,
       expiresAt: true,
       createdAt: true,
@@ -51,6 +54,9 @@ export function getVisibleCampusStatusByUser(viewerId: string, userId: string) {
       id: true,
       content: true,
       mood: true,
+      tag: true,
+      emoji: true,
+      color: true,
       visibility: true,
       expiresAt: true,
       createdAt: true,
@@ -65,6 +71,6 @@ export function getVisibleCampusStatusByUser(viewerId: string, userId: string) {
 export function getOwnCampusStatus(userId: string) {
   return prisma.campusStatus.findFirst({
     where: { userId, expiresAt: { gt: new Date() } },
-    select: { id: true, content: true, mood: true, visibility: true, expiresAt: true },
+    select: { id: true, content: true, mood: true, tag: true, emoji: true, color: true, visibility: true, expiresAt: true },
   })
 }

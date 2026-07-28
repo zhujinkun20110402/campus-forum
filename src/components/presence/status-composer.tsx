@@ -1,15 +1,18 @@
 "use client"
 
-import { Clock3, Globe2, Loader2, Radio, Trash2, UserRoundCheck, Users } from "lucide-react"
+import { Clock3, Globe2, Loader2, Palette, Radio, Smile, Tag, Trash2, UserRoundCheck, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useActionState, useState, useTransition } from "react"
 import { deleteCampusStatus, publishCampusStatus } from "@/lib/presence-actions"
-import { STATUS_MOODS, STATUS_VISIBILITIES } from "@/lib/status-constants"
+import { STATUS_COLORS, STATUS_MOODS, STATUS_VISIBILITIES } from "@/lib/status-constants"
 import { cn } from "@/lib/utils"
 
 interface OwnStatus {
   content: string
   mood: string
+  tag: string | null
+  emoji: string | null
+  color: string
   visibility: string
   expiresAt: Date | string
 }
@@ -20,6 +23,9 @@ export function StatusComposer({ currentStatus }: { currentStatus: OwnStatus | n
   const router = useRouter()
   const [content, setContent] = useState(currentStatus?.content ?? "")
   const [mood, setMood] = useState(currentStatus?.mood ?? STATUS_MOODS[0].value)
+  const [tag, setTag] = useState(currentStatus?.tag ?? "")
+  const [emoji, setEmoji] = useState(currentStatus?.emoji ?? "")
+  const [color, setColor] = useState(currentStatus?.color ?? STATUS_MOODS[0].hex)
   const [visibility, setVisibility] = useState(currentStatus?.visibility ?? STATUS_VISIBILITIES[0].value)
   const [state, action, pending] = useActionState(publishCampusStatus, undefined)
   const [deleting, startDelete] = useTransition()
@@ -28,6 +34,8 @@ export function StatusComposer({ currentStatus }: { currentStatus: OwnStatus | n
     startDelete(async () => {
       await deleteCampusStatus()
       setContent("")
+      setTag("")
+      setEmoji("")
       router.refresh()
     })
   }
@@ -45,6 +53,7 @@ export function StatusComposer({ currentStatus }: { currentStatus: OwnStatus | n
       <form action={action} className="mt-5">
         <input type="hidden" name="mood" value={mood} />
         <input type="hidden" name="visibility" value={visibility} />
+        <input type="hidden" name="color" value={color} />
 
         <label htmlFor="status-content" className="sr-only">24 小时状态内容</label>
         <div className="relative">
@@ -62,6 +71,31 @@ export function StatusComposer({ currentStatus }: { currentStatus: OwnStatus | n
           <span className="absolute bottom-2.5 right-3 font-mono text-[8px] text-[#918b80]">{content.length} / 120</span>
         </div>
 
+        <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_110px]">
+          <label className="block">
+            <span className="mb-2 flex items-center gap-1.5 font-mono text-[8px] font-bold tracking-[0.13em] text-[#777268] dark:text-[#989389]"><Tag className="h-3 w-3" />CUSTOM LABEL</span>
+            <input
+              name="tag"
+              value={tag}
+              maxLength={12}
+              onChange={(event) => setTag(event.target.value)}
+              placeholder="例：图书馆自习"
+              className="h-10 w-full border border-[#191914] bg-[#ece6da] px-3 text-xs outline-none focus:shadow-[2px_2px_0_#ff6b43] dark:border-[#f5f0e5] dark:bg-[#11110f]"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-2 flex items-center gap-1.5 font-mono text-[8px] font-bold tracking-[0.13em] text-[#777268] dark:text-[#989389]"><Smile className="h-3 w-3" />EMOJI</span>
+            <input
+              name="emoji"
+              value={emoji}
+              maxLength={16}
+              onChange={(event) => setEmoji(event.target.value)}
+              placeholder="☕"
+              className="h-10 w-full border border-[#191914] bg-[#ece6da] px-3 text-center text-lg outline-none focus:shadow-[2px_2px_0_#ff6b43] dark:border-[#f5f0e5] dark:bg-[#11110f]"
+            />
+          </label>
+        </div>
+
         <div className="mt-5">
           <p className="mb-2 font-mono text-[8px] font-bold tracking-[0.13em] text-[#777268] dark:text-[#989389]">CURRENT MODE</p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
@@ -70,7 +104,10 @@ export function StatusComposer({ currentStatus }: { currentStatus: OwnStatus | n
                 key={item.value}
                 type="button"
                 aria-pressed={mood === item.value}
-                onClick={() => setMood(item.value)}
+                onClick={() => {
+                  setMood(item.value)
+                  setColor(item.hex)
+                }}
                 className={cn(
                   "min-h-14 border border-[#191914] px-2 py-2 text-center text-[10px] font-bold transition-transform dark:border-[#f5f0e5]",
                   mood === item.value ? `${item.color} -translate-y-0.5 text-[#191914] shadow-[2px_2px_0_#191914]` : "hover:bg-[#ece6da] dark:hover:bg-[#292821]"
@@ -80,6 +117,30 @@ export function StatusComposer({ currentStatus }: { currentStatus: OwnStatus | n
                 <span className="mt-1 block font-mono text-[7px] tracking-[0.1em] opacity-55">{item.english}</span>
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className="mt-5">
+          <p className="mb-2 flex items-center gap-1.5 font-mono text-[8px] font-bold tracking-[0.13em] text-[#777268] dark:text-[#989389]"><Palette className="h-3 w-3" />SIGNAL COLOR</p>
+          <div className="flex flex-wrap items-center gap-2">
+            {STATUS_COLORS.map((item) => (
+              <button
+                key={item}
+                type="button"
+                aria-label={`选择颜色 ${item}`}
+                aria-pressed={color.toLowerCase() === item}
+                onClick={() => setColor(item)}
+                className={cn(
+                  "h-8 w-8 border border-[#191914] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5]",
+                  color.toLowerCase() === item && "-translate-y-0.5 shadow-[2px_2px_0_#191914] dark:shadow-[2px_2px_0_#f5f0e5]"
+                )}
+                style={{ backgroundColor: item }}
+              />
+            ))}
+            <label className="relative flex h-8 items-center gap-2 border border-[#191914] bg-[#ece6da] px-2 font-mono text-[8px] font-bold dark:border-[#f5f0e5] dark:bg-[#11110f]">
+              <input type="color" value={color} onChange={(event) => setColor(event.target.value)} className="h-5 w-5 cursor-pointer border-0 bg-transparent p-0" />
+              {color.toUpperCase()}
+            </label>
           </div>
         </div>
 

@@ -20,7 +20,7 @@ export default async function NotificationsPage() {
         index="12"
         eyebrow="NOTIFICATION DESK"
         title="与你有关的校园回声"
-        description="回复、点赞、关注与管理动态集中在这里。通知只保留必要的关联信息，已读内容可以随时清理。"
+        description="回复、点赞、关注、声望礼物与七日来信集中在这里。每一次真正与你有关的校园互动，都有清晰的去处。"
         icon={Bell}
         accentClass="bg-[#f3c84b]"
         compact

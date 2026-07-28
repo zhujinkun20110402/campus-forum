@@ -1,6 +1,7 @@
 import "server-only"
 
 import { prisma } from "@/lib/prisma"
+import { cleanupExpiredPostcards } from "@/lib/postcards"
 
 export const NOTIFICATION_TYPES = {
   COMMENT_CREATED: "COMMENT_CREATED",
@@ -8,6 +9,8 @@ export const NOTIFICATION_TYPES = {
   POST_LIKED: "POST_LIKED",
   USER_FOLLOWED: "USER_FOLLOWED",
   POST_PINNED: "POST_PINNED",
+  REPUTATION_GIFT: "REPUTATION_GIFT",
+  POSTCARD_RECEIVED: "POSTCARD_RECEIVED",
 } as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES]
@@ -42,6 +45,7 @@ export function getUnreadNotificationCount(userId: string) {
 }
 
 export async function getNotificationCenter(userId: string) {
+  await cleanupExpiredPostcards()
   const [notifications, unreadCount, readCount] = await Promise.all([
     getNotifications(userId),
     getUnreadNotificationCount(userId),

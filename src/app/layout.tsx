@@ -6,6 +6,7 @@ import { HeaderWrapper } from "@/components/layout/header-wrapper"
 import { FooterWrapper } from "@/components/layout/footer-wrapper"
 import { NavigationProgress } from "@/components/layout/navigation-progress"
 import { auth } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 
 const notoSerif = Noto_Serif_SC({
   variable: "--font-noto-serif-sc",
@@ -44,6 +45,12 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const session = await auth()
+  const ownStatus = session?.user?.id
+    ? await prisma.campusStatus.findFirst({
+        where: { userId: session.user.id, expiresAt: { gt: new Date() } },
+        select: { color: true, emoji: true },
+      })
+    : null
 
   return (
     <html
@@ -72,7 +79,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5]">
         <Providers session={session}>
           <NavigationProgress />
-          <HeaderWrapper />
+          <HeaderWrapper ownStatus={ownStatus} />
           <main className="flex-1">{children}</main>
           <FooterWrapper />
         </Providers>

@@ -11,23 +11,26 @@ datasource db {
 }
 
 model User {
-  id                   String    @id @default(cuid())
-  name                 String?
-  email                String    @unique
-  emailVerified        DateTime?
-  image                String?
-  password             String?
-  role                 String    @default("USER")
-  bio                  String?   @db.Text
-  raputation           Int       @default(0)
-  lastCheckInDay       String?   @db.VarChar(10)
-  checkInStreak        Int       @default(0)
-  totalCheckIns        Int       @default(0)
-  hideFollowers        Boolean   @default(false)
-  hideFollowing        Boolean   @default(false)
-  inviteGrantClaimedAt DateTime?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id                     String    @id @default(cuid())
+  name                   String?
+  email                  String    @unique
+  emailVerified          DateTime?
+  image                  String?
+  password               String?
+  role                   String    @default("USER")
+  bio                    String?   @db.Text
+  raputation             Int       @default(0)
+  lastCheckInDay         String?   @db.VarChar(10)
+  checkInStreak          Int       @default(0)
+  totalCheckIns          Int       @default(0)
+  lastReputationGiftDay  String?   @db.VarChar(10)
+  postcardQuotaMonth     String?   @db.VarChar(7)
+  postcardsSentThisMonth Int       @default(0)
+  hideFollowers          Boolean   @default(false)
+  hideFollowing          Boolean   @default(false)
+  inviteGrantClaimedAt   DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   posts                 Post[]
   comments              Comment[]
@@ -40,6 +43,8 @@ model User {
   followers             Follow[]       @relation("FollowedUser")
   receivedNotifications Notification[] @relation("NotificationRecipient")
   sentNotifications     Notification[] @relation("NotificationActor")
+  sentPostcards         Postcard[]     @relation("SentPostcards")
+  receivedPostcards     Postcard[]     @relation("ReceivedPostcards")
   campusStatus          CampusStatus?
 }
 
@@ -184,6 +189,9 @@ model CampusStatus {
   userId     String   @unique
   content    String   @db.VarChar(120)
   mood       String   @db.VarChar(24)
+  tag        String?  @db.VarChar(24)
+  emoji      String?  @db.VarChar(16)
+  color      String   @default("#f3c84b") @db.VarChar(7)
   visibility String   @default("PUBLIC") @db.VarChar(16)
   expiresAt  DateTime
   createdAt  DateTime @default(now())
@@ -192,4 +200,22 @@ model CampusStatus {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([expiresAt, updatedAt])
+}
+
+model Postcard {
+  id          String    @id @default(cuid())
+  senderId    String
+  recipientId String
+  message     String    @db.VarChar(500)
+  theme       String    @default("PAPER") @db.VarChar(24)
+  emoji       String?   @db.VarChar(16)
+  openedAt    DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  sender    User @relation("SentPostcards", fields: [senderId], references: [id], onDelete: Cascade)
+  recipient User @relation("ReceivedPostcards", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, expiresAt, createdAt])
+  @@index([senderId, createdAt])
 }

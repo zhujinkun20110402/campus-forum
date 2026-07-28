@@ -9,6 +9,7 @@ import {
   FileText,
   Heart,
   LockKeyhole,
+  Mail,
   MessageSquare,
   Settings,
   Trophy,
@@ -22,6 +23,7 @@ import { ReputationBar } from "@/components/reputation/reputation-bar"
 import { UserBadges } from "@/components/reputation/user-badges"
 import { ChampionCrown } from "@/components/reputation/champion-crown"
 import { FollowButton } from "@/components/social/follow-button"
+import { ReputationGiftButton } from "@/components/social/reputation-gift-button"
 import { ProfileStatus } from "@/components/presence/profile-status"
 import { EditorialHeading, EditorialPanel } from "@/components/ui/editorial"
 import { SafeImage } from "@/components/ui/safe-image"
@@ -31,6 +33,8 @@ import { requireUser } from "@/lib/session"
 import { getSuccessfulInviteCount } from "@/lib/invitations"
 import { getCompetitiveRank, getFollowSummary } from "@/lib/social"
 import { getVisibleCampusStatusByUser } from "@/lib/campus-status"
+import { getReputationGiftState } from "@/lib/reputation-gifts"
+import { getStatusTextColor } from "@/lib/status-constants"
 
 const categoryStyles: Record<string, string> = {
   announcement: "bg-[#ff6b43]",
@@ -54,13 +58,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   if (!user) notFound()
 
-  const [likeReceivedCount, pinnedPostCount, successfulInviteCount, followSummary, competitiveRank, campusStatus, posts, comments] = await Promise.all([
+  const [likeReceivedCount, pinnedPostCount, successfulInviteCount, followSummary, competitiveRank, campusStatus, giftState, posts, comments] = await Promise.all([
     prisma.like.count({ where: { post: { authorId: id } } }),
     prisma.post.count({ where: { authorId: id, pinned: true } }),
     getSuccessfulInviteCount(id),
     getFollowSummary(currentUser.id, id),
     getCompetitiveRank(id),
     getVisibleCampusStatusByUser(currentUser.id, id),
+    getReputationGiftState(currentUser.id),
     prisma.post.findMany({
       where: { authorId: id },
       include: { category: true, _count: { select: { comments: true, likes: true } } },
@@ -105,7 +110,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-[#e4532f]">PROFILE / CAMPUS MEMBER</p>
             <div className="mt-6 grid items-center gap-7 md:grid-cols-[auto_minmax(0,1fr)]">
               <div className="relative mx-auto md:mx-0">
-                <div className={cn("relative h-28 w-28 overflow-hidden border-2 border-[#191914] bg-[#191914] shadow-[7px_7px_0_#ff6b43] dark:border-[#f5f0e5] sm:h-32 sm:w-32", isChampion && "champion-frame")}>
+                <div
+                  className={cn("relative h-28 w-28 overflow-hidden border-2 border-[#191914] bg-[#191914] shadow-[7px_7px_0_#ff6b43] dark:border-[#f5f0e5] sm:h-32 sm:w-32", isChampion && "champion-frame")}
+                  style={campusStatus ? { borderColor: campusStatus.color, boxShadow: `7px 7px 0 ${campusStatus.color}` } : undefined}
+                >
                   {user.image ? (
                     <SafeImage src={user.image} alt={user.name ?? "用户头像"} fill sizes="128px" className="object-cover" />
                   ) : (
@@ -115,6 +123,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                   )}
                 </div>
                 {isChampion && <ChampionCrown className="absolute -right-8 -top-10" />}
+                {campusStatus?.emoji && (
+                  <span className="absolute -bottom-3 -left-3 z-20 flex min-h-9 min-w-9 items-center justify-center border-2 border-[#191914] px-1 text-lg leading-none dark:border-[#f5f0e5]" style={{ backgroundColor: campusStatus.color, color: getStatusTextColor(campusStatus.color) }} title="当前 24 小时状态">
+                    {campusStatus.emoji}
+                  </span>
+                )}
                 {user.role === "ADMIN" && (
                   <div className="absolute -bottom-3 -right-3 flex h-9 w-9 items-center justify-center border-2 border-[#191914] bg-[#f3c84b] text-[#191914] dark:border-[#f5f0e5]">
                     <Crown className="h-4 w-4" />
@@ -141,8 +154,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     <>
                       <Link href="/profile/settings" className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#fffaf0] px-4 text-sm font-bold shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-1 dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[3px_3px_0_#f5f0e5]"><Settings className="h-4 w-4 text-[#e4532f]" /> 编辑个人资料</Link>
                       <Link href={`/profile/${id}/connections`} className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#b9ddbd] px-4 text-sm font-bold text-[#191914] dark:border-[#f5f0e5]"><Users className="h-4 w-4" /> 我的关注</Link>
+                      <Link href="/postcards" className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#ffb4aa] px-4 text-sm font-bold text-[#191914] dark:border-[#f5f0e5]"><Mail className="h-4 w-4" /> 我的明信片</Link>
                     </>
-                  ) : <FollowButton targetUserId={id} initialFollowing={followSummary.isFollowing} />}
+                  ) : (
+                    <>
+                      <FollowButton targetUserId={id} initialFollowing={followSummary.isFollowing} />
+                      {followSummary.isFollowing && <ReputationGiftButton targetUserId={id} initialAvailable={giftState.available} reward={giftState.reward} />}
+                      <Link href={`/postcards?to=${encodeURIComponent(id)}`} className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#ffb4aa] px-4 text-sm font-bold text-[#191914] shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]"><Mail className="h-4 w-4" /> 写明信片</Link>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

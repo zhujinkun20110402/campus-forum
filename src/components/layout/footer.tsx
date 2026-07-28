@@ -21,6 +21,7 @@ const footerLinks = [
       { href: "/leaderboard", label: "声望排行榜" },
       { href: "/album", label: "校园相册" },
       { href: "/status", label: "今日在场" },
+      { href: "/postcards", label: "校园明信片" },
       { href: "/post/new", label: "发布新帖" },
       { href: "/auth/signin", label: "登录账号" },
     ],

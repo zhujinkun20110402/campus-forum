@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Heart, MessageCircle, MessageSquareReply, Pin, UserPlus } from "lucide-react"
+import { Gift, Heart, Mail, MessageCircle, MessageSquareReply, Pin, UserPlus } from "lucide-react"
 import { useState, useTransition } from "react"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { NOTIFICATION_REFRESH_EVENT } from "@/components/notifications/notification-bell"
@@ -26,6 +26,8 @@ const notificationMeta = {
   POST_LIKED: { icon: Heart, label: "赞了你的帖子", color: "bg-[#ffb4aa]" },
   USER_FOLLOWED: { icon: UserPlus, label: "关注了你", color: "bg-[#b9ddbd]" },
   POST_PINNED: { icon: Pin, label: "将你的帖子设为置顶", color: "bg-[#ff6b43]" },
+  REPUTATION_GIFT: { icon: Gift, label: "送给你一份 +2 声望礼物", color: "bg-[#f3c84b]" },
+  POSTCARD_RECEIVED: { icon: Mail, label: "给你寄来一封七日明信片", color: "bg-[#ffb4aa]" },
 } as const
 
 export function NotificationItem({ notification }: NotificationItemProps) {
@@ -35,7 +37,9 @@ export function NotificationItem({ notification }: NotificationItemProps) {
   const meta = notificationMeta[notification.type as keyof typeof notificationMeta] ?? notificationMeta.COMMENT_CREATED
   const Icon = meta.icon
   const actorName = notification.actor?.name ?? "一位校园成员"
-  const href = notification.type === "USER_FOLLOWED"
+  const href = notification.type === "POSTCARD_RECEIVED"
+    ? "/postcards"
+    : notification.type === "USER_FOLLOWED" || notification.type === "REPUTATION_GIFT"
     ? (notification.actor ? `/profile/${notification.actor.id}` : "/notifications")
     : (notification.post
       ? `/post/${notification.post.id}${notification.comment ? `#comment-${notification.comment.id}` : ""}`
