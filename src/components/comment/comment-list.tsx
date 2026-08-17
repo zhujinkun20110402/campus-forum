@@ -34,6 +34,7 @@ interface CommentListProps {
   currentUserId: string
   isAdmin?: boolean
   postId: string
+  isConfession?: boolean
 }
 
 interface ReplySelection {
@@ -42,7 +43,7 @@ interface ReplySelection {
   author: { name: string | null }
 }
 
-export function CommentList({ comments, currentUserId, isAdmin, postId }: CommentListProps) {
+export function CommentList({ comments, currentUserId, isAdmin, postId, isConfession = false }: CommentListProps) {
   const threadRef = useRef<HTMLDivElement>(null)
   const [replyingTo, setReplyingTo] = useState<ReplySelection | null>(null)
   const clearReply = useCallback(() => setReplyingTo(null), [])
@@ -80,17 +81,28 @@ export function CommentList({ comments, currentUserId, isAdmin, postId }: Commen
         ) : comments.map((comment) => {
           const mine = comment.author.id === currentUserId
           const authorName = comment.author.name ?? "未命名用户"
+          // 表白墙评论区：非本人的评论一律匿名，避免发帖人回复时暴露身份
+          const anonymous = isConfession && !mine
+          const displayName = mine ? "我" : anonymous ? "匿名同学" : authorName
 
           return (
             <div id={`comment-${comment.id}`} key={comment.id} className={cn("scroll-mt-28 flex items-start gap-2.5", mine && "flex-row-reverse")}>
-              <Link href={`/profile/${comment.author.id}`} className="shrink-0" aria-label={`查看 ${authorName} 的主页`}>
-                <UserAvatar name={comment.author.name} image={comment.author.image} role={comment.author.role} size="md" />
-              </Link>
+              {anonymous ? (
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[#191914] bg-[#ffb4aa] text-sm font-bold text-[#191914] dark:border-[#f5f0e5]">?</div>
+              ) : (
+                <Link href={`/profile/${comment.author.id}`} className="shrink-0" aria-label={`查看 ${authorName} 的主页`}>
+                  <UserAvatar name={comment.author.name} image={comment.author.image} role={comment.author.role} size="md" />
+                </Link>
+              )}
 
               <div className={cn("min-w-0 max-w-[82%] sm:max-w-[72%]", mine && "text-right")}>
                 <div className={cn("mb-1 flex flex-wrap items-center gap-2", mine && "justify-end")}>
-                  <Link href={`/profile/${comment.author.id}`} className="text-xs font-bold hover:text-[#d44120] dark:hover:text-[#ff8a68]">{mine ? "我" : authorName}</Link>
-                  {comment.author.raputation != null && <LevelBadge raputation={comment.author.raputation} role={comment.author.role} size="xs" showTitle={false} />}
+                  {anonymous ? (
+                    <span className="text-xs font-bold">{displayName}</span>
+                  ) : (
+                    <Link href={`/profile/${comment.author.id}`} className="text-xs font-bold hover:text-[#d44120] dark:hover:text-[#ff8a68]">{displayName}</Link>
+                  )}
+                  {!anonymous && comment.author.raputation != null && <LevelBadge raputation={comment.author.raputation} role={comment.author.role} size="xs" showTitle={false} />}
                   <span className="font-mono text-[8px] text-[#6f736b] dark:text-[#8f948b]">{formatRelativeTime(comment.createdAt)}</span>
                 </div>
 
@@ -100,7 +112,7 @@ export function CommentList({ comments, currentUserId, isAdmin, postId }: Commen
                 )}>
                   {comment.parent && (
                     <button type="button" onClick={() => startReply(comment.parent!)} className="mb-2 block w-full border-l-3 border-[#e4532f] bg-[#191914]/[0.06] px-2 py-1.5 text-left dark:bg-white/[0.07]">
-                      <span className="block text-[10px] font-bold text-[#d44120] dark:text-[#ff8a68]">回复 @{comment.parent.author.name ?? "未命名用户"}</span>
+                      <span className="block text-[10px] font-bold text-[#d44120] dark:text-[#ff8a68]">回复 @{isConfession ? "匿名同学" : (comment.parent.author.name ?? "未命名用户")}</span>
                       <span className="mt-0.5 block truncate text-[10px] text-[#69655d] dark:text-[#aaa69c]">{comment.parent.content}</span>
                     </button>
                   )}
@@ -122,7 +134,7 @@ export function CommentList({ comments, currentUserId, isAdmin, postId }: Commen
       <CommentForm
         key={replyingTo?.id ?? "root"}
         postId={postId}
-        replyTo={replyingTo ? { id: replyingTo.id, name: replyingTo.author.name ?? "未命名用户", content: replyingTo.content } : null}
+        replyTo={replyingTo ? { id: replyingTo.id, name: isConfession ? "匿名同学" : (replyingTo.author.name ?? "未命名用户"), content: replyingTo.content } : null}
         onCancelReply={clearReply}
         onSuccess={clearReply}
       />

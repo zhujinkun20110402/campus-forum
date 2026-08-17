@@ -54,6 +54,17 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
   const isConfession = post.category.slug === "confession"
   const pinned = post.pinned
 
+  // 表白墙帖子的评论区同样匿名化：抹除评论者真实身份（保留 id 用于区分“我”）
+  if (isConfession) {
+    post.comments = post.comments.map((comment) => ({
+      ...comment,
+      author: { ...comment.author, name: null, image: null, role: null, raputation: null },
+      parent: comment.parent
+        ? { ...comment.parent, author: { ...comment.parent.author, name: null } }
+        : null,
+    }))
+  }
+
   return (
     <div className="min-h-screen bg-[#ece6da] dark:bg-[#10100e]">
       <section className="campus-paper border-b-2 border-[#191914] px-4 pb-14 pt-28 dark:border-[#f5f0e5] sm:px-6 sm:pb-16 lg:px-8">
@@ -120,7 +131,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
           <section className="mt-14">
             <EditorialHeading index="02" eyebrow="DISCUSSION" title="讨论区" meta={`${post._count.comments} 条回应`} />
             <div className="mt-7">
-              <CommentList comments={post.comments} currentUserId={currentUser.id} isAdmin={isAdmin} postId={post.id} />
+              <CommentList comments={post.comments} currentUserId={currentUser.id} isAdmin={isAdmin} postId={post.id} isConfession={isConfession} />
             </div>
           </section>
         </div>
