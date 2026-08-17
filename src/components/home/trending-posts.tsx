@@ -34,7 +34,9 @@ export function TrendingPosts({ posts }: TrendingPostsProps) {
       </div>
 
       <div>
-        {posts.map((post, index) => (
+        {posts.map((post, index) => {
+          const isConfession = post.category.slug === "confession"
+          return (
           <Link
             key={post.id}
             href={`/post/${post.id}`}
@@ -49,8 +51,12 @@ export function TrendingPosts({ posts }: TrendingPostsProps) {
               </h4>
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[9px] text-[#8b857b] dark:text-[#918c82]">
                 <span className="flex items-center gap-1.5">
-                  <UserAvatar name={post.author.name} image={post.author.image} role={post.author.role} size="sm" />
-                  <span className="max-w-20 truncate">{post.author.name ?? "匿名"}</span>
+                  {isConfession ? (
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-[#191914] bg-[#ffb4aa] text-[10px] font-bold text-[#191914] dark:border-[#f5f0e5]">?</span>
+                  ) : (
+                    <UserAvatar name={post.author.name} image={post.author.image} role={post.author.role} size="sm" />
+                  )}
+                  <span className="max-w-20 truncate">{isConfession ? "匿名同学" : (post.author.name ?? "匿名")}</span>
                 </span>
                 <span className="flex items-center gap-1"><Heart className="h-3 w-3" />{post._count.likes}</span>
                 <span className="flex items-center gap-1"><MessageCircle className="h-3 w-3" />{post._count.comments}</span>
@@ -58,7 +64,8 @@ export function TrendingPosts({ posts }: TrendingPostsProps) {
               </div>
             </div>
           </Link>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

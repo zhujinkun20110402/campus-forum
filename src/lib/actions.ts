@@ -443,7 +443,7 @@ export async function getTrendingPosts() {
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
-  return prisma.post.findMany({
+  const posts = await prisma.post.findMany({
     where: { createdAt: { gte: sevenDaysAgo } },
     orderBy: [
       { likes: { _count: "desc" } },
@@ -456,6 +456,13 @@ export async function getTrendingPosts() {
       _count: { select: { comments: true, likes: true } },
     },
   })
+
+  // 表白墙帖子在服务端即抹除作者信息，避免真实身份泄露
+  return posts.map((post) =>
+    post.category.slug === "confession"
+      ? { ...post, author: { id: "anonymous", name: null, image: null, role: null, raputation: null } }
+      : post
+  )
 }
 
 export async function getPinnedPosts() {

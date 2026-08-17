@@ -67,7 +67,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     getVisibleCampusStatusByUser(currentUser.id, id),
     getReputationGiftState(currentUser.id),
     prisma.post.findMany({
-      where: { authorId: id },
+      where: { authorId: id, category: { slug: { not: "confession" } } },
       include: { category: true, _count: { select: { comments: true, likes: true } } },
       orderBy: { createdAt: "desc" },
       take: 10,
