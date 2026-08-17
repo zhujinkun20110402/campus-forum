@@ -58,7 +58,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
   if (isConfession) {
     post.comments = post.comments.map((comment) => ({
       ...comment,
-      author: { ...comment.author, name: null, image: null, role: null, raputation: null },
+      author: { ...comment.author, name: null, image: null, role: "", raputation: 0 },
       parent: comment.parent
         ? { ...comment.parent, author: { ...comment.parent.author, name: null } }
         : null,

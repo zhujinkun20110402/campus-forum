@@ -102,7 +102,7 @@ export function CommentList({ comments, currentUserId, isAdmin, postId, isConfes
                   ) : (
                     <Link href={`/profile/${comment.author.id}`} className="text-xs font-bold hover:text-[#d44120] dark:hover:text-[#ff8a68]">{displayName}</Link>
                   )}
-                  {!anonymous && comment.author.raputation != null && <LevelBadge raputation={comment.author.raputation} role={comment.author.role} size="xs" showTitle={false} />}
+                  {!anonymous && !isConfession && comment.author.raputation != null && <LevelBadge raputation={comment.author.raputation} role={comment.author.role} size="xs" showTitle={false} />}
                   <span className="font-mono text-[8px] text-[#6f736b] dark:text-[#8f948b]">{formatRelativeTime(comment.createdAt)}</span>
                 </div>
 
