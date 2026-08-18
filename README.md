@@ -1,5 +1,18 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## 关系系统 · 数据库变更（手动执行）
+
+关系系统（`/relationships`）新增了两张表，并给通知表扩展了一个字段。由于本地 `prisma db push` 网络较差，请手动执行 SQL 脚本：
+
+1. 用 psql 或任意数据库客户端执行 [`scripts/relationship-system.sql`](scripts/relationship-system.sql)（脚本可重复执行，已做幂等处理）；
+2. 在项目根目录重新生成 Prisma Client：
+
+```bash
+npx prisma generate
+```
+
+> 未执行 SQL 前，点赞/评论/明信片等核心功能不受影响（关系经验会静默跳过），但 `/relationships` 页面需要建表后才能访问。
+
 ## Getting Started
 
 First, run the development server:

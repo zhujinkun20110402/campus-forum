@@ -8,6 +8,7 @@ import { NOTIFICATION_TYPES } from "@/lib/notifications"
 import { getMonthlyPostcardQuota, POSTCARD_THEMES } from "@/lib/postcard-constants"
 import { cleanupExpiredPostcards } from "@/lib/postcards"
 import { prisma } from "@/lib/prisma"
+import { awardRelationshipXp } from "@/lib/relationship-actions"
 
 const postcardSchema = z.object({
   recipientId: z.string().trim().min(1, "请选择收件人").max(64, "收件人信息无效"),
@@ -118,6 +119,9 @@ export async function sendPostcard(_previousState: unknown, formData: FormData) 
     }
 
     if (!result) throw new PostcardRuleError("额度状态发生变化，请重试")
+
+    // 关系升温：给互绑好友寄明信片 +6 经验
+    await awardRelationshipXp(senderId, parsed.data.recipientId, "POSTCARD")
 
     revalidatePath("/postcards")
     revalidatePath("/notifications")

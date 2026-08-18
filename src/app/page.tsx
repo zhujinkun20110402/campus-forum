@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { LucideIcon } from "lucide-react"
 import {
   ArrowRight,
   BookOpen,
@@ -27,7 +28,9 @@ import { TrendingPosts } from "@/components/home/trending-posts"
 import { CampusStatusMiniBoard } from "@/components/presence/campus-status-mini-board"
 import { DailyCheckInCard } from "@/components/presence/daily-check-in-card"
 import { CountUp } from "@/components/effects/count-up"
+import { QixiHearts } from "@/components/effects/qixi-hearts"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
+import { QixiBanner } from "@/components/home/qixi-banner"
 import { SafeImage } from "@/components/ui/safe-image"
 import { auth } from "@/lib/auth"
 import { getPinnedPosts, getTrendingPosts } from "@/lib/actions"
@@ -36,7 +39,18 @@ import { getVisibleCampusStatuses } from "@/lib/campus-status"
 import { getCheckInStatus } from "@/lib/daily-check-in"
 import { cn } from "@/lib/utils"
 
-const categoryEntries = [
+interface CategoryEntry {
+  slug: string
+  name: string
+  desc: string
+  english: string
+  icon: LucideIcon
+  surface: string
+  isPage?: boolean
+  badge?: string
+}
+
+const categoryEntries: CategoryEntry[] = [
   {
     slug: "announcement",
     name: "校园公告",
@@ -69,6 +83,7 @@ const categoryEntries = [
     icon: Heart,
     surface: "bg-[#ffb4aa]",
     isPage: true,
+    badge: "七夕特辑",
   },
   {
     slug: "activity",
@@ -139,7 +154,7 @@ const campusImages = [
   },
 ]
 
-const tickerItems = ["校园新鲜事", "学习搭子", "失物招领", "社团招新", "匿名心声", "二手好物"]
+const tickerItems = ["校园新鲜事", "学习搭子", "失物招领", "社团招新", "七夕告白季", "表白墙营业中", "二手好物"]
 
 export default async function HomePage({
   searchParams,
@@ -193,7 +208,10 @@ export default async function HomePage({
 
   return (
     <div className="min-h-screen overflow-hidden bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5]">
-      <section className="campus-paper relative overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:min-h-[820px] lg:px-8 lg:pb-24 lg:pt-36">
+      <QixiBanner />
+
+      <section className="campus-paper relative overflow-hidden px-4 pb-16 pt-10 sm:px-6 sm:pt-12 lg:min-h-[820px] lg:px-8 lg:pb-24 lg:pt-16">
+        <QixiHearts />
         <div aria-hidden className="absolute -left-12 top-44 h-28 w-28 rotate-12 border-2 border-[#191914] bg-[#d9ef61] dark:border-[#f5f0e5]" />
         <div aria-hidden className="absolute -right-10 bottom-20 h-36 w-36 rounded-full border-2 border-[#191914] bg-[#ff6b43] dark:border-[#f5f0e5]" />
 
@@ -358,9 +376,17 @@ export default async function HomePage({
                       <div className="flex h-12 w-12 items-center justify-center border-2 border-[#191914] bg-[#fffaf0]">
                         <Icon className="h-5 w-5" />
                       </div>
-                      <span className="font-mono text-[10px] font-bold tracking-[0.15em]">
-                        {String(index + 1).padStart(2, "0")} / {entry.english}
-                      </span>
+                      <div className="flex flex-col items-end gap-1.5">
+                        <span className="font-mono text-[10px] font-bold tracking-[0.15em]">
+                          {String(index + 1).padStart(2, "0")} / {entry.english}
+                        </span>
+                        {entry.badge && (
+                          <span className="inline-flex items-center gap-1 border border-[#191914] bg-[#fffaf0] px-1.5 py-0.5 font-mono text-[8px] font-bold tracking-[0.14em] text-[#e4532f]">
+                            <Heart className="h-2.5 w-2.5 animate-qixi-heartbeat" aria-hidden />
+                            {entry.badge}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="mt-8">
                       <div className="flex items-end justify-between gap-4">
@@ -551,7 +577,10 @@ export default async function HomePage({
 function GuestHome() {
   return (
     <div className="min-h-screen overflow-hidden bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5]">
-      <section className="campus-paper relative overflow-hidden px-4 pb-18 pt-28 sm:px-6 lg:min-h-[760px] lg:px-8 lg:pb-24 lg:pt-36">
+      <QixiBanner />
+
+      <section className="campus-paper relative overflow-hidden px-4 pb-18 pt-10 sm:px-6 sm:pt-12 lg:min-h-[760px] lg:px-8 lg:pb-24 lg:pt-16">
+        <QixiHearts />
         <div aria-hidden className="absolute -left-12 top-40 h-28 w-28 rotate-12 border-2 border-[#191914] bg-[#f3c84b] dark:border-[#f5f0e5]" />
         <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">
           <div>

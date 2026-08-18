@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Gift, Heart, Mail, MessageCircle, MessageSquareReply, Pin, UserPlus } from "lucide-react"
+import { Gift, Heart, HeartHandshake, Mail, MessageCircle, MessageSquareReply, Pin, Sparkles, UserPlus } from "lucide-react"
 import { useState, useTransition } from "react"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { NOTIFICATION_REFRESH_EVENT } from "@/components/notifications/notification-bell"
@@ -15,7 +15,7 @@ interface NotificationItemProps {
     readAt: Date | string | null
     createdAt: Date | string
     actor: { id: string; name: string | null; image: string | null; role: string } | null
-    post: { id: string; title: string } | null
+    post: { id: string; title: string; category?: { slug: string } | null } | null
     comment: { id: string } | null
   }
 }
@@ -28,7 +28,20 @@ const notificationMeta = {
   POST_PINNED: { icon: Pin, label: "将你的帖子设为置顶", color: "bg-[#ff6b43]" },
   REPUTATION_GIFT: { icon: Gift, label: "送给你一份 +2 声望礼物", color: "bg-[#f3c84b]" },
   POSTCARD_RECEIVED: { icon: Mail, label: "给你寄来一封七日明信片", color: "bg-[#ffb4aa]" },
+  RELATIONSHIP_REQUEST: { icon: HeartHandshake, label: "想和你绑定关系", color: "bg-[#ffb4aa]" },
+  RELATIONSHIP_ACCEPTED: { icon: HeartHandshake, label: "接受了你的关系申请", color: "bg-[#d9ef61]" },
+  RELATIONSHIP_DECLINED: { icon: HeartHandshake, label: "婉拒了你的关系申请", color: "bg-[#ece6da]" },
+  RELATIONSHIP_DISSOLVED: { icon: HeartHandshake, label: "解除了你们的关系", color: "bg-[#ff6b43]" },
+  RELATIONSHIP_LEVEL_UP: { icon: Sparkles, label: "你们的关系升级啦", color: "bg-[#f3c84b]" },
 } as const
+
+const RELATIONSHIP_NOTIFICATION_TYPES = new Set([
+  "RELATIONSHIP_REQUEST",
+  "RELATIONSHIP_ACCEPTED",
+  "RELATIONSHIP_DECLINED",
+  "RELATIONSHIP_DISSOLVED",
+  "RELATIONSHIP_LEVEL_UP",
+])
 
 export function NotificationItem({ notification }: NotificationItemProps) {
   const router = useRouter()
@@ -36,8 +49,12 @@ export function NotificationItem({ notification }: NotificationItemProps) {
   const [pending, startTransition] = useTransition()
   const meta = notificationMeta[notification.type as keyof typeof notificationMeta] ?? notificationMeta.COMMENT_CREATED
   const Icon = meta.icon
-  const actorName = notification.actor?.name ?? "一位校园成员"
-  const href = notification.type === "POSTCARD_RECEIVED"
+  // 表白墙匿名通知：actor 为 null 且帖子属于表白墙时，一律显示为“匿名同学”
+  const isAnonymous = !notification.actor && notification.post?.category?.slug === "confession"
+  const actorName = isAnonymous ? "匿名同学" : notification.actor?.name ?? "一位校园成员"
+  const href = RELATIONSHIP_NOTIFICATION_TYPES.has(notification.type)
+    ? "/relationships"
+    : notification.type === "POSTCARD_RECEIVED"
     ? "/postcards"
     : notification.type === "USER_FOLLOWED" || notification.type === "REPUTATION_GIFT"
     ? (notification.actor ? `/profile/${notification.actor.id}` : "/notifications")
@@ -62,7 +79,13 @@ export function NotificationItem({ notification }: NotificationItemProps) {
       className="group grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-3 border-b border-[#191914]/15 px-4 py-5 text-left transition-colors last:border-b-0 hover:bg-[#f2eadc] disabled:cursor-wait dark:border-white/15 dark:hover:bg-[#292821] sm:gap-4 sm:px-6"
     >
       <div className="relative">
-        <UserAvatar name={notification.actor?.name} image={notification.actor?.image} role={notification.actor?.role} size="md" />
+        {isAnonymous ? (
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#191914] bg-[#ffb4aa] text-sm font-bold text-[#191914] dark:border-[#f5f0e5]">
+            ?
+          </div>
+        ) : (
+          <UserAvatar name={notification.actor?.name} image={notification.actor?.image} role={notification.actor?.role} size="md" />
+        )}
         <span className={`absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center border border-[#191914] text-[#191914] ${meta.color}`}>
           <Icon className="h-3.5 w-3.5" />
         </span>

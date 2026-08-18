@@ -4,9 +4,12 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { signOut, useSession } from "next-auth/react"
+import type { LucideIcon } from "lucide-react"
 import {
   Bell,
   ChevronDown,
+  Heart,
+  HeartHandshake,
   LogOut,
   Mail,
   Menu,
@@ -28,18 +31,27 @@ import { SafeImage } from "@/components/ui/safe-image"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-const navLinks = [
+interface NavLinkItem {
+  href: string
+  label: string
+  icon?: LucideIcon
+  badge?: string
+  surface?: string
+}
+
+const navLinks: NavLinkItem[] = [
   { href: "/category/announcement", label: "公告" },
   { href: "/category/lostfound", label: "寻物" },
-  { href: "/confession", label: "表白墙" },
+  { href: "/confession", label: "表白墙", icon: Heart, badge: "七夕", surface: "bg-[#ffb4aa] dark:bg-[#3a2624]" },
   { href: "/category/study", label: "学习" },
   { href: "/category/feedback", label: "反馈" },
   { href: "/leaderboard", label: "排行" },
 ]
 
-const mobileExtraLinks = [
+const mobileExtraLinks: NavLinkItem[] = [
   { href: "/status", label: "状态" },
   { href: "/postcards", label: "明信片" },
+  { href: "/relationships", label: "关系", icon: HeartHandshake, surface: "bg-[#d9ef61] dark:bg-[#3f4a1c]" },
   { href: "/category/activity", label: "活动" },
   { href: "/album", label: "相册" },
   { href: "/invites", label: "邀请" },
@@ -93,18 +105,33 @@ export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: stri
             <nav className="hidden items-center gap-0.5 lg:flex" aria-label="主导航">
               {user ? navLinks.map((link) => {
                 const isActive = pathname === link.href || pathname?.startsWith(`${link.href}/`)
+                const LinkIcon = link.icon
                 return (
                   <Link
                     key={link.href}
                     href={link.href}
                     className={cn(
-                      "px-3 py-2 text-sm font-medium transition-colors",
+                      "inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors",
                       isActive
                         ? "bg-[#191914] text-[#fffaf0] dark:bg-[#f5f0e5] dark:text-[#191914]"
                         : "hover:bg-[#d9ef61] hover:text-[#191914]"
                     )}
                   >
+                    {LinkIcon && (
+                      <LinkIcon
+                        aria-hidden
+                        className={cn(
+                          "h-3.5 w-3.5",
+                          link.badge ? "animate-qixi-heartbeat text-[#e4532f]" : "text-[#777268] dark:text-[#989389]"
+                        )}
+                      />
+                    )}
                     {link.label}
+                    {link.badge && (
+                      <span className="ml-0.5 inline-flex items-center border border-current px-1 py-px font-mono text-[9px] font-bold leading-none tracking-[0.1em] text-[#e4532f]">
+                        {link.badge}
+                      </span>
+                    )}
                   </Link>
                 )
               }) : (
@@ -120,6 +147,9 @@ export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: stri
                   <NotificationBell />
                   <Link href="/invites" aria-label="我的邀请码" className="hidden h-9 w-9 items-center justify-center border border-transparent transition-colors hover:border-[#191914] hover:bg-[#d9ef61] hover:text-[#191914] dark:hover:border-[#f5f0e5] sm:flex">
                     <Ticket className="h-4 w-4" />
+                  </Link>
+                  <Link href="/relationships" aria-label="我的关系" className="hidden h-9 w-9 items-center justify-center border border-transparent transition-colors hover:border-[#191914] hover:bg-[#ffb4aa] hover:text-[#191914] dark:hover:border-[#f5f0e5] sm:flex">
+                    <HeartHandshake className="h-4 w-4" />
                   </Link>
                   <Link href="/postcards" aria-label="我的明信片" className="hidden h-9 w-9 items-center justify-center border border-transparent transition-colors hover:border-[#191914] hover:bg-[#ffb4aa] hover:text-[#191914] dark:hover:border-[#f5f0e5] sm:flex">
                     <Mail className="h-4 w-4" />
@@ -177,6 +207,9 @@ export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: stri
                             </Link>
                             <Link href="/notifications" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#ffb4aa] hover:text-[#191914]">
                               <Bell className="h-4 w-4" /> 通知中心
+                            </Link>
+                            <Link href="/relationships" onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#ffb4aa] hover:text-[#191914]">
+                              <HeartHandshake className="h-4 w-4" /> 我的关系
                             </Link>
                             <Link href={`/profile/${user.id}`} onClick={() => setDropdownOpen(false)} className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-[#d9ef61] hover:text-[#191914]">
                               <User className="h-4 w-4" /> 我的主页
@@ -247,6 +280,7 @@ export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: stri
                 <nav className="grid grid-cols-2 gap-2" aria-label="移动端导航">
               {[...navLinks, ...mobileExtraLinks].map((link, index) => {
                 const isActive = pathname === link.href || pathname?.startsWith(`${link.href}/`)
+                const LinkIcon = link.icon
                 return (
                   <Link
                     key={link.href}
@@ -254,10 +288,20 @@ export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: stri
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
                       "flex min-h-16 flex-col justify-between border border-[#191914] p-3 dark:border-[#f5f0e5]",
-                      isActive ? "bg-[#d9ef61] text-[#191914]" : "hover:bg-[#ece6da] dark:hover:bg-[#2a2924]"
+                      isActive
+                        ? "bg-[#d9ef61] text-[#191914]"
+                        : cn(link.surface, "hover:bg-[#ece6da] dark:hover:bg-[#2a2924]")
                     )}
                   >
-                    <span className="font-mono text-[8px] font-bold tracking-[0.15em] text-[#e4532f]">0{index + 1}</span>
+                    <span className="flex items-center justify-between gap-2 font-mono text-[8px] font-bold tracking-[0.15em] text-[#e4532f]">
+                      <span>
+                        0{index + 1}
+                        {link.badge ? ` · ${link.badge}` : ""}
+                      </span>
+                      {LinkIcon && (
+                        <LinkIcon aria-hidden className={cn("h-3.5 w-3.5", link.badge && "animate-qixi-heartbeat")} />
+                      )}
+                    </span>
                     <span className="font-serif text-lg font-bold">{link.label}</span>
                   </Link>
                 )

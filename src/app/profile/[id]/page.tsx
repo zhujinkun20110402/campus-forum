@@ -8,6 +8,8 @@ import {
   Crown,
   FileText,
   Heart,
+  HeartHandshake,
+  Link2,
   LockKeyhole,
   Mail,
   MessageSquare,
@@ -35,6 +37,8 @@ import { getCompetitiveRank, getFollowSummary } from "@/lib/social"
 import { getVisibleCampusStatusByUser } from "@/lib/campus-status"
 import { getReputationGiftState } from "@/lib/reputation-gifts"
 import { getStatusTextColor } from "@/lib/status-constants"
+import { getLevel, getLevelTitle, getRelationshipType } from "@/lib/relationship-config"
+import { getRelationshipState, getRelationshipsForUser, isMutualFollow } from "@/lib/relationships"
 
 const categoryStyles: Record<string, string> = {
   announcement: "bg-[#ff6b43]",
@@ -58,7 +62,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   if (!user) notFound()
 
-  const [likeReceivedCount, pinnedPostCount, successfulInviteCount, followSummary, competitiveRank, campusStatus, giftState, posts, comments] = await Promise.all([
+  const [likeReceivedCount, pinnedPostCount, successfulInviteCount, followSummary, competitiveRank, campusStatus, giftState, posts, comments, targetRelationships, relationState, mutual] = await Promise.all([
     prisma.like.count({ where: { post: { authorId: id } } }),
     prisma.post.count({ where: { authorId: id, pinned: true } }),
     getSuccessfulInviteCount(id),
@@ -78,6 +82,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
+    getRelationshipsForUser(id),
+    isOwnProfile ? Promise.resolve({ bonds: [] as { id: string; type: string; xp: number; createdAt: Date }[], pending: null }) : getRelationshipState(currentUser.id, id),
+    isOwnProfile ? Promise.resolve(false) : isMutualFollow(currentUser.id, id),
   ])
   const hasPinnedPost = pinnedPostCount > 0
   const isChampion = competitiveRank === 1
@@ -154,6 +161,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     <>
                       <Link href="/profile/settings" className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#fffaf0] px-4 text-sm font-bold shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-1 dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[3px_3px_0_#f5f0e5]"><Settings className="h-4 w-4 text-[#e4532f]" /> 编辑个人资料</Link>
                       <Link href={`/profile/${id}/connections`} className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#b9ddbd] px-4 text-sm font-bold text-[#191914] dark:border-[#f5f0e5]"><Users className="h-4 w-4" /> 我的关注</Link>
+                      <Link href="/relationships" className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#d9ef61] px-4 text-sm font-bold text-[#191914] shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-1 dark:border-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]"><HeartHandshake className="h-4 w-4" /> 我的关系{targetRelationships.length > 0 ? ` · ${targetRelationships.length}` : ""}</Link>
                       <Link href="/postcards" className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#ffb4aa] px-4 text-sm font-bold text-[#191914] dark:border-[#f5f0e5]"><Mail className="h-4 w-4" /> 我的明信片</Link>
                     </>
                   ) : (
@@ -161,6 +169,33 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                       <FollowButton targetUserId={id} initialFollowing={followSummary.isFollowing} />
                       {followSummary.isFollowing && <ReputationGiftButton targetUserId={id} initialAvailable={giftState.available} reward={giftState.reward} />}
                       <Link href={`/postcards?to=${encodeURIComponent(id)}`} className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#ffb4aa] px-4 text-sm font-bold text-[#191914] shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]"><Mail className="h-4 w-4" /> 写明信片</Link>
+                      {relationState.bonds.length > 0 ? (
+                        <Link
+                          href="/relationships"
+                          className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#191914] px-4 text-sm font-bold text-[#fffaf0] shadow-[3px_3px_0_#ffb4aa] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:bg-[#f5f0e5] dark:text-[#191914]"
+                        >
+                          <HeartHandshake className="h-4 w-4" />
+                          {relationState.bonds.map((bond) => `${getRelationshipType(bond.type)?.emoji ?? ""}${getRelationshipType(bond.type)?.name ?? bond.type} LV${getLevel(bond.xp)}`).join(" · ")}
+                          <span className="font-mono text-[9px]">管理</span>
+                        </Link>
+                      ) : relationState.pending ? (
+                        relationState.pending.fromUserId === currentUser.id ? (
+                          <Link href="/relationships" className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#f3c84b] px-4 text-sm font-bold text-[#191914] dark:border-[#f5f0e5]">
+                            <HeartHandshake className="h-4 w-4" /> 已申请「{getRelationshipType(relationState.pending.type)?.name ?? "关系"}」· 等待回应
+                          </Link>
+                        ) : (
+                          <Link href="/relationships" className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#ffb4aa] px-4 text-sm font-bold text-[#191914] shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]">
+                            <HeartHandshake className="h-4 w-4" /> TA 想和你绑定「{getRelationshipType(relationState.pending.type)?.name ?? "关系"}」
+                          </Link>
+                        )
+                      ) : mutual ? (
+                        <Link
+                          href={`/relationships?with=${encodeURIComponent(id)}`}
+                          className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#d9ef61] px-4 text-sm font-bold text-[#191914] shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]"
+                        >
+                          <HeartHandshake className="h-4 w-4" /> 绑定关系
+                        </Link>
+                      ) : null}
                     </>
                   )}
                 </div>
@@ -184,6 +219,41 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             <ReputationBar raputation={user.raputation} role={user.role} className="rounded-none border-2 border-[#191914] bg-[#f3c84b] text-[#191914] shadow-[5px_5px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#292821] dark:shadow-[5px_5px_0_#f5f0e5]" />
             <EditorialPanel className="p-5">
               <UserBadges stats={badgeStats} />
+            </EditorialPanel>
+            <EditorialPanel className="p-5">
+              <p className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#e4532f]">RELATIONSHIPS</p>
+              <h3 className="mt-1.5 flex items-center gap-2 font-serif text-lg font-bold">
+                <Link2 className="h-4 w-4 text-[#e4532f]" /> 关系
+              </h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {targetRelationships.length === 0 ? (
+                  <p className="text-xs leading-5 text-[#777268] dark:text-[#989389]">
+                    还没有绑定关系{isOwnProfile ? "，去和互关好友绑定一段吧" : ""}。
+                  </p>
+                ) : (
+                  targetRelationships.map((rel) => {
+                    const partner = rel.userA.id === id ? rel.userB : rel.userA
+                    const config = getRelationshipType(rel.type)
+                    const level = getLevel(rel.xp)
+                    return (
+                      <Link
+                        key={rel.id}
+                        href={`/profile/${partner.id}`}
+                        title={`${config?.name ?? rel.type} · ${getLevelTitle(rel.type, level)}`}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 border border-[#191914] px-2 py-1 text-[10px] font-bold text-[#191914] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5]",
+                          config?.surface ?? "bg-[#e5ded1]"
+                        )}
+                      >
+                        <span aria-hidden>{config?.emoji}</span>
+                        <span>{config?.name ?? rel.type}</span>
+                        <span className="max-w-24 truncate">· {partner.name ?? "同学"}</span>
+                        <span className="font-mono text-[8px] tracking-[0.08em]">LV{level}</span>
+                      </Link>
+                    )
+                  })
+                )}
+              </div>
             </EditorialPanel>
           </aside>
 

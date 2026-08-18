@@ -11,6 +11,11 @@ export const NOTIFICATION_TYPES = {
   POST_PINNED: "POST_PINNED",
   REPUTATION_GIFT: "REPUTATION_GIFT",
   POSTCARD_RECEIVED: "POSTCARD_RECEIVED",
+  RELATIONSHIP_REQUEST: "RELATIONSHIP_REQUEST",
+  RELATIONSHIP_ACCEPTED: "RELATIONSHIP_ACCEPTED",
+  RELATIONSHIP_DECLINED: "RELATIONSHIP_DECLINED",
+  RELATIONSHIP_DISSOLVED: "RELATIONSHIP_DISSOLVED",
+  RELATIONSHIP_LEVEL_UP: "RELATIONSHIP_LEVEL_UP",
 } as const
 
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES]
@@ -29,7 +34,7 @@ export function getNotifications(userId: string, take = 100) {
         select: { id: true, name: true, image: true, role: true },
       },
       post: {
-        select: { id: true, title: true },
+        select: { id: true, title: true, category: { select: { slug: true } } },
       },
       comment: {
         select: { id: true },

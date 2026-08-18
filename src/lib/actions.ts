@@ -13,6 +13,7 @@ import {
 } from "@/lib/reputation.server"
 import { createUserWithInvite } from "@/lib/invitations"
 import { NOTIFICATION_TYPES } from "@/lib/notifications"
+import { awardRelationshipXp } from "@/lib/relationship-actions"
 import { requireUser } from "@/lib/session"
 
 async function checkBanned(userId: string) {
@@ -191,7 +192,14 @@ export async function createComment(postId: string, _prevState: unknown, formDat
   }
 
   const parentId = validated.data.parentId || null
-  let notificationUserId: string | null = null
+
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { authorId: true, category: { select: { slug: true } } },
+  })
+  if (!post) return { message: "帖子不存在或已被删除" }
+
+  let notificationUserId: string | null = post.authorId
   if (parentId) {
     const parent = await prisma.comment.findFirst({
       where: { id: parentId, postId },
@@ -199,14 +207,10 @@ export async function createComment(postId: string, _prevState: unknown, formDat
     })
     if (!parent) return { message: "被回复的评论不存在或已被删除" }
     notificationUserId = parent.authorId
-  } else {
-    const post = await prisma.post.findUnique({
-      where: { id: postId },
-      select: { authorId: true },
-    })
-    if (!post) return { message: "帖子不存在或已被删除" }
-    notificationUserId = post.authorId
   }
+
+  // 表白墙匿名：评论/回复通知不携带 actor 身份，避免作者从通知得知评论者是谁
+  const isConfession = post.category.slug === "confession"
 
   await prisma.comment.create({
     data: {
@@ -217,7 +221,7 @@ export async function createComment(postId: string, _prevState: unknown, formDat
       notifications: notificationUserId && notificationUserId !== session.user.id ? {
         create: {
           userId: notificationUserId,
-          actorId: session.user.id,
+          actorId: isConfession ? null : session.user.id,
           postId,
           type: parentId ? NOTIFICATION_TYPES.COMMENT_REPLIED : NOTIFICATION_TYPES.COMMENT_CREATED,
         },
@@ -227,6 +231,11 @@ export async function createComment(postId: string, _prevState: unknown, formDat
 
   // 声望奖励：评论 +2
   await adjustRaputation(session.user.id, REP_POINTS.COMMENT_CREATED)
+
+  // 关系升温：给互绑好友的帖子评论 +8 经验
+  if (post.authorId !== session.user.id) {
+    await awardRelationshipXp(session.user.id, post.authorId, "COMMENT")
+  }
 
   revalidatePath(`/post/${postId}`)
   return { success: true }
@@ -251,10 +260,10 @@ export async function toggleLike(postId: string) {
     },
   })
 
-  // 获取帖子作者 ID（用于声望调整）
+  // 获取帖子作者 ID（用于声望调整）与分类（用于表白墙匿名通知）
   const post = await prisma.post.findUnique({
     where: { id: postId },
-    select: { authorId: true },
+    select: { authorId: true, category: { select: { slug: true } } },
   })
 
   if (existingLike) {
@@ -273,12 +282,14 @@ export async function toggleLike(postId: string) {
       await adjustRaputation(post.authorId, -REP_POINTS.POST_LIKED)
     }
   } else {
+    const isConfession = post?.category.slug === "confession"
     await prisma.$transaction([
       prisma.like.create({ data: { postId, userId } }),
       ...(post && post.authorId !== userId ? [prisma.notification.create({
         data: {
           userId: post.authorId,
-          actorId: userId,
+          // 表白墙匿名：点赞通知同样不暴露点赞者身份
+          actorId: isConfession ? null : userId,
           postId,
           type: NOTIFICATION_TYPES.POST_LIKED,
         },
@@ -287,6 +298,8 @@ export async function toggleLike(postId: string) {
     // 点赞：给帖子作者增加声望（不给自己点赞加分）
     if (post && post.authorId !== userId) {
       await adjustRaputation(post.authorId, REP_POINTS.POST_LIKED)
+      // 关系升温：给互绑好友的帖子点赞 +3 经验
+      await awardRelationshipXp(userId, post.authorId, "LIKE")
     }
   }
 

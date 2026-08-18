@@ -16,9 +16,10 @@ interface UserResultCardProps {
   }
   viewerId: string
   isFollowing: boolean
+  extra?: React.ReactNode
 }
 
-export function UserResultCard({ user, viewerId, isFollowing }: UserResultCardProps) {
+export function UserResultCard({ user, viewerId, isFollowing, extra }: UserResultCardProps) {
   return (
     <article className="grid gap-4 border-b border-[#191914]/20 py-5 last:border-b-0 dark:border-white/20 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
       <Link href={`/profile/${user.id}`} className="w-fit">
@@ -41,6 +42,7 @@ export function UserResultCard({ user, viewerId, isFollowing }: UserResultCardPr
       </div>
       <div className="flex items-center gap-2 sm:justify-end">
         {viewerId !== user.id && <FollowButton targetUserId={user.id} initialFollowing={isFollowing} compact />}
+        {extra}
         <Link href={`/profile/${user.id}`} className="flex h-9 w-9 items-center justify-center border border-[#191914] hover:bg-[#f3c84b] dark:border-[#f5f0e5]" aria-label={`查看 ${user.name ?? "用户"} 的主页`}><ArrowUpRight className="h-4 w-4" /></Link>
       </div>
     </article>

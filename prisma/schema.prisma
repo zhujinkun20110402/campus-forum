@@ -46,6 +46,10 @@ model User {
   sentPostcards         Postcard[]     @relation("SentPostcards")
   receivedPostcards     Postcard[]     @relation("ReceivedPostcards")
   campusStatus          CampusStatus?
+  relationshipsA        Relationship[]         @relation("RelationshipUserA")
+  relationshipsB        Relationship[]         @relation("RelationshipUserB")
+  sentRelationRequests  RelationshipRequest[]  @relation("RelationshipRequestFrom")
+  receivedRelationRequests RelationshipRequest[] @relation("RelationshipRequestTo")
 }
 
 model InviteCode {
@@ -173,6 +177,7 @@ model Notification {
   type      String    @db.VarChar(32)
   postId    String?
   commentId String?
+  requestId String?
   readAt    DateTime?
   createdAt DateTime  @default(now())
 
@@ -180,8 +185,10 @@ model Notification {
   actor   User?    @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
   post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
   comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  request RelationshipRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
 
   @@index([userId, readAt, createdAt])
+  @@index([requestId])
 }
 
 model CampusStatus {
@@ -218,4 +225,42 @@ model Postcard {
 
   @@index([recipientId, expiresAt, createdAt])
   @@index([senderId, createdAt])
+}
+
+model Relationship {
+  id        String   @id @default(cuid())
+  userAId   String
+  userBId   String
+  type      String   @db.VarChar(16)
+  xp        Int      @default(0)
+  xpDay     String?  @db.VarChar(10)
+  xpToday   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userA User @relation("RelationshipUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("RelationshipUserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  // 同一种关系每位成员最多绑定一位（如：不能同时和两个人绑“情侣”）
+  @@unique([userAId, type])
+  @@unique([userBId, type])
+}
+
+model RelationshipRequest {
+  id          String    @id @default(cuid())
+  fromUserId  String
+  toUserId    String
+  type        String    @db.VarChar(16)
+  message     String?   @db.VarChar(120)
+  status      String    @default("PENDING") @db.VarChar(16)
+  createdAt   DateTime  @default(now())
+  respondedAt DateTime?
+
+  fromUser User @relation("RelationshipRequestFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("RelationshipRequestTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  notifications Notification[]
+
+  @@index([toUserId, status])
+  @@index([fromUserId])
 }

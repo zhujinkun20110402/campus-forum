@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { RELATIONSHIP_TYPE_CODES } from "@/lib/relationship-config"
 
 export const loginSchema = z.object({
   name: z.string().min(1, "请输入用户名或邮箱"),
@@ -41,6 +42,12 @@ export const profileSchema = z.object({
   image: z.string().optional().or(z.literal("")),
   hideFollowers: z.boolean().optional(),
   hideFollowing: z.boolean().optional(),
+})
+
+export const relationshipRequestSchema = z.object({
+  targetId: z.string().trim().min(1, "请选择想要绑定的成员"),
+  type: z.enum(RELATIONSHIP_TYPE_CODES as [string, ...string[]], { message: "请选择一种关系" }),
+  message: z.string().trim().max(120, "留言最多 120 个字").optional().or(z.literal("")),
 })
 
 export type LoginInput = z.infer<typeof loginSchema>

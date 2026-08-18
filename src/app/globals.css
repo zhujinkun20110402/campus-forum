@@ -396,6 +396,30 @@ body {
   animation: motto-glow 4s ease-in-out infinite;
 }
 
+/* 七夕心跳：横幅与表白墙上的爱心 */
+@keyframes qixi-heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.22);
+  }
+  40% {
+    transform: scale(0.92);
+  }
+  60% {
+    transform: scale(1.14);
+  }
+  75% {
+    transform: scale(0.98);
+  }
+}
+
+.animate-qixi-heartbeat {
+  animation: qixi-heartbeat 1.8s ease-in-out infinite;
+  transform-origin: center;
+}
+
 /* 弹跳箭头 */
 @keyframes bounce-subtle {
   0%, 100% {
