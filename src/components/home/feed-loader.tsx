@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { getMorePosts } from "@/lib/actions"
-import { PostCard } from "@/components/post/post-card"
-import { Loader2 } from "lucide-react"
+import { PostRow } from "@/components/post/post-row"
+import { ChevronDown, Loader2 } from "lucide-react"
 
 interface PostType {
   id: string
@@ -26,7 +26,6 @@ export function FeedLoader({ initialPosts, pageSize = 12, feed = "latest" }: Fee
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(initialPosts.length >= pageSize)
-  const sentinelRef = useRef<HTMLDivElement>(null)
 
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) return
@@ -47,43 +46,39 @@ export function FeedLoader({ initialPosts, pageSize = 12, feed = "latest" }: Fee
     }
   }, [page, pageSize, feed, loading, hasMore])
 
-  useEffect(() => {
-    const sentinel = sentinelRef.current
-    if (!sentinel) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore()
-        }
-      },
-      { threshold: 0.1 }
-    )
-
-    observer.observe(sentinel)
-    return () => observer.disconnect()
-  }, [loadMore])
-
   return (
     <div>
-      <div className="grid gap-5">
+      <div className="overflow-hidden border-2 border-[#191914] bg-[#fffaf0] shadow-[5px_5px_0_rgba(25,25,20,0.16)] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[5px_5px_0_rgba(245,240,229,0.12)]">
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
+          <PostRow key={post.id} post={post} />
         ))}
       </div>
 
-      <div ref={sentinelRef} className="flex min-h-20 items-center justify-center py-8">
-        {loading && (
-          <div className="flex items-center gap-2 border border-[#191914] bg-[#fffaf0] px-4 py-2 font-mono text-[10px] font-bold tracking-[0.12em] text-[#777268] dark:border-[#f5f0e5] dark:bg-[#191914] dark:text-[#aaa69c]">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            LOADING MORE
-          </div>
-        )}
-        {!hasMore && posts.length > 0 && (
+      <div className="mt-5 flex min-h-11 items-center justify-center">
+        {hasMore ? (
+          <button
+            type="button"
+            onClick={loadMore}
+            disabled={loading}
+            className="inline-flex h-11 items-center gap-2 border-2 border-[#191914] bg-[#fffaf0] px-6 text-sm font-bold text-[#191914] shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60 disabled:hover:translate-y-0 dark:border-[#f5f0e5] dark:bg-[#191914] dark:text-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5]"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                加载中…
+              </>
+            ) : (
+              <>
+                加载更多
+                <ChevronDown className="h-4 w-4" aria-hidden />
+              </>
+            )}
+          </button>
+        ) : posts.length > 0 ? (
           <p className="font-mono text-[10px] font-bold tracking-[0.16em] text-[#918b80] dark:text-[#77736b]">
             — YOU&apos;RE ALL CAUGHT UP —
           </p>
-        )}
+        ) : null}
       </div>
     </div>
   )

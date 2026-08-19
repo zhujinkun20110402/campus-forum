@@ -1,4 +1,4 @@
-import { PostCard } from "@/components/post/post-card"
+import { PostRow } from "@/components/post/post-row"
 
 interface PostListProps {
   posts: {
@@ -27,9 +27,9 @@ interface PostListProps {
 
 export function PostList({ posts, hideAuthor = false }: PostListProps) {
   return (
-    <div className="grid gap-5">
+    <div className="overflow-hidden border-2 border-[#191914] bg-[#fffaf0] shadow-[5px_5px_0_rgba(25,25,20,0.16)] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[5px_5px_0_rgba(245,240,229,0.12)]">
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} hideAuthor={hideAuthor} />
+        <PostRow key={post.id} post={post} hideAuthor={hideAuthor} />
       ))}
     </div>
   )

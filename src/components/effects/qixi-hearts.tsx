@@ -108,12 +108,35 @@ export function QixiHearts({
 
     resize()
     createParticles()
-    if (reducedMotion) {
-      drawFrame()
-    } else {
+
+    let visible = true
+    if (!reducedMotion) {
       animationId = requestAnimationFrame(loop)
+      // 离屏时暂停动画，减少不必要的 CPU 占用
+      const visibilityObserver = new IntersectionObserver(
+        (entries) => {
+          const isVisible = entries[0]?.isIntersecting ?? true
+          if (isVisible && !visible) {
+            visible = true
+            animationId = requestAnimationFrame(loop)
+          } else if (!isVisible && visible) {
+            visible = false
+            cancelAnimationFrame(animationId)
+          }
+        },
+        { threshold: 0.02 }
+      )
+      visibilityObserver.observe(canvas)
+      window.addEventListener("resize", handleResize)
+
+      return () => {
+        visibilityObserver.disconnect()
+        cancelAnimationFrame(animationId)
+        window.removeEventListener("resize", handleResize)
+      }
     }
 
+    drawFrame()
     window.addEventListener("resize", handleResize)
 
     return () => {

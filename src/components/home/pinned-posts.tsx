@@ -27,7 +27,7 @@ export function PinnedPosts({ posts }: PinnedPostsProps) {
         </div>
         <div>
           <h3 className="text-sm font-bold">置顶公告</h3>
-          <p className="font-mono text-[9px] font-bold tracking-[0.14em] text-[#191914]/55">PINNED BY SCHOOL</p>
+          <p className="font-mono text-[9px] font-bold tracking-[0.14em] text-[#191914]/55">PINNED BY ADMIN</p>
         </div>
       </div>
 

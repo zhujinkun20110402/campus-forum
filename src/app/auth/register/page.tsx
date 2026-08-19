@@ -23,7 +23,7 @@ export default function RegisterPage() {
               <SafeImage src="/images/app-icon.png" alt="论坛图标" fill sizes="44px" className="object-contain p-1" />
             </div>
             <div>
-              <p className="font-serif text-sm font-bold">北京二中经开区学校</p>
+              <p className="font-serif text-sm font-bold">学生论坛</p>
               <p className="mt-1 font-mono text-[8px] font-bold tracking-[0.18em] text-[#d9ef61]">CAMPUS FORUM</p>
             </div>
           </Link>

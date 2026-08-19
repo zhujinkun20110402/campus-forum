@@ -8,9 +8,7 @@ import { CountUp } from "@/components/effects/count-up"
 import { BanUserButton } from "@/components/admin/ban-user-button"
 import { ReputationAdjustButton } from "@/components/admin/reputation-adjust-button"
 import { LevelBadge } from "@/components/reputation/level-badge"
-import { getPhotosPreview } from "@/lib/album-store"
 import { EditorialHero } from "@/components/ui/editorial"
-import { SafeImage } from "@/components/ui/safe-image"
 import { requireUser } from "@/lib/session"
 import {
   Users,
@@ -19,7 +17,6 @@ import {
   Shield,
   Clock,
   TrendingUp,
-  Images,
   Activity,
   Server,
   CheckCircle2,
@@ -58,7 +55,6 @@ export default async function AdminPage() {
     totalPosts,
     totalComments,
     totalLikes,
-    photos,
     categoryStats,
   ] = await Promise.all([
     prisma.user.findMany({
@@ -97,7 +93,6 @@ export default async function AdminPage() {
     prisma.post.count(),
     prisma.comment.count(),
     prisma.like.count(),
-    getPhotosPreview(16),
     prisma.category.findMany({
       include: { _count: { select: { posts: true } } },
       orderBy: { posts: { _count: "desc" } },
@@ -303,10 +298,6 @@ export default async function AdminPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-stone-400">照片墙</span>
-                  <a href="/album" className="text-sm text-amber-400 hover:underline">查看 →</a>
-                </div>
-                <div className="flex items-center justify-between">
                   <span className="text-xs text-stone-400">版本</span>
                   <span className="text-sm text-white font-mono">v2.0.0</span>
                 </div>
@@ -314,66 +305,6 @@ export default async function AdminPage() {
             </div>
           </ScrollReveal>
         </div>
-
-        {/* Photo Wall Preview */}
-        <ScrollReveal delay={0.1}>
-          <div className="overflow-hidden border-2 border-[#191914] bg-[#fffaf0] shadow-[5px_5px_0_rgba(25,25,20,0.16)] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[5px_5px_0_rgba(245,240,229,0.1)]">
-            <div className="p-6 border-b border-stone-100 dark:border-stone-800">
-              <div className="flex items-center gap-2">
-                <Images className="h-5 w-5 text-amber-500" />
-                <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">照片墙</h2>
-                <span className="text-xs text-stone-400 dark:text-stone-500 ml-auto">
-                  最近 {photos.length} 张
-                </span>
-                <a
-                  href="/album"
-                  className="ml-3 text-xs text-amber-600 dark:text-amber-400 hover:underline"
-                >
-                  前往管理 →
-                </a>
-              </div>
-            </div>
-            {photos.length > 0 ? (
-              <div className="p-6">
-                <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
-                  {photos.slice(0, 16).map((photo) => (
-                    <div
-                      key={photo.url}
-                      className="group relative aspect-square overflow-hidden border border-[#191914]/20 dark:border-white/20"
-                    >
-                      <SafeImage
-                        src={photo.thumb || photo.url}
-                        alt={photo.caption ?? ""}
-                        fill
-                        sizes="(min-width: 1024px) 12vw, 25vw"
-                        className="object-cover"
-                      />
-                      {photo.caption && (
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-end p-1.5 transition-opacity">
-                          <p className="text-[9px] text-white/80 line-clamp-2 leading-tight">
-                            {photo.caption}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                {photos.length === 16 && (
-                  <p className="text-center text-xs text-stone-400 dark:text-stone-500 mt-4">
-                    前往照片墙查看全部
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="p-12 text-center">
-                <Images className="mx-auto h-10 w-10 text-stone-300 dark:text-stone-700" />
-                <p className="mt-3 text-sm text-stone-400 dark:text-stone-500">
-                  照片墙暂无照片，前往添加
-                </p>
-              </div>
-            )}
-          </div>
-        </ScrollReveal>
 
         {/* Users Management */}
         <ScrollReveal delay={0.15}>

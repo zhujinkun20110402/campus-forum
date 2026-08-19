@@ -53,7 +53,6 @@ const mobileExtraLinks: NavLinkItem[] = [
   { href: "/postcards", label: "明信片" },
   { href: "/relationships", label: "关系", icon: HeartHandshake, surface: "bg-[#d9ef61] dark:bg-[#3f4a1c]" },
   { href: "/category/activity", label: "活动" },
-  { href: "/album", label: "相册" },
   { href: "/invites", label: "邀请" },
 ]
 
@@ -94,7 +93,7 @@ export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: stri
               </div>
               <div className="min-w-0 leading-none">
                 <span className="block truncate font-serif text-sm font-bold tracking-tight sm:text-[15px]">
-                  北京二中经开区学校
+                  学生论坛
                 </span>
                 <span className="mt-1 block font-mono text-[8px] font-bold tracking-[0.18em] text-[#e4532f]">
                   CAMPUS FORUM
@@ -164,7 +163,7 @@ export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: stri
                 <>
                   <Link
                     href="/post/new"
-                    className="hidden h-9 items-center gap-1.5 border-2 border-[#191914] bg-[#ff6b43] px-3.5 text-xs font-bold text-[#191914] shadow-[2px_2px_0_#191914] transition-transform hover:-translate-y-0.5 sm:flex dark:border-[#f5f0e5] dark:shadow-[2px_2px_0_#f5f0e5]"
+                    className="inline-flex h-9 shrink-0 items-center gap-1.5 border-2 border-[#191914] bg-[#ff6b43] px-3 text-xs font-bold text-[#191914] shadow-[2px_2px_0_#191914] transition-transform hover:-translate-y-0.5 dark:border-[#f5f0e5] dark:shadow-[2px_2px_0_#f5f0e5]"
                   >
                     <PenLine className="h-3.5 w-3.5" />
                     发帖
@@ -308,11 +307,8 @@ export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: stri
               })}
                 </nav>
                 <div className="mt-3 flex items-center gap-2 border-t border-[#191914]/20 pt-3 dark:border-white/20">
-              <Link href="/search" onClick={() => setMobileMenuOpen(false)} className="flex h-11 flex-1 items-center justify-center gap-2 border border-[#191914] text-sm font-bold hover:bg-[#f3c84b] dark:border-[#f5f0e5]">
+              <Link href="/search" onClick={() => setMobileMenuOpen(false)} className="flex h-11 w-full items-center justify-center gap-2 border border-[#191914] text-sm font-bold hover:bg-[#f3c84b] dark:border-[#f5f0e5]">
                 <Search className="h-4 w-4" /> 搜索
-              </Link>
-              <Link href="/post/new" onClick={() => setMobileMenuOpen(false)} className="flex h-11 flex-1 items-center justify-center gap-2 border border-[#191914] bg-[#ff6b43] text-sm font-bold text-[#191914] dark:border-[#f5f0e5]">
-                  <PenLine className="h-4 w-4" /> 发帖
               </Link>
                 </div>
               </>

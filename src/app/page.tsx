@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Suspense } from "react"
 import type { LucideIcon } from "lucide-react"
 import {
   ArrowRight,
@@ -11,7 +12,6 @@ import {
   LockKeyhole,
   MapPin,
   Megaphone,
-  MessageCircle,
   MessageSquareWarning,
   Plus,
   Search,
@@ -168,49 +168,72 @@ export default async function HomePage({
   const params = await searchParams
   const feedMode = params.feed === "following" ? "following" : "latest"
 
-  const [pinnedPosts, posts, trendingPosts, activeUsers, stats, categoryCounts, checkInStatus, campusStatuses] = await Promise.all([
-    getPinnedPosts(),
-    prisma.post.findMany({
-      where: feedMode === "following"
-        ? { author: { followers: { some: { followerId: session.user.id } } } }
-        : { pinned: false },
-      take: 12,
-      orderBy: { createdAt: "desc" },
-      include: {
-        author: { select: { id: true, name: true, image: true, role: true, raputation: true } },
-        category: { select: { name: true, slug: true } },
-        _count: { select: { comments: true, likes: true } },
-      },
-    }),
-    getTrendingPosts(),
-    prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 6,
-      select: { id: true, name: true, image: true, role: true, raputation: true },
-    }),
-    prisma.$transaction([
-      prisma.post.count(),
-      prisma.user.count(),
-      prisma.comment.count(),
-    ]),
-    prisma.category.findMany({
-      include: {
-        _count: { select: { posts: true } },
-      },
-    }),
-    getCheckInStatus(session.user.id),
-    getVisibleCampusStatuses(session.user.id, 5),
-  ])
-
-  const [totalPosts, totalUsers, totalComments] = stats
-  const countMap = new Map(categoryCounts.map((category) => [category.slug, category._count.posts]))
-  const regularPosts = posts
-
   return (
     <div className="min-h-screen overflow-hidden bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5]">
       <QixiBanner />
 
-      <section className="campus-paper relative overflow-hidden px-4 pb-16 pt-10 sm:px-6 sm:pt-12 lg:min-h-[820px] lg:px-8 lg:pb-24 lg:pt-16">
+      {/* 手机 / 平板：照片背景版报头——大气、且不占过深 */}
+      <section className="relative overflow-hidden border-b-2 border-[#191914] pt-24 dark:border-[#f5f0e5] lg:hidden">
+        <div aria-hidden className="absolute inset-0">
+          <SafeImage
+            src="/images/campus-01.jpg"
+            alt="校园风景"
+            fill
+            priority
+            sizes="(max-width: 1023px) 100vw, 1px"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-[#11110f]/55" />
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#11110f]/85 to-transparent" />
+        </div>
+        <QixiHearts density={10} />
+
+        <div className="relative mx-auto max-w-7xl px-4 pb-9 pt-5 sm:px-6">
+          <div className="inline-flex items-center gap-2 border border-[#f5f0e5] bg-[#191914]/70 px-2.5 py-1 font-mono text-[8px] font-bold tracking-[0.18em] text-[#f5f0e5] backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#ff5b35]" />
+            CAMPUS IS LIVE
+          </div>
+
+          <h1 className="mt-4 font-serif text-[clamp(2.4rem,9vw,3.6rem)] font-bold leading-[0.98] tracking-[-0.05em] text-[#f5f0e5] drop-shadow-[2px_2px_0_rgba(0,0,0,0.5)]">
+            把校园
+            <span className="relative mt-2 block w-fit">
+              <span className="relative z-10 inline-block -rotate-1 bg-[#d9ef61] px-2 py-0.5 text-[#191914] shadow-[3px_3px_0_rgba(25,25,20,0.55)]">
+                说得更鲜活
+              </span>
+            </span>
+          </h1>
+
+          <p className="mt-3 line-clamp-2 max-w-md text-xs leading-5 text-white/75 sm:text-sm">
+            分享问题、找到同伴、交换消息，也认真收藏那些只会发生一次的青春现场。
+          </p>
+
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href="/post/new"
+                className="inline-flex h-10 items-center gap-1.5 border-2 border-[#191914] bg-[#ff6b43] px-4 text-xs font-bold text-[#191914] shadow-[3px_3px_0_#f5f0e5] transition-transform hover:-translate-y-0.5"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                发布新帖
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+              <Link
+                href="#latest"
+                className="inline-flex h-10 items-center gap-1.5 border-2 border-[#f5f0e5] bg-[#191914]/70 px-4 text-xs font-bold text-[#f5f0e5] backdrop-blur-sm transition-colors hover:bg-[#f5f0e5] hover:text-[#191914]"
+              >
+                <Compass className="h-3.5 w-3.5" />
+                逛逛新鲜事
+              </Link>
+            </div>
+            <Suspense fallback={null}>
+              <HomeStats variant="mobile" />
+            </Suspense>
+          </div>
+        </div>
+      </section>
+
+      {/* 桌面端：保留原版巨幅标题与照片 hero */}
+      <section className="campus-paper relative hidden overflow-hidden px-4 pb-16 pt-24 sm:px-6 lg:block lg:min-h-[820px] lg:px-8 lg:pb-24 lg:pt-28">
         <QixiHearts />
         <div aria-hidden className="absolute -left-12 top-44 h-28 w-28 rotate-12 border-2 border-[#191914] bg-[#d9ef61] dark:border-[#f5f0e5]" />
         <div aria-hidden className="absolute -right-10 bottom-20 h-36 w-36 rounded-full border-2 border-[#191914] bg-[#ff6b43] dark:border-[#f5f0e5]" />
@@ -244,11 +267,11 @@ export default async function HomePage({
             <ScrollReveal delay={0.24}>
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 <Link
-                  href={session?.user ? "/post/new" : "/auth/signin"}
+                  href="/post/new"
                   className="hard-shadow group inline-flex min-h-12 items-center gap-2 border-2 border-[#191914] bg-[#ff6b43] px-6 py-3 text-sm font-bold text-[#191914] transition-transform hover:-translate-y-1 dark:border-[#f5f0e5]"
                 >
-                  {session?.user ? <Plus className="h-4 w-4" /> : <MessageCircle className="h-4 w-4" />}
-                  {session?.user ? "发布新帖" : "加入校园社区"}
+                  <Plus className="h-4 w-4" />
+                  发布新帖
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
                 <Link
@@ -262,28 +285,9 @@ export default async function HomePage({
             </ScrollReveal>
 
             <ScrollReveal delay={0.32}>
-              <div className="mt-12 grid max-w-xl grid-cols-3 border-y-2 border-[#191914] dark:border-[#f5f0e5]">
-                {[
-                  [totalPosts, "正在讨论"],
-                  [totalUsers, "校园成员"],
-                  [totalComments, "真诚回应"],
-                ].map(([value, label], index) => (
-                  <div
-                    key={label}
-                    className={cn(
-                      "py-4 text-center sm:py-5",
-                      index !== 0 && "border-l border-[#191914]/30 dark:border-[#f5f0e5]/30"
-                    )}
-                  >
-                    <div className="font-mono text-2xl font-bold tracking-tight sm:text-3xl">
-                      <CountUp end={Number(value)} />
-                    </div>
-                    <div className="mt-1 text-[10px] font-medium tracking-[0.14em] text-[#777268] dark:text-[#969187]">
-                      {label}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Suspense fallback={null}>
+                <HomeStats variant="desktop" />
+              </Suspense>
             </ScrollReveal>
           </div>
 
@@ -293,7 +297,7 @@ export default async function HomePage({
               <div className="relative aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5] xl:aspect-[5/4]">
                 <SafeImage
                   src="/images/campus-01.jpg"
-                  alt="北京二中经开区学校校园"
+                  alt="校园风景"
                   fill
                   priority
                   sizes="(min-width: 1024px) 52vw, 100vw"
@@ -343,77 +347,98 @@ export default async function HomePage({
         </div>
       </div>
 
-      <section id="categories" className="bg-[#fffaf0] px-4 py-20 dark:bg-[#151512] sm:px-6 sm:py-24 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <ScrollReveal>
-            <div className="mb-10 flex flex-col justify-between gap-5 border-b-2 border-[#191914] pb-6 dark:border-[#f5f0e5] sm:flex-row sm:items-end">
-              <div>
-                <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-[#e4532f]">01 / FIND YOUR CORNER</p>
-                <h2 className="mt-3 font-serif text-4xl font-bold tracking-tight sm:text-5xl">今天想聊什么？</h2>
-              </div>
-              <p className="max-w-sm text-sm leading-6 text-[#777268] dark:text-[#989389]">
-                从一条通知到一道难题，每个版块都对应一段真实的校园生活。
-              </p>
-            </div>
-          </ScrollReveal>
+      <Suspense fallback={<HomeContentSkeleton />}>
+        <HomeContent userId={session.user.id} feedMode={feedMode} />
+      </Suspense>
+    </div>
+  )
+}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {categoryEntries.map((entry, index) => {
-              const Icon = entry.icon
-              const href = entry.isPage ? "/confession" : `/category/${entry.slug}`
-              const postCount = countMap.get(entry.slug) ?? 0
+async function HomeStats({ variant }: { variant: "mobile" | "desktop" }) {
+  const [totalPosts, totalUsers, totalComments] = await prisma.$transaction([
+    prisma.post.count(),
+    prisma.user.count(),
+    prisma.comment.count(),
+  ])
 
-              return (
-                <ScrollReveal key={entry.slug} delay={index * 0.05}>
-                  <Link
-                    href={href}
-                    className={cn(
-                      "category-block group relative flex min-h-48 flex-col justify-between overflow-hidden border-2 border-[#191914] p-5 text-[#191914] shadow-[6px_6px_0_#191914] transition-all duration-300 hover:-translate-y-1 hover:shadow-[10px_10px_0_#191914] sm:p-6",
-                      entry.surface
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center border-2 border-[#191914] bg-[#fffaf0]">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="flex flex-col items-end gap-1.5">
-                        <span className="font-mono text-[10px] font-bold tracking-[0.15em]">
-                          {String(index + 1).padStart(2, "0")} / {entry.english}
-                        </span>
-                        {entry.badge && (
-                          <span className="inline-flex items-center gap-1 border border-[#191914] bg-[#fffaf0] px-1.5 py-0.5 font-mono text-[8px] font-bold tracking-[0.14em] text-[#e4532f]">
-                            <Heart className="h-2.5 w-2.5 animate-qixi-heartbeat" aria-hidden />
-                            {entry.badge}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="mt-8">
-                      <div className="flex items-end justify-between gap-4">
-                        <div>
-                          <h3 className="font-serif text-2xl font-bold">{entry.name}</h3>
-                          <p className="mt-1 text-sm text-[#191914]/65">{entry.desc}</p>
-                        </div>
-                        <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
-                      </div>
-                      <p className="mt-4 border-t border-[#191914]/25 pt-3 font-mono text-[10px] font-bold tracking-[0.12em]">
-                        {postCount} POSTS
-                      </p>
-                    </div>
-                  </Link>
-                </ScrollReveal>
-              )
-            })}
+  if (variant === "mobile") {
+    return (
+      <div className="flex items-center gap-3 font-mono text-[10px] font-bold text-white/80">
+        <span><CountUp end={totalPosts} /> 帖</span>
+        <span aria-hidden className="h-3 w-px bg-white/30" />
+        <span><CountUp end={totalUsers} /> 成员</span>
+        <span aria-hidden className="h-3 w-px bg-white/30" />
+        <span><CountUp end={totalComments} /> 回应</span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-12 grid max-w-xl grid-cols-3 border-y-2 border-[#191914] dark:border-[#f5f0e5]">
+      {[
+        [totalPosts, "正在讨论"],
+        [totalUsers, "校园成员"],
+        [totalComments, "真诚回应"],
+      ].map(([value, label], index) => (
+        <div
+          key={label}
+          className={cn(
+            "py-4 text-center sm:py-5",
+            index !== 0 && "border-l border-[#191914]/30 dark:border-[#f5f0e5]/30"
+          )}
+        >
+          <div className="font-mono text-2xl font-bold tracking-tight sm:text-3xl">
+            <CountUp end={Number(value)} />
+          </div>
+          <div className="mt-1 text-[10px] font-medium tracking-[0.14em] text-[#777268] dark:text-[#969187]">
+            {label}
           </div>
         </div>
-      </section>
+      ))}
+    </div>
+  )
+}
 
-      <section id="latest" className="campus-dot-grid bg-[#ece6da] px-4 py-20 dark:bg-[#10100e] sm:px-6 sm:py-24 lg:px-8">
+async function HomeContent({ userId, feedMode }: { userId: string; feedMode: "latest" | "following" }) {
+  const [pinnedPosts, posts, trendingPosts, activeUsers, categoryCounts, checkInStatus, campusStatuses] = await Promise.all([
+    getPinnedPosts(),
+    prisma.post.findMany({
+      where: feedMode === "following"
+        ? { author: { followers: { some: { followerId: userId } } } }
+        : { pinned: false },
+      take: 12,
+      orderBy: { createdAt: "desc" },
+      include: {
+        author: { select: { id: true, name: true, image: true, role: true, raputation: true } },
+        category: { select: { name: true, slug: true } },
+        _count: { select: { comments: true, likes: true } },
+      },
+    }),
+    getTrendingPosts(),
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 6,
+      select: { id: true, name: true, image: true, role: true, raputation: true },
+    }),
+    prisma.category.findMany({
+      include: {
+        _count: { select: { posts: true } },
+      },
+    }),
+    getCheckInStatus(userId),
+    getVisibleCampusStatuses(userId, 5),
+  ])
+
+  const countMap = new Map(categoryCounts.map((category) => [category.slug, category._count.posts]))
+
+  return (
+    <>
+      <section id="latest" className="campus-dot-grid bg-[#ece6da] px-4 py-14 dark:bg-[#10100e] sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <ScrollReveal>
             <div className="mb-10 flex flex-col justify-between gap-5 border-b-2 border-[#191914] pb-6 dark:border-[#f5f0e5] sm:flex-row sm:items-end">
               <div>
-                <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-[#e4532f]">02 / CAMPUS FEED</p>
+                <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-[#e4532f]">01 / CAMPUS FEED</p>
                 <h2 className="mt-3 font-serif text-4xl font-bold tracking-tight sm:text-5xl">校园正在发生</h2>
                 <div className="mt-5 inline-flex border-2 border-[#191914] bg-[#fffaf0] p-1 dark:border-[#f5f0e5] dark:bg-[#191914]" aria-label="动态范围">
                   <Link
@@ -439,11 +464,11 @@ export default async function HomePage({
                 </div>
               </div>
               <Link
-                href={session?.user ? "/post/new" : "/auth/signin"}
+                href="/post/new"
                 className="group inline-flex items-center gap-2 self-start border-2 border-[#191914] bg-[#d9ef61] px-4 py-2.5 text-sm font-bold text-[#191914] shadow-[3px_3px_0_#191914] transition-transform hover:-translate-y-1 dark:border-[#f5f0e5] dark:shadow-[3px_3px_0_#f5f0e5] sm:self-auto"
               >
                 <Plus className="h-4 w-4" />
-                {session?.user ? "写点新鲜的" : "登录后发帖"}
+                写点新鲜的
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
@@ -457,7 +482,7 @@ export default async function HomePage({
                 </ScrollReveal>
               )}
 
-              {regularPosts.length === 0 ? (
+              {posts.length === 0 ? (
                 <ScrollReveal>
                   <div className="border-2 border-dashed border-[#191914] bg-[#fffaf0] px-6 py-20 text-center dark:border-[#f5f0e5] dark:bg-[#191914]">
                     <Users className="mx-auto h-10 w-10 text-[#ff6b43]" />
@@ -475,7 +500,7 @@ export default async function HomePage({
                   </div>
                 </ScrollReveal>
               ) : (
-                <FeedLoader key={feedMode} initialPosts={regularPosts} feed={feedMode} />
+                <FeedLoader key={feedMode} initialPosts={posts} feed={feedMode} />
               )}
             </div>
 
@@ -484,15 +509,15 @@ export default async function HomePage({
                 <DailyCheckInCard initialStatus={checkInStatus} compact />
               </ScrollReveal>
               <ScrollReveal direction="left" delay={0.04}>
-                <CampusStatusMiniBoard statuses={campusStatuses} viewerId={session.user.id} />
+                <CampusStatusMiniBoard statuses={campusStatuses} viewerId={userId} />
               </ScrollReveal>
-              <ScrollReveal direction="left">
+              <ScrollReveal direction="left" className="hidden lg:block">
                 <TrendingPosts posts={trendingPosts} />
               </ScrollReveal>
-              <ScrollReveal direction="left" delay={0.08}>
+              <ScrollReveal direction="left" delay={0.08} className="hidden lg:block">
                 <ActiveUsers users={activeUsers} />
               </ScrollReveal>
-              <ScrollReveal direction="left" delay={0.16}>
+              <ScrollReveal direction="left" delay={0.16} className="hidden lg:block">
                 <div className="border-2 border-[#191914] bg-[#191914] p-6 text-[#f8f0e3] shadow-[6px_6px_0_#ff6b43] dark:border-[#f5f0e5]">
                   <p className="font-mono text-[10px] font-bold tracking-[0.18em] text-[#d9ef61]">COMMUNITY NOTE</p>
                   <h3 className="mt-3 font-serif text-2xl font-bold">认真表达，也认真回应。</h3>
@@ -509,6 +534,71 @@ export default async function HomePage({
         </div>
       </section>
 
+      <section id="categories" className="bg-[#fffaf0] px-4 py-14 dark:bg-[#151512] sm:px-6 sm:py-20 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <ScrollReveal>
+            <div className="mb-8 flex flex-col justify-between gap-5 border-b-2 border-[#191914] pb-6 dark:border-[#f5f0e5] sm:flex-row sm:items-end">
+              <div>
+                <p className="font-mono text-[10px] font-bold tracking-[0.2em] text-[#e4532f]">02 / FIND YOUR CORNER</p>
+                <h2 className="mt-3 font-serif text-4xl font-bold tracking-tight sm:text-5xl">今天想聊什么？</h2>
+              </div>
+              <p className="max-w-sm text-sm leading-6 text-[#777268] dark:text-[#989389]">
+                从一条通知到一道难题，每个版块都对应一段真实的校园生活。
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {categoryEntries.map((entry, index) => {
+              const Icon = entry.icon
+              const href = entry.isPage ? "/confession" : `/category/${entry.slug}`
+              const postCount = countMap.get(entry.slug) ?? 0
+
+              return (
+                <ScrollReveal key={entry.slug} delay={index * 0.04}>
+                  <Link
+                    href={href}
+                    className={cn(
+                      "category-block group relative flex min-h-36 flex-col justify-between overflow-hidden border-2 border-[#191914] p-3.5 text-[#191914] shadow-[5px_5px_0_#191914] transition-all duration-300 hover:-translate-y-1 hover:shadow-[8px_8px_0_#191914] sm:min-h-40 sm:p-4",
+                      entry.surface
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex h-9 w-9 items-center justify-center border-2 border-[#191914] bg-[#fffaf0] sm:h-10 sm:w-10">
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="font-mono text-[9px] font-bold tracking-[0.12em]">
+                          {String(index + 1).padStart(2, "0")} / {entry.english}
+                        </span>
+                        {entry.badge && (
+                          <span className="inline-flex items-center gap-1 border border-[#191914] bg-[#fffaf0] px-1.5 py-0.5 font-mono text-[8px] font-bold tracking-[0.14em] text-[#e4532f]">
+                            <Heart className="h-2.5 w-2.5 animate-qixi-heartbeat" aria-hidden />
+                            {entry.badge}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-5 sm:mt-6">
+                      <div className="flex items-end justify-between gap-2">
+                        <div className="min-w-0">
+                          <h3 className="truncate font-serif text-lg font-bold sm:text-xl">{entry.name}</h3>
+                          <p className="mt-0.5 line-clamp-1 text-xs text-[#191914]/65">{entry.desc}</p>
+                        </div>
+                        <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
+                      </div>
+                      <p className="mt-3 border-t border-[#191914]/25 pt-2 font-mono text-[9px] font-bold tracking-[0.12em] sm:text-[10px]">
+                        {postCount} POSTS
+                      </p>
+                    </div>
+                  </Link>
+                </ScrollReveal>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
       <section className="bg-[#191914] px-4 py-20 text-[#f8f0e3] sm:px-6 sm:py-24 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <ScrollReveal>
@@ -518,7 +608,7 @@ export default async function HomePage({
                 <h2 className="mt-3 font-serif text-4xl font-bold tracking-tight sm:text-5xl">在场的青春</h2>
               </div>
               <div className="flex items-center gap-2 font-mono text-[10px] tracking-[0.14em] text-white/45">
-                <MapPin className="h-3.5 w-3.5 text-[#ff6b43]" /> 北京二中经开区学校
+                <MapPin className="h-3.5 w-3.5 text-[#ff6b43]" /> 学生论坛
               </div>
             </div>
           </ScrollReveal>
@@ -559,10 +649,10 @@ export default async function HomePage({
               <div className="lg:text-right">
                 <p className="mb-5 text-sm leading-6 text-[#191914]/65">分享见闻、提出问题，或者只是记录今天。</p>
                 <Link
-                  href={session?.user ? "/post/new" : "/auth/register"}
+                  href="/post/new"
                   className="inline-flex items-center gap-2 border-2 border-[#191914] bg-[#fffaf0] px-5 py-3 text-sm font-bold shadow-[4px_4px_0_#191914] transition-transform hover:-translate-y-1"
                 >
-                  {session?.user ? "现在发帖" : "加入我们"}
+                  现在发帖
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -570,6 +660,30 @@ export default async function HomePage({
           </ScrollReveal>
         </div>
       </section>
+    </>
+  )
+}
+
+function HomeContentSkeleton() {
+  return (
+    <div className="campus-dot-grid bg-[#ece6da] px-4 py-14 dark:bg-[#10100e] sm:px-6 sm:py-20 lg:px-8" aria-hidden>
+      <div className="mx-auto max-w-7xl">
+        <div className="skeleton mb-10 h-10 w-56 border-2 border-[#191914]/20 dark:border-white/20" />
+        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(300px,0.85fr)]">
+          <div className="min-w-0 overflow-hidden border-2 border-[#191914] bg-[#fffaf0] dark:border-[#f5f0e5] dark:bg-[#191914]">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div key={index} className="space-y-2 border-b border-[#191914]/15 px-3 py-3.5 last:border-b-0 dark:border-white/15 sm:px-5">
+                <div className="skeleton h-4 w-3/4" />
+                <div className="skeleton h-3 w-1/2" />
+              </div>
+            ))}
+          </div>
+          <div className="hidden space-y-5 lg:block">
+            <div className="skeleton h-40 border-2 border-[#191914]/20 dark:border-white/20" />
+            <div className="skeleton h-56 border-2 border-[#191914]/20 dark:border-white/20" />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -579,7 +693,7 @@ function GuestHome() {
     <div className="min-h-screen overflow-hidden bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5]">
       <QixiBanner />
 
-      <section className="campus-paper relative overflow-hidden px-4 pb-18 pt-10 sm:px-6 sm:pt-12 lg:min-h-[760px] lg:px-8 lg:pb-24 lg:pt-16">
+      <section className="campus-paper relative overflow-hidden px-4 pb-18 pt-24 sm:px-6 lg:min-h-[760px] lg:px-8 lg:pb-24 lg:pt-28">
         <QixiHearts />
         <div aria-hidden className="absolute -left-12 top-40 h-28 w-28 rotate-12 border-2 border-[#191914] bg-[#f3c84b] dark:border-[#f5f0e5]" />
         <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">

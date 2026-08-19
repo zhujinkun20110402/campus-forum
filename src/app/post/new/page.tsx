@@ -26,7 +26,7 @@ export default async function NewPostPage({
   const tips = [
     "用一句清晰的标题说明帖子重点",
     "选择准确分类，方便同学快速找到",
-    "正文支持 Markdown 与图片上传",
+    "图片直接粘贴或拖入编辑器，自动插入正文",
     "公开内容中不要留下敏感个人信息",
   ]
 

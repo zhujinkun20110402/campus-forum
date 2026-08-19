@@ -19,7 +19,6 @@ const footerLinks = [
     links: [
       { href: "/search", label: "搜索帖子与成员" },
       { href: "/leaderboard", label: "声望排行榜" },
-      { href: "/album", label: "校园相册" },
       { href: "/status", label: "今日在场" },
       { href: "/postcards", label: "校园明信片" },
       { href: "/post/new", label: "发布新帖" },
@@ -39,7 +38,7 @@ export function Footer() {
                 <SafeImage src="/images/app-icon.png" alt="论坛图标" fill sizes="48px" className="object-contain p-1.5" />
               </div>
               <div>
-                <p className="font-serif text-lg font-bold">北京二中经开区学校</p>
+                <p className="font-serif text-lg font-bold">学生论坛</p>
                 <p className="mt-1 font-mono text-[9px] font-bold tracking-[0.18em] text-[#ff8a68]">CAMPUS FORUM</p>
               </div>
             </div>
@@ -73,7 +72,7 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col gap-3 border-t border-white/20 pt-6 font-mono text-[9px] font-bold tracking-[0.12em] text-white/25 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} BEIJING NO.2 SCHOOL BDA CAMPUS FORUM</p>
+          <p>&copy; {new Date().getFullYear()} STUDENT FORUM</p>
           <div className="flex items-center gap-3">
             <Link
               href="/about"

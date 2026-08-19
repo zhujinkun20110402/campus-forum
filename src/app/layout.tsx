@@ -31,9 +31,9 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "北京二中经开区学校 · 鲜活校园论坛",
+  title: "学生论坛 · 鲜活校园",
   description:
-    "属于北京二中经开区学校同学们的鲜活校园社区，分享学习、活动、失物招领与每一个值得记录的校园故事。",
+    "属于同学们的学生论坛社区，分享学习、活动、失物招领与每一个值得记录的校园故事。",
   icons: {
     icon: "/images/app-icon.png",
     apple: "/images/app-icon.png",
