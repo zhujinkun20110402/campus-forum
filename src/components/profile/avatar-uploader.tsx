@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import { Camera, Loader2, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { SafeImage } from "@/components/ui/safe-image"
+import { prepareImageForUpload } from "@/components/post/image-upload"
 
 interface AvatarUploaderProps {
   value: string
@@ -20,8 +21,10 @@ export function AvatarUploader({ value, onChange }: AvatarUploaderProps) {
 
     setUploading(true)
     try {
+      // 客户端先压缩到 512px 以内，避免超过服务端 4.5MB 上限
+      const processed = await prepareImageForUpload(file, 512)
       const formData = new FormData()
-      formData.append("source", file)
+      formData.append("source", processed, file.name)
       formData.append("target", "avatar")
 
       const res = await fetch("/api/upload", {

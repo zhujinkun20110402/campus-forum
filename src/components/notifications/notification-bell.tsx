@@ -8,6 +8,9 @@ import { cn } from "@/lib/utils"
 
 export const NOTIFICATION_REFRESH_EVENT = "campus:notifications-refresh"
 
+/** 轮询间隔：3 分钟（节约服务端函数调用额度） */
+const POLL_INTERVAL_MS = 180_000
+
 export function NotificationBell() {
   const pathname = usePathname()
   const [unreadCount, setUnreadCount] = useState(0)
@@ -24,10 +27,30 @@ export function NotificationBell() {
   }, [])
 
   useEffect(() => {
+    let interval: number | undefined
+
+    const startPolling = () => {
+      if (interval !== undefined) return
+      interval = window.setInterval(refresh, POLL_INTERVAL_MS)
+    }
+    const stopPolling = () => {
+      if (interval !== undefined) {
+        window.clearInterval(interval)
+        interval = undefined
+      }
+    }
+
     const initialRefresh = window.setTimeout(refresh, 0)
-    const interval = window.setInterval(refresh, 60_000)
+    // 标签页可见时才轮询；切到后台立即暂停，回到前台刷新一次并恢复
+    if (!document.hidden) startPolling()
+
     const handleVisibility = () => {
-      if (document.visibilityState === "visible") void refresh()
+      if (document.hidden) {
+        stopPolling()
+      } else {
+        void refresh()
+        startPolling()
+      }
     }
     const handleRefresh = () => void refresh()
 
@@ -36,7 +59,7 @@ export function NotificationBell() {
     document.addEventListener("visibilitychange", handleVisibility)
     return () => {
       window.clearTimeout(initialRefresh)
-      window.clearInterval(interval)
+      stopPolling()
       window.removeEventListener("focus", handleRefresh)
       window.removeEventListener(NOTIFICATION_REFRESH_EVENT, handleRefresh)
       document.removeEventListener("visibilitychange", handleVisibility)

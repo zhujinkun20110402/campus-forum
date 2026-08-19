@@ -33,8 +33,14 @@ import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { QixiBanner } from "@/components/home/qixi-banner"
 import { SafeImage } from "@/components/ui/safe-image"
 import { auth } from "@/lib/auth"
-import { getPinnedPosts, getTrendingPosts } from "@/lib/actions"
 import { prisma } from "@/lib/prisma"
+import {
+  getActiveUsersCached,
+  getCategoryCountsCached,
+  getPinnedPostsCached,
+  getSiteStatsCached,
+  getTrendingPostsCached,
+} from "@/lib/cacheable-queries"
 import { getVisibleCampusStatuses } from "@/lib/campus-status"
 import { getCheckInStatus } from "@/lib/daily-check-in"
 import { cn } from "@/lib/utils"
@@ -355,11 +361,7 @@ export default async function HomePage({
 }
 
 async function HomeStats({ variant }: { variant: "mobile" | "desktop" }) {
-  const [totalPosts, totalUsers, totalComments] = await prisma.$transaction([
-    prisma.post.count(),
-    prisma.user.count(),
-    prisma.comment.count(),
-  ])
+  const { posts: totalPosts, users: totalUsers, comments: totalComments } = await getSiteStatsCached()
 
   if (variant === "mobile") {
     return (
@@ -401,7 +403,7 @@ async function HomeStats({ variant }: { variant: "mobile" | "desktop" }) {
 
 async function HomeContent({ userId, feedMode }: { userId: string; feedMode: "latest" | "following" }) {
   const [pinnedPosts, posts, trendingPosts, activeUsers, categoryCounts, checkInStatus, campusStatuses] = await Promise.all([
-    getPinnedPosts(),
+    getPinnedPostsCached(),
     prisma.post.findMany({
       where: feedMode === "following"
         ? { author: { followers: { some: { followerId: userId } } } }
@@ -414,17 +416,9 @@ async function HomeContent({ userId, feedMode }: { userId: string; feedMode: "la
         _count: { select: { comments: true, likes: true } },
       },
     }),
-    getTrendingPosts(),
-    prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 6,
-      select: { id: true, name: true, image: true, role: true, raputation: true },
-    }),
-    prisma.category.findMany({
-      include: {
-        _count: { select: { posts: true } },
-      },
-    }),
+    getTrendingPostsCached(),
+    getActiveUsersCached(),
+    getCategoryCountsCached(),
     getCheckInStatus(userId),
     getVisibleCampusStatuses(userId, 5),
   ])
