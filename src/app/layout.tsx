@@ -5,6 +5,7 @@ import { Providers } from "@/components/layout/providers"
 import { HeaderWrapper } from "@/components/layout/header-wrapper"
 import { FooterWrapper } from "@/components/layout/footer-wrapper"
 import { NavigationProgress } from "@/components/layout/navigation-progress"
+import { ImportantNotice } from "@/components/layout/important-notice"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
@@ -34,8 +35,8 @@ export const metadata: Metadata = {
   description:
     "属于北京二中经开区学校同学们的鲜活校园社区，分享学习、活动、失物招领与每一个值得记录的校园故事。",
   icons: {
-    icon: "/images/school-logo.png",
-    apple: "/images/school-logo.png",
+    icon: "/images/app-icon.png",
+    apple: "/images/app-icon.png",
   },
 }
 
@@ -82,6 +83,7 @@ export default async function RootLayout({
           <HeaderWrapper ownStatus={ownStatus} />
           <main className="flex-1">{children}</main>
           <FooterWrapper />
+          <ImportantNotice />
         </Providers>
       </body>
     </html>

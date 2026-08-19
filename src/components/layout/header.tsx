@@ -85,8 +85,8 @@ export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: stri
             <Link href="/" className="group flex min-w-0 items-center gap-2.5" aria-label="返回校园论坛首页">
               <div className="relative h-9 w-9 shrink-0 overflow-hidden border border-[#191914] bg-white dark:border-[#f5f0e5]">
                 <SafeImage
-                  src="/images/school-logo.png"
-                  alt="校徽"
+                  src="/images/app-icon.png"
+                  alt="论坛图标"
                   fill
                   sizes="36px"
                   className="object-contain p-1"

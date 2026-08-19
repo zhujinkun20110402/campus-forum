@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowUpRight, Mail, MapPin, Phone } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 import { SafeImage } from "@/components/ui/safe-image"
 
 const footerLinks = [
@@ -32,11 +32,11 @@ export function Footer() {
   return (
     <footer className="border-t-8 border-[#ff6b43] bg-[#11110f] text-[#f5f0e5]">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8">
-        <div className="grid gap-12 border-b border-white/20 pb-12 lg:grid-cols-[1.35fr_0.65fr_0.65fr]">
+        <div className="grid gap-12 pb-10 lg:grid-cols-[1.35fr_0.65fr_0.65fr]">
           <div>
             <div className="flex items-center gap-3">
               <div className="relative h-12 w-12 overflow-hidden border-2 border-[#f5f0e5] bg-[#d9ef61]">
-                <SafeImage src="/images/school-logo.png" alt="校徽" fill sizes="48px" className="object-contain p-1.5" />
+                <SafeImage src="/images/app-icon.png" alt="论坛图标" fill sizes="48px" className="object-contain p-1.5" />
               </div>
               <div>
                 <p className="font-serif text-lg font-bold">北京二中经开区学校</p>
@@ -70,30 +70,6 @@ export function Footer() {
               </ul>
             </div>
           ))}
-        </div>
-
-        <div className="grid gap-8 py-8 sm:grid-cols-3">
-          <div className="flex items-start gap-3">
-            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#ff6b43]" />
-            <div>
-              <p className="font-mono text-[9px] font-bold tracking-[0.14em] text-white/30">LOCATION</p>
-              <p className="mt-1 text-xs text-white/55">北京市经济技术开发区</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Mail className="mt-0.5 h-4 w-4 shrink-0 text-[#d9ef61]" />
-            <div>
-              <p className="font-mono text-[9px] font-bold tracking-[0.14em] text-white/30">EMAIL</p>
-              <p className="mt-1 text-xs text-white/55">EZJKXSH@outlook.com</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Phone className="mt-0.5 h-4 w-4 shrink-0 text-[#f3c84b]" />
-            <div>
-              <p className="font-mono text-[9px] font-bold tracking-[0.14em] text-white/30">PHONE</p>
-              <p className="mt-1 text-xs text-white/55">010-6780-2277</p>
-            </div>
-          </div>
         </div>
 
         <div className="flex flex-col gap-3 border-t border-white/20 pt-6 font-mono text-[9px] font-bold tracking-[0.12em] text-white/25 sm:flex-row sm:items-center sm:justify-between">

@@ -12,7 +12,7 @@ export default function SignInPage() {
         <div className="relative flex min-h-screen flex-col justify-between p-12 xl:p-16">
           <Link href="/" className="flex items-center gap-3">
             <div className="relative h-11 w-11 overflow-hidden border-2 border-white bg-[#d9ef61]">
-              <SafeImage src="/images/school-logo.png" alt="校徽" fill sizes="44px" className="object-contain p-1" />
+              <SafeImage src="/images/app-icon.png" alt="论坛图标" fill sizes="44px" className="object-contain p-1" />
             </div>
             <div>
               <p className="font-serif text-sm font-bold">北京二中经开区学校</p>
@@ -53,7 +53,7 @@ export default function SignInPage() {
         <div className="w-full max-w-md">
           <Link href="/" className="mb-8 flex items-center gap-3 lg:hidden">
             <div className="relative h-10 w-10 overflow-hidden border-2 border-[#191914] bg-[#d9ef61] dark:border-[#f5f0e5]">
-              <SafeImage src="/images/school-logo.png" alt="校徽" fill sizes="40px" className="object-contain p-1" />
+              <SafeImage src="/images/app-icon.png" alt="论坛图标" fill sizes="40px" className="object-contain p-1" />
             </div>
             <span className="font-serif text-sm font-bold">校园论坛</span>
           </Link>
