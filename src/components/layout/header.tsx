@@ -8,7 +8,6 @@ import type { LucideIcon } from "lucide-react"
 import {
   Bell,
   ChevronDown,
-  Heart,
   HeartHandshake,
   LogOut,
   Mail,
@@ -42,7 +41,7 @@ interface NavLinkItem {
 const navLinks: NavLinkItem[] = [
   { href: "/category/announcement", label: "公告" },
   { href: "/category/lostfound", label: "寻物" },
-  { href: "/confession", label: "表白墙", icon: Heart, badge: "七夕", surface: "bg-[#ffb4aa] dark:bg-[#3a2624]" },
+  { href: "/confession", label: "表白墙" },
   { href: "/category/study", label: "学习" },
   { href: "/category/feedback", label: "反馈" },
   { href: "/leaderboard", label: "排行" },
@@ -119,10 +118,7 @@ export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: stri
                     {LinkIcon && (
                       <LinkIcon
                         aria-hidden
-                        className={cn(
-                          "h-3.5 w-3.5",
-                          link.badge ? "animate-qixi-heartbeat text-[#e4532f]" : "text-[#777268] dark:text-[#989389]"
-                        )}
+                        className="h-3.5 w-3.5 text-[#777268] dark:text-[#989389]"
                       />
                     )}
                     {link.label}
@@ -298,7 +294,7 @@ export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: stri
                         {link.badge ? ` · ${link.badge}` : ""}
                       </span>
                       {LinkIcon && (
-                        <LinkIcon aria-hidden className={cn("h-3.5 w-3.5", link.badge && "animate-qixi-heartbeat")} />
+                        <LinkIcon aria-hidden className="h-3.5 w-3.5" />
                       )}
                     </span>
                     <span className="font-serif text-lg font-bold">{link.label}</span>

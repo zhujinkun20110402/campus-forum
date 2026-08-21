@@ -28,9 +28,7 @@ import { TrendingPosts } from "@/components/home/trending-posts"
 import { CampusStatusMiniBoard } from "@/components/presence/campus-status-mini-board"
 import { DailyCheckInCard } from "@/components/presence/daily-check-in-card"
 import { CountUp } from "@/components/effects/count-up"
-import { QixiHearts } from "@/components/effects/qixi-hearts"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
-import { QixiBanner } from "@/components/home/qixi-banner"
 import { SafeImage } from "@/components/ui/safe-image"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -53,7 +51,6 @@ interface CategoryEntry {
   icon: LucideIcon
   surface: string
   isPage?: boolean
-  badge?: string
 }
 
 const categoryEntries: CategoryEntry[] = [
@@ -89,7 +86,6 @@ const categoryEntries: CategoryEntry[] = [
     icon: Heart,
     surface: "bg-[#ffb4aa]",
     isPage: true,
-    badge: "七夕特辑",
   },
   {
     slug: "activity",
@@ -160,7 +156,7 @@ const campusImages = [
   },
 ]
 
-const tickerItems = ["校园新鲜事", "学习搭子", "失物招领", "社团招新", "七夕告白季", "表白墙营业中", "二手好物"]
+const tickerItems = ["校园新鲜事", "学习搭子", "失物招领", "社团招新", "匿名心声", "二手好物"]
 
 export default async function HomePage({
   searchParams,
@@ -176,8 +172,6 @@ export default async function HomePage({
 
   return (
     <div className="min-h-screen overflow-hidden bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5]">
-      <QixiBanner />
-
       {/* 手机 / 平板：照片背景版报头——大气、且不占过深 */}
       <section className="relative overflow-hidden border-b-2 border-[#191914] pt-24 dark:border-[#f5f0e5] lg:hidden">
         <div aria-hidden className="absolute inset-0">
@@ -192,7 +186,6 @@ export default async function HomePage({
           <div className="absolute inset-0 bg-[#11110f]/55" />
           <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#11110f]/85 to-transparent" />
         </div>
-        <QixiHearts density={10} />
 
         <div className="relative mx-auto max-w-7xl px-4 pb-9 pt-5 sm:px-6">
           <div className="inline-flex items-center gap-2 border border-[#f5f0e5] bg-[#191914]/70 px-2.5 py-1 font-mono text-[8px] font-bold tracking-[0.18em] text-[#f5f0e5] backdrop-blur-sm">
@@ -240,7 +233,6 @@ export default async function HomePage({
 
       {/* 桌面端：保留原版巨幅标题与照片 hero */}
       <section className="campus-paper relative hidden overflow-hidden px-4 pb-16 pt-24 sm:px-6 lg:block lg:min-h-[820px] lg:px-8 lg:pb-24 lg:pt-28">
-        <QixiHearts />
         <div aria-hidden className="absolute -left-12 top-44 h-28 w-28 rotate-12 border-2 border-[#191914] bg-[#d9ef61] dark:border-[#f5f0e5]" />
         <div aria-hidden className="absolute -right-10 bottom-20 h-36 w-36 rounded-full border-2 border-[#191914] bg-[#ff6b43] dark:border-[#f5f0e5]" />
 
@@ -561,17 +553,9 @@ async function HomeContent({ userId, feedMode }: { userId: string; feedMode: "la
                       <div className="flex h-9 w-9 items-center justify-center border-2 border-[#191914] bg-[#fffaf0] sm:h-10 sm:w-10">
                         <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                       </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <span className="font-mono text-[9px] font-bold tracking-[0.12em]">
-                          {String(index + 1).padStart(2, "0")} / {entry.english}
-                        </span>
-                        {entry.badge && (
-                          <span className="inline-flex items-center gap-1 border border-[#191914] bg-[#fffaf0] px-1.5 py-0.5 font-mono text-[8px] font-bold tracking-[0.14em] text-[#e4532f]">
-                            <Heart className="h-2.5 w-2.5 animate-qixi-heartbeat" aria-hidden />
-                            {entry.badge}
-                          </span>
-                        )}
-                      </div>
+                      <span className="font-mono text-[9px] font-bold tracking-[0.12em]">
+                        {String(index + 1).padStart(2, "0")} / {entry.english}
+                      </span>
                     </div>
                     <div className="mt-5 sm:mt-6">
                       <div className="flex items-end justify-between gap-2">
@@ -685,10 +669,7 @@ function HomeContentSkeleton() {
 function GuestHome() {
   return (
     <div className="min-h-screen overflow-hidden bg-[#f4efe4] text-[#191914] dark:bg-[#11110f] dark:text-[#f5f0e5]">
-      <QixiBanner />
-
       <section className="campus-paper relative overflow-hidden px-4 pb-18 pt-24 sm:px-6 lg:min-h-[760px] lg:px-8 lg:pb-24 lg:pt-28">
-        <QixiHearts />
         <div aria-hidden className="absolute -left-12 top-40 h-28 w-28 rotate-12 border-2 border-[#191914] bg-[#f3c84b] dark:border-[#f5f0e5]" />
         <div className="relative mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[0.95fr_1.05fr]">
           <div>
