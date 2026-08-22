@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { RELATIONSHIP_TYPE_CODES } from "@/lib/relationship-config"
+import { REPORT_REASON_CODES } from "@/lib/report-config"
 
 export const loginSchema = z.object({
   name: z.string().min(1, "请输入用户名或邮箱"),
@@ -48,6 +49,13 @@ export const relationshipRequestSchema = z.object({
   targetId: z.string().trim().min(1, "请选择想要绑定的成员"),
   type: z.enum(RELATIONSHIP_TYPE_CODES as [string, ...string[]], { message: "请选择一种关系" }),
   message: z.string().trim().max(120, "留言最多 120 个字").optional().or(z.literal("")),
+})
+
+export const reportSchema = z.object({
+  targetType: z.enum(["POST", "COMMENT"], { message: "举报目标无效" }),
+  targetId: z.string().trim().min(1, "举报目标无效"),
+  reason: z.enum(REPORT_REASON_CODES as [string, ...string[]], { message: "请选择举报原因" }),
+  detail: z.string().trim().max(500, "补充说明最多 500 字").optional().or(z.literal("")),
 })
 
 export type LoginInput = z.infer<typeof loginSchema>

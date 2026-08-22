@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { CornerUpLeft, MessageCircleMore, Radio } from "lucide-react"
 import { CommentForm } from "@/components/comment/comment-form"
 import { DeleteCommentButton } from "@/components/comment/delete-comment-button"
+import { ReportButton } from "@/components/report/report-button"
 import { LevelBadge } from "@/components/reputation/level-badge"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { cn, formatRelativeTime } from "@/lib/utils"
@@ -123,6 +124,7 @@ export function CommentList({ comments, currentUserId, isAdmin, postId, isConfes
                   <button type="button" onClick={() => startReply(comment)} className="inline-flex h-7 items-center gap-1 px-2 text-[10px] font-bold text-[#5f5c54] hover:bg-[#fffaf0] hover:text-[#191914] dark:text-[#aaa69c] dark:hover:bg-[#191914] dark:hover:text-[#f5f0e5]">
                     <CornerUpLeft className="h-3 w-3" /> 回复
                   </button>
+                  {!mine && <ReportButton targetType="COMMENT" targetId={comment.id} iconOnly />}
                   {(mine || isAdmin) && <DeleteCommentButton commentId={comment.id} postId={postId} className="h-7 w-7 rounded-none text-[#777268] hover:bg-[#ffb4aa] hover:text-[#b52f1e]" />}
                 </div>
               </div>

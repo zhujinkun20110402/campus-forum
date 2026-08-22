@@ -7,9 +7,11 @@ import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { CountUp } from "@/components/effects/count-up"
 import { BanUserButton } from "@/components/admin/ban-user-button"
 import { ReputationAdjustButton } from "@/components/admin/reputation-adjust-button"
+import { ReportReviewButtons } from "@/components/admin/report-review-buttons"
 import { LevelBadge } from "@/components/reputation/level-badge"
 import { EditorialHero } from "@/components/ui/editorial"
 import { requireUser } from "@/lib/session"
+import { getReportReason } from "@/lib/report-config"
 import {
   Users,
   FileText,
@@ -22,6 +24,7 @@ import {
   CheckCircle2,
   Award,
   TicketPlus,
+  Flag,
 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -56,6 +59,8 @@ export default async function AdminPage() {
     totalComments,
     totalLikes,
     categoryStats,
+    pendingReports,
+    handledReports,
   ] = await Promise.all([
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
@@ -97,7 +102,42 @@ export default async function AdminPage() {
       include: { _count: { select: { posts: true } } },
       orderBy: { posts: { _count: "desc" } },
     }),
+    prisma.report.findMany({
+      where: { status: "PENDING" },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      include: { reporter: { select: { id: true, name: true, image: true } } },
+    }),
+    prisma.report.findMany({
+      where: { status: { not: "PENDING" } },
+      orderBy: { handledAt: "desc" },
+      take: 10,
+      include: {
+        reporter: { select: { id: true, name: true } },
+        handledBy: { select: { id: true, name: true } },
+      },
+    }),
   ])
+
+  // 举报目标内容预览（多态加载：帖子标题 / 评论正文）
+  const postTargetIds = pendingReports.filter((report) => report.targetType === "POST").map((report) => report.targetId)
+  const commentTargetIds = pendingReports.filter((report) => report.targetType === "COMMENT").map((report) => report.targetId)
+  const [reportPostTargets, reportCommentTargets] = await Promise.all([
+    postTargetIds.length > 0
+      ? prisma.post.findMany({
+          where: { id: { in: postTargetIds } },
+          select: { id: true, title: true, author: { select: { id: true, name: true } } },
+        })
+      : Promise.resolve<{ id: string; title: string; author: { id: string; name: string | null } }[]>([]),
+    commentTargetIds.length > 0
+      ? prisma.comment.findMany({
+          where: { id: { in: commentTargetIds } },
+          select: { id: true, content: true, postId: true, author: { select: { id: true, name: true } } },
+        })
+      : Promise.resolve<{ id: string; content: string; postId: string; author: { id: string; name: string | null } }[]>([]),
+  ])
+  const reportPostMap = new Map(reportPostTargets.map((post) => [post.id, post]))
+  const reportCommentMap = new Map(reportCommentTargets.map((comment) => [comment.id, comment]))
 
   const stats = [
     {
@@ -305,6 +345,111 @@ export default async function AdminPage() {
             </div>
           </ScrollReveal>
         </div>
+
+        {/* Reports Management */}
+        <ScrollReveal delay={0.1}>
+          <div id="reports" className="scroll-mt-28 overflow-hidden border-2 border-[#191914] bg-[#fffaf0] shadow-[5px_5px_0_rgba(25,25,20,0.16)] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[5px_5px_0_rgba(245,240,229,0.1)]">
+            <div className="flex items-center gap-2 border-b border-stone-100 p-6 dark:border-stone-800">
+              <Flag className="h-5 w-5 text-[#e4532f]" />
+              <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">举报处理</h2>
+              <span className="ml-auto inline-flex items-center gap-2 text-xs text-stone-400 dark:text-stone-500">
+                <span className="border border-[#191914] bg-[#ffb4aa] px-2 py-0.5 font-mono text-[10px] font-bold text-[#191914] dark:border-[#f5f0e5]">{pendingReports.length} 条待处理</span>
+                {handledReports.length > 0 && <span>{handledReports.length} 条已结案记录</span>}
+              </span>
+            </div>
+
+            {pendingReports.length === 0 ? (
+              <div className="px-6 py-12 text-center">
+                <Flag className="mx-auto h-9 w-9 text-stone-300 dark:text-stone-700" />
+                <p className="mt-3 text-sm text-stone-400 dark:text-stone-500">暂时没有待处理的举报</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-[#191914]/15 dark:divide-white/15">
+                {pendingReports.map((report) => {
+                  const isPost = report.targetType === "POST"
+                  const postTarget = isPost ? reportPostMap.get(report.targetId) : undefined
+                  const commentTarget = isPost ? undefined : reportCommentMap.get(report.targetId)
+                  const targetLabel = isPost ? "帖子" : "评论"
+                  const preview = isPost
+                    ? postTarget?.title ?? "（内容已被删除）"
+                    : commentTarget?.content?.slice(0, 80) ?? "（内容已被删除）"
+                  const authorName = isPost
+                    ? postTarget?.author.name ?? "（作者已不存在）"
+                    : commentTarget?.author.name ?? "（作者已不存在）"
+                  const authorId = isPost ? postTarget?.author.id : commentTarget?.author.id
+                  const reasonConfig = getReportReason(report.reason)
+
+                  return (
+                    <div key={report.id} className="grid gap-3 p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold text-stone-800 dark:text-stone-100">
+                            {report.reporter?.name ?? "已注销用户"}
+                          </span>
+                          <span className="text-xs text-stone-400 dark:text-stone-500">举报了{targetLabel}</span>
+                          <span className={`border border-[#191914] px-2 py-0.5 font-mono text-[9px] font-bold text-[#191914] dark:border-[#f5f0e5] ${reasonConfig?.surface ?? "bg-[#ece6da]"}`}>
+                            {reasonConfig?.name ?? report.reason}
+                          </span>
+                          <span className="font-mono text-[9px] text-stone-400">{formatRelativeTime(report.createdAt)}</span>
+                        </div>
+                        <p className="mt-2 line-clamp-1 text-sm text-stone-600 dark:text-stone-300">
+                          《{preview}》
+                        </p>
+                        <p className="mt-1 text-xs text-stone-400 dark:text-stone-500">
+                          作者：{authorName}
+                          {!isPost && commentTarget ? (
+                            <Link href={`/post/${commentTarget.postId}`} className="ml-2 text-amber-600 hover:underline dark:text-amber-400">
+                              前往讨论区查看 →
+                            </Link>
+                          ) : null}
+                        </p>
+                        {report.detail && (
+                          <p className="mt-2 border-l-4 border-[#e4532f] bg-stone-100 px-3 py-2 text-xs leading-5 text-stone-600 dark:bg-stone-800 dark:text-stone-300">
+                            补充说明：{report.detail}
+                          </p>
+                        )}
+                      </div>
+                      <div className="lg:text-right">
+                        <ReportReviewButtons
+                          reportId={report.id}
+                          targetType={report.targetType}
+                          targetId={report.targetId}
+                          hasAuthor={Boolean(authorId)}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {handledReports.length > 0 && (
+              <div className="border-t border-stone-100 dark:border-stone-800">
+                <p className="px-6 pb-2 pt-5 font-mono text-[9px] font-bold tracking-[0.14em] text-stone-400">RECENTLY HANDLED</p>
+                <div className="divide-y divide-[#191914]/10 dark:divide-white/10">
+                  {handledReports.map((report) => {
+                    const reasonConfig = getReportReason(report.reason)
+                    return (
+                      <div key={report.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-6 py-2.5 text-xs text-stone-400 dark:text-stone-500">
+                        <span className="font-mono text-[9px] font-bold">
+                          {report.status === "RESOLVED" ? "已处理" : "已驳回"}
+                        </span>
+                        <span>{report.reporter?.name ?? "已注销用户"}</span>
+                        <span>举报{report.targetType === "POST" ? "帖子" : "评论"}</span>
+                        <span className={`border border-[#191914]/60 px-1.5 py-0.5 font-mono text-[8px] font-bold text-[#191914] dark:border-[#f5f0e5]/60 dark:text-[#f5f0e5] ${reasonConfig?.surface ?? "bg-[#ece6da]"}`}>
+                          {reasonConfig?.name ?? report.reason}
+                        </span>
+                        <span className="ml-auto">
+                          处理人 {report.handledBy?.name ?? "—"} · {report.handledAt ? formatRelativeTime(report.handledAt) : "—"}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </ScrollReveal>
 
         {/* Users Management */}
         <ScrollReveal delay={0.15}>

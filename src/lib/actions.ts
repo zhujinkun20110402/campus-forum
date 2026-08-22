@@ -328,6 +328,13 @@ export async function deletePost(postId: string) {
   // 声望扣除：删帖 -5
   await adjustRaputation(post.authorId, REP_POINTS.POST_DELETED)
 
+  // 清理该帖子的举报记录（举报表未建时静默跳过）
+  try {
+    await prisma.report.deleteMany({ where: { targetType: "POST", targetId: postId } })
+  } catch {
+    // ignore
+  }
+
   revalidatePath("/")
   revalidatePath("/confession")
   redirect("/")
@@ -353,6 +360,13 @@ export async function deleteComment(commentId: string, postId: string) {
 
   // 声望扣除：删评论 -2
   await adjustRaputation(comment.authorId, REP_POINTS.COMMENT_DELETED)
+
+  // 清理该评论的举报记录（举报表未建时静默跳过）
+  try {
+    await prisma.report.deleteMany({ where: { targetType: "COMMENT", targetId: commentId } })
+  } catch {
+    // ignore
+  }
 
   revalidatePath(`/post/${postId}`)
 }

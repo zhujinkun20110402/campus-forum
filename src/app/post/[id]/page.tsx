@@ -10,6 +10,7 @@ import { DeleteButton } from "@/components/post/delete-button"
 import { LikeButton } from "@/components/post/like-button"
 import { PinButton } from "@/components/post/pin-button"
 import { ShareButton } from "@/components/post/share-button"
+import { ReportButton } from "@/components/report/report-button"
 import { LevelBadge } from "@/components/reputation/level-badge"
 import { EditorialHeading, EditorialPanel } from "@/components/ui/editorial"
 import { UserAvatar } from "@/components/user/user-avatar"
@@ -122,6 +123,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                   <MessageSquare className="h-4 w-4 text-[#e4532f]" /> {post._count.comments} 条评论
                 </span>
                 <ShareButton postId={post.id} title={post.title} />
+                {!isAuthor && <ReportButton targetType="POST" targetId={post.id} />}
                 {isAdmin && <PinButton postId={post.id} initialPinned={pinned} />}
                 {(isAuthor || isAdmin) && <DeleteButton postId={post.id} />}
               </div>

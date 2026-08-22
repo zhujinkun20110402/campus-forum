@@ -50,6 +50,8 @@ model User {
   relationshipsB        Relationship[]         @relation("RelationshipUserB")
   sentRelationRequests  RelationshipRequest[]  @relation("RelationshipRequestFrom")
   receivedRelationRequests RelationshipRequest[] @relation("RelationshipRequestTo")
+  madeReports           Report[]               @relation("ReportReporter")
+  handledReports        Report[]               @relation("ReportHandledBy")
 }
 
 model InviteCode {
@@ -263,4 +265,24 @@ model RelationshipRequest {
 
   @@index([toUserId, status])
   @@index([fromUserId])
+}
+
+model Report {
+  id          String    @id @default(cuid())
+  reporterId  String?
+  targetType  String    @db.VarChar(16)
+  targetId    String
+  reason      String    @db.VarChar(32)
+  detail      String?   @db.VarChar(500)
+  status      String    @default("PENDING") @db.VarChar(16)
+  handledById String?
+  handledAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  reporter  User? @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  handledBy User? @relation("ReportHandledBy", fields: [handledById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@index([reporterId])
 }

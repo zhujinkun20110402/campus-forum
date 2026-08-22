@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Gift, Heart, HeartHandshake, Mail, MessageCircle, MessageSquareReply, Pin, Sparkles, UserPlus } from "lucide-react"
+import { Ban, Flag, Gift, Heart, HeartHandshake, Mail, MessageCircle, MessageSquareReply, Pin, ShieldCheck, Sparkles, Trash2, UserPlus } from "lucide-react"
 import { useState, useTransition } from "react"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { NOTIFICATION_REFRESH_EVENT } from "@/components/notifications/notification-bell"
@@ -33,6 +33,11 @@ const notificationMeta = {
   RELATIONSHIP_DECLINED: { icon: HeartHandshake, label: "婉拒了你的关系申请", color: "bg-[#ece6da]" },
   RELATIONSHIP_DISSOLVED: { icon: HeartHandshake, label: "解除了你们的关系", color: "bg-[#ff6b43]" },
   RELATIONSHIP_LEVEL_UP: { icon: Sparkles, label: "你们的关系升级啦", color: "bg-[#f3c84b]" },
+  REPORT_CREATED: { icon: Flag, label: "提交了内容举报", color: "bg-[#f3c84b]" },
+  REPORT_RESOLVED: { icon: ShieldCheck, label: "处理了你的举报", color: "bg-[#b9ddbd]" },
+  REPORT_DISMISSED: { icon: ShieldCheck, label: "审核了你的举报：未构成违规", color: "bg-[#ece6da]" },
+  REPORT_CONTENT_DELETED: { icon: Trash2, label: "删除了你被举报的内容", color: "bg-[#ff6b43]" },
+  REPORT_USER_BANNED: { icon: Ban, label: "你的账号因违规被暂时封禁", color: "bg-[#ff6b43]" },
 } as const
 
 const RELATIONSHIP_NOTIFICATION_TYPES = new Set([
@@ -41,6 +46,14 @@ const RELATIONSHIP_NOTIFICATION_TYPES = new Set([
   "RELATIONSHIP_DECLINED",
   "RELATIONSHIP_DISSOLVED",
   "RELATIONSHIP_LEVEL_UP",
+])
+
+const REPORT_NOTIFICATION_TYPES = new Set([
+  "REPORT_CREATED",
+  "REPORT_RESOLVED",
+  "REPORT_DISMISSED",
+  "REPORT_CONTENT_DELETED",
+  "REPORT_USER_BANNED",
 ])
 
 export function NotificationItem({ notification }: NotificationItemProps) {
@@ -54,6 +67,8 @@ export function NotificationItem({ notification }: NotificationItemProps) {
   const actorName = isAnonymous ? "匿名同学" : notification.actor?.name ?? "一位校园成员"
   const href = RELATIONSHIP_NOTIFICATION_TYPES.has(notification.type)
     ? "/relationships"
+    : REPORT_NOTIFICATION_TYPES.has(notification.type)
+    ? (notification.type === "REPORT_CREATED" ? "/admin#reports" : "/notifications")
     : notification.type === "POSTCARD_RECEIVED"
     ? "/postcards"
     : notification.type === "USER_FOLLOWED" || notification.type === "REPUTATION_GIFT"
