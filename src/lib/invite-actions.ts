@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { z } from "zod"
+import { z } from "zod/v4"
 import { auth } from "@/lib/auth"
 import { createAdminInviteCodes, MAX_ADMIN_INVITE_BATCH } from "@/lib/invitations"
 

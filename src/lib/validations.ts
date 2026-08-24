@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "zod/v4"
 import { RELATIONSHIP_TYPE_CODES } from "@/lib/relationship-config"
 import { REPORT_REASON_CODES } from "@/lib/report-config"
 

@@ -1,9 +1,7 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, Clock, MessageSquare } from "lucide-react"
-import ReactMarkdown from "react-markdown"
-import rehypeHighlight from "rehype-highlight"
-import remarkGfm from "remark-gfm"
+import { MarkdownContent } from "@/components/post/markdown-content"
 import { CommentList } from "@/components/comment/comment-list"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { DeleteButton } from "@/components/post/delete-button"
@@ -114,7 +112,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
           <ScrollReveal>
             <EditorialPanel className="p-6 sm:p-10 lg:p-12">
               <article className="prose prose-stone max-w-none dark:prose-invert prose-a:text-[#d44120] prose-img:rounded-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{post.content}</ReactMarkdown>
+                <MarkdownContent content={post.content} />
               </article>
 
               <div className="mt-10 flex flex-wrap items-center gap-2 border-t-2 border-[#191914] pt-6 dark:border-[#f5f0e5]">

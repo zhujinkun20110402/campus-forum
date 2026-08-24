@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { z } from "zod"
+import { z } from "zod/v4"
 import { auth } from "@/lib/auth"
 import { getCheckInDayKeys } from "@/lib/daily-check-in"
 import { prisma } from "@/lib/prisma"
