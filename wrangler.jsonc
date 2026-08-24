@@ -24,7 +24,11 @@
     {
       "binding": "HYPERDRIVE",
       // 在 Cloudflare 后台创建 Hyperdrive 后，把它的 id 填到这里
-      "id": "<YOUR_HYPERDRIVE_ID>"
+      "id": "6bbc325249a840f9ab0b805b5ee11be0"
     }
-  ]
+  ],
+  "vars": {
+    // 告诉 prisma.ts 走 Hyperdrive 连接（不用你手动设置）
+    "CLOUDFLARE_HYPERDRIVE": "1"
+  }
 }
