@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Noto_Serif_SC, Noto_Sans_SC, JetBrains_Mono } from "next/font/google"
+import localFont from "next/font/local"
 import "./globals.css"
 import { Providers } from "@/components/layout/providers"
 import { HeaderWrapper } from "@/components/layout/header-wrapper"
@@ -9,24 +9,35 @@ import { ImportantNotice } from "@/components/layout/important-notice"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-const notoSerif = Noto_Serif_SC({
+// CF 分支使用自托管字体（latin 子集，中文回退系统字体）：
+// 本机构建/Cloudflare 构建都不依赖 Google Fonts 网络，渲染效果与之前一致。
+const notoSerif = localFont({
   variable: "--font-noto-serif-sc",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  src: [
+    { path: "../fonts/noto-serif-sc-latin-400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/noto-serif-sc-latin-600.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/noto-serif-sc-latin-700.woff2", weight: "700", style: "normal" },
+  ],
   display: "swap",
 })
 
-const notoSans = Noto_Sans_SC({
+const notoSans = localFont({
   variable: "--font-noto-sans-sc",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
+  src: [
+    { path: "../fonts/noto-sans-sc-latin-300.woff2", weight: "300", style: "normal" },
+    { path: "../fonts/noto-sans-sc-latin-400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/noto-sans-sc-latin-500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/noto-sans-sc-latin-700.woff2", weight: "700", style: "normal" },
+  ],
   display: "swap",
 })
 
-const jetbrainsMono = JetBrains_Mono({
+const jetbrainsMono = localFont({
   variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  src: [
+    { path: "../fonts/jetbrains-mono-latin-400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/jetbrains-mono-latin-500.woff2", weight: "500", style: "normal" },
+  ],
   display: "swap",
 })
 
