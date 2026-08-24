@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "campus-forum",
+  "compatibility_date": "2026-01-01",
+  "compatibility_flags": [
+    // 启用 Node.js API（OpenNext 必需）
+    "nodejs_compat",
+    // 允许请求外部 URL（图床 Chevereto 等）
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      // 与上方 "name" 保持一致
+      "service": "campus-forum"
+    }
+  ],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      // 在 Cloudflare 后台创建 Hyperdrive 后，把它的 id 填到这里
+      "id": "<YOUR_HYPERDRIVE_ID>"
+    }
+  ]
+}

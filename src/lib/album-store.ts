@@ -470,7 +470,7 @@ export async function approvePendingPhoto(url: string): Promise<WallPhoto[]> {
     body: formData,
   })
 
-  const uploadJson = await uploadRes.json()
+  const uploadJson = (await uploadRes.json()) as { status_code?: number; status_txt?: string }
   if (uploadJson.status_code !== 200) {
     throw new Error(uploadJson.status_txt || "审核通过失败")
   }

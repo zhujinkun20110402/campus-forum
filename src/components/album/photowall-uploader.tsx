@@ -29,7 +29,7 @@ export function PhotowallUploader() {
       method: "POST",
       body: formData,
     })
-    const json = await res.json()
+    const json = (await res.json()) as { success?: boolean; pending?: boolean; error?: string }
     if (!json.success) throw new Error(json.error || "上传失败")
     return json.pending as boolean
   }

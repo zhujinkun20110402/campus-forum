@@ -98,7 +98,7 @@ export async function uploadImages(files: File[]): Promise<string[]> {
       const formData = new FormData()
       formData.append("source", processed, file.name)
       const res = await fetch("/api/upload", { method: "POST", body: formData })
-      const json = await res.json()
+      const json = (await res.json()) as { success?: boolean; url?: string; error?: string }
       if (json.success && json.url) urls.push(json.url)
     } catch {
       // 单张失败不影响其它图片

@@ -35,7 +35,7 @@ export function PhotowallAdmin() {
     try {
       const res = await fetch("/api/photowall/pending")
       if (!res.ok) throw new Error("获取待审核照片失败")
-      const data = await res.json()
+      const data = (await res.json()) as { photos?: PendingPhoto[] }
       setPendingPhotos(data.photos || [])
     } catch {
       setPendingPhotos([])
@@ -56,7 +56,7 @@ export function PhotowallAdmin() {
       method: "POST",
       body: formData,
     })
-    const json = await res.json()
+    const json = (await res.json()) as { success?: boolean; url?: string; error?: string }
     if (!json.success) throw new Error(json.error || "上传失败")
     return json.url as string
   }

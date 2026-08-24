@@ -72,7 +72,11 @@ export async function POST(request: NextRequest) {
       body: uploadData,
     })
 
-    const json = await res.json()
+    const json = (await res.json()) as {
+      status_code?: number
+      status_txt?: string
+      image?: { url?: string; display_url?: string; url_viewer?: string; thumb?: { url?: string }; original_filename?: string }
+    }
 
     if (json.status_code !== 200) {
       return NextResponse.json(

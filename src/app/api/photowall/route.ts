@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json()
+    const body = (await request.json()) as { action?: string; url?: string }
     const { action, url } = body
 
     if (!url || typeof url !== "string") {
