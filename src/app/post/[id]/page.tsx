@@ -8,6 +8,7 @@ import { CommentList } from "@/components/comment/comment-list"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { DeleteButton } from "@/components/post/delete-button"
 import { LikeButton } from "@/components/post/like-button"
+import { LightboxImage, PostImageLightbox } from "@/components/post/post-image-lightbox"
 import { PinButton } from "@/components/post/pin-button"
 import { ShareButton } from "@/components/post/share-button"
 import { ReportButton } from "@/components/report/report-button"
@@ -114,7 +115,13 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
           <ScrollReveal>
             <EditorialPanel className="p-6 sm:p-10 lg:p-12">
               <article className="prose prose-stone max-w-none dark:prose-invert prose-a:text-[#d44120] prose-img:rounded-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>{post.content}</ReactMarkdown>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeHighlight]}
+                  components={{ img: LightboxImage }}
+                >
+                  {post.content}
+                </ReactMarkdown>
               </article>
 
               <div className="mt-10 flex flex-wrap items-center gap-2 border-t-2 border-[#191914] pt-6 dark:border-[#f5f0e5]">
@@ -138,6 +145,8 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
           </section>
         </div>
       </main>
+
+      <PostImageLightbox />
     </div>
   )
 }

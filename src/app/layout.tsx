@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Noto_Serif_SC, Noto_Sans_SC, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/components/layout/providers"
@@ -6,6 +6,7 @@ import { HeaderWrapper } from "@/components/layout/header-wrapper"
 import { FooterWrapper } from "@/components/layout/footer-wrapper"
 import { NavigationProgress } from "@/components/layout/navigation-progress"
 import { ImportantNotice } from "@/components/layout/important-notice"
+import { InstallPrompt, ServiceWorkerRegister } from "@/components/layout/install-prompt"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
@@ -35,9 +36,24 @@ export const metadata: Metadata = {
   description:
     "属于同学们的学生论坛社区，分享学习、活动、失物招领与每一个值得记录的校园故事。",
   icons: {
-    icon: "/images/app-icon.png",
-    apple: "/images/app-icon.png",
+    icon: [
+      { url: "/images/app-icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/images/app-icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/images/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
+  appleWebApp: {
+    capable: true,
+    title: "学生论坛",
+    statusBarStyle: "default",
+  },
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fffaf0" },
+    { media: "(prefers-color-scheme: dark)", color: "#11110f" },
+  ],
 }
 
 export default async function RootLayout({
@@ -60,6 +76,9 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* iOS 主屏幕全屏模式：Next 16 的 appleWebApp.capable 只输出 mobile-web-app-capable，
+            Safari 需要这条才能在从主屏幕打开时隐藏浏览器 UI */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -84,6 +103,8 @@ export default async function RootLayout({
           <main className="flex-1">{children}</main>
           <FooterWrapper />
           <ImportantNotice />
+          <InstallPrompt />
+          <ServiceWorkerRegister />
         </Providers>
       </body>
     </html>

@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useRef, useState, useTransition } from "react"
-import { useForm, Controller } from "react-hook-form"
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react"
+import { useForm, Controller, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +10,8 @@ import { ImageUpload, uploadImages } from "@/components/post/image-upload"
 import { SafeImage } from "@/components/ui/safe-image"
 import { createPost } from "@/lib/actions"
 import { postSchema, type PostInput } from "@/lib/validations"
-import { Check, Loader2, Send, X } from "lucide-react"
+import { clearDraft, getAutosaveSnapshot, getDraftSnapshot, saveDraft, subscribeAutosave, subscribeDraft } from "@/lib/draft-store"
+import { Check, FileText, Loader2, Send, X } from "lucide-react"
 
 interface PostFormProps {
   categories: { id: string; name: string }[]
@@ -30,7 +31,8 @@ export function PostForm({ categories, defaultCategoryId = "" }: PostFormProps) 
     control,
     getValues,
     setValue,
-    formState: { errors },
+    reset,
+    formState: { errors, isDirty },
   } = useForm<PostInput>({
     resolver: zodResolver(postSchema),
     defaultValues: {
@@ -39,6 +41,36 @@ export function PostForm({ categories, defaultCategoryId = "" }: PostFormProps) 
       categoryId: defaultCategoryId,
     },
   })
+
+  const watched = useWatch({ control })
+  const draft = useSyncExternalStore(subscribeDraft, getDraftSnapshot, () => null)
+  const autosaveEnabled = useSyncExternalStore(subscribeAutosave, getAutosaveSnapshot, () => true)
+  const draftRestoredRef = useRef(false)
+
+  // 首次进入页面时恢复本地草稿（仅一次；用 ref 控制，不触发 set-state-in-effect）
+  useEffect(() => {
+    if (draftRestoredRef.current) return
+    draftRestoredRef.current = true
+    if (!autosaveEnabled) return
+    const saved = getDraftSnapshot()
+    if (saved) {
+      reset({ title: saved.title, content: saved.content, categoryId: saved.categoryId })
+    }
+  }, [autosaveEnabled, reset])
+
+  // 输入即自动保存（防抖 800ms）；只在有改动时保存，避免用空表单覆盖已有草稿
+  useEffect(() => {
+    if (!autosaveEnabled || !isDirty) return
+    const timer = setTimeout(() => {
+      saveDraft({
+        title: watched.title ?? "",
+        content: watched.content ?? "",
+        categoryId: watched.categoryId ?? "",
+        savedAt: Date.now(),
+      })
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [watched, autosaveEnabled, isDirty])
 
   /** 把一段文本插入正文：有选区时替换选区，光标停在编辑器里时插在光标处，否则追加到末尾。 */
   const insertText = useCallback(
@@ -138,10 +170,16 @@ export function PostForm({ categories, defaultCategoryId = "" }: PostFormProps) 
     formData.append("content", data.content)
     formData.append("categoryId", data.categoryId)
 
+    // 先清草稿：发布成功会直接跳转；失败则在下面立刻把内容重新存回草稿
+    clearDraft()
+
     startTransition(async () => {
       const result = await createPost(null, formData)
       if (result && "message" in result) {
         setError("root", { message: result.message } as { message: string })
+        if (autosaveEnabled) {
+          saveDraft({ title: data.title, content: data.content, categoryId: data.categoryId, savedAt: Date.now() })
+        }
       }
     })
   }
@@ -278,6 +316,22 @@ export function PostForm({ categories, defaultCategoryId = "" }: PostFormProps) 
 
       {errors.root && (
         <p className="border-2 border-[#d44120] bg-[#ffb4aa]/30 px-4 py-3 text-sm font-medium text-[#b52f1e]" role="alert">{errors.root.message}</p>
+      )}
+
+      {draft && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border border-[#191914]/30 bg-[#ece6da]/70 px-4 py-2.5 dark:border-white/30 dark:bg-[#292821]/70">
+          <span className="flex min-w-0 items-center gap-2 text-xs text-[#777268] dark:text-[#989389]">
+            <FileText className="h-3.5 w-3.5 shrink-0 text-[#e4532f]" />
+            {autosaveEnabled ? "草稿已自动保存 · 仅存于本设备" : "存在本地草稿（自动保存已关闭）"}
+          </span>
+          <button
+            type="button"
+            onClick={clearDraft}
+            className="flex shrink-0 items-center gap-1 border border-[#191914] px-2.5 py-1.5 text-xs font-bold text-[#191914] transition-colors hover:bg-[#ffb4aa] dark:border-[#f5f0e5] dark:text-[#f5f0e5]"
+          >
+            <X className="h-3 w-3" /> 清除草稿
+          </button>
+        </div>
       )}
 
       {/* 移动端固定在底部的发布栏；桌面端随表单流 */}

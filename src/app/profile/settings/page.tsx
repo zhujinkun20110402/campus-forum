@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { Crown, Settings, Shield } from "lucide-react"
 import { ProfileForm } from "@/components/profile/profile-form"
+import { DraftSettings } from "@/components/profile/draft-settings"
 import { LevelBadge } from "@/components/reputation/level-badge"
 import { ReputationBar } from "@/components/reputation/reputation-bar"
 import { UserAvatar } from "@/components/user/user-avatar"
@@ -60,6 +61,14 @@ export default async function ProfileSettingsPage() {
               <h2 className="mt-2 font-serif text-2xl font-bold">个人资料</h2>
             </div>
             <ProfileForm user={profileUser} />
+          </EditorialPanel>
+
+          <EditorialPanel className="mt-7 p-6 sm:p-8">
+            <div className="mb-7 border-b-2 border-[#191914] pb-5 dark:border-[#f5f0e5]">
+              <p className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#e4532f]">WRITING PREFERENCE</p>
+              <h2 className="mt-2 font-serif text-2xl font-bold">写作偏好</h2>
+            </div>
+            <DraftSettings />
           </EditorialPanel>
 
           <aside className="space-y-5 lg:sticky lg:top-24">

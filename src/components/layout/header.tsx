@@ -28,6 +28,7 @@ import { NotificationBell } from "@/components/notifications/notification-bell"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { SafeImage } from "@/components/ui/safe-image"
 import { Button } from "@/components/ui/button"
+import { InstallEntry } from "@/components/layout/install-prompt"
 import { cn } from "@/lib/utils"
 
 interface NavLinkItem {
@@ -303,9 +304,14 @@ export function Header({ ownStatus }: { ownStatus?: { color: string; emoji: stri
               })}
                 </nav>
                 <div className="mt-3 flex items-center gap-2 border-t border-[#191914]/20 pt-3 dark:border-white/20">
-              <Link href="/search" onClick={() => setMobileMenuOpen(false)} className="flex h-11 w-full items-center justify-center gap-2 border border-[#191914] text-sm font-bold hover:bg-[#f3c84b] dark:border-[#f5f0e5]">
-                <Search className="h-4 w-4" /> 搜索
-              </Link>
+                  <Link href="/search" onClick={() => setMobileMenuOpen(false)} className="flex h-11 w-full items-center justify-center gap-2 border border-[#191914] text-sm font-bold hover:bg-[#f3c84b] dark:border-[#f5f0e5]">
+                    <Search className="h-4 w-4" /> 搜索
+                  </Link>
+                  <InstallEntry
+                    label="装到桌面"
+                    onAction={() => setMobileMenuOpen(false)}
+                    className="flex h-11 w-full items-center justify-center gap-2 border border-[#191914] text-sm font-bold hover:bg-[#d9ef61] dark:border-[#f5f0e5]"
+                  />
                 </div>
               </>
             ) : (

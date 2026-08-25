@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 import { SafeImage } from "@/components/ui/safe-image"
+import { InstallEntry } from "@/components/layout/install-prompt"
 
 const footerLinks = [
   {
@@ -66,6 +67,11 @@ export function Footer() {
                     </Link>
                   </li>
                 ))}
+                {group.title === "快速到达" && (
+                  <li>
+                    <InstallEntry className="text-sm text-white/55 transition-colors hover:text-white" />
+                  </li>
+                )}
               </ul>
             </div>
           ))}
