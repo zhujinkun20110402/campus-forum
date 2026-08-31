@@ -3,18 +3,23 @@
 /**
  * PWA 安装引导
  *
+ * 架构要点（修复移动端菜单入口点击无反应的 bug）：
+ * - beforeinstallprompt 在页面加载时即触发，移动菜单打开时才挂载的组件接不到 → 事件存入模块级单例
+ * - 移动菜单点击入口后会立刻关闭菜单（组件卸载）→ 指引弹窗改为全局单例，
+ *   由常驻布局根部的 InstallGuideModal 渲染，菜单关闭也不受影响
+ *
  * InstallPrompt（横幅）：
  * - Chrome / Edge 捕获 beforeinstallprompt → 显示「立即安装」按钮
- * - iOS Safari 显示「分享 → 添加到主屏幕」指引
- * - 已安装不显示；点 × 关闭后永久不再弹出，关闭瞬间提示页脚保留了「安装到桌面」入口
+ * - iOS Safari 显示「分享 → 添加到主屏幕」提示，点击可打开详细指引
+ * - 已安装不显示；点 × 关闭后永久不再弹出
  *
  * InstallEntry（常驻入口，挂在页脚与移动端菜单）：
  * - 有安装事件时点击直接触发安装
- * - 没有（iOS / 事件已过期）则弹出分平台图文指引
+ * - 没有（iOS / 鸿蒙 / 事件未触发）则打开全局分平台指引
  * - 已安装时显示「已安装到桌面」状态
  *
- * ServiceWorkerRegister：
- * - 注册 public/sw.js（无 fetch 监听、不缓存任何页面）
+ * InstallGuideModal（全局指引弹窗，挂在布局根部）：
+ * - 覆盖 iOS / 鸿蒙(HarmonyOS) / 安卓 / PC 四套图文步骤
  */
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react"
@@ -29,7 +34,7 @@ const dismissedListeners = new Set<() => void>()
 function getDismissedSnapshot(): boolean {
   if (dismissedCache === null) {
     try {
-      // 关闭一次即永久不再弹出；页脚保留了常驻安装入口
+      // 关闭一次即永久不再弹出；页脚/菜单保留了常驻安装入口
       dismissedCache = localStorage.getItem(DISMISS_KEY) === "1"
     } catch {
       dismissedCache = false
@@ -62,6 +67,58 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>
 }
 
+// ===== 模块级单例：安装事件（页面加载时捕获，任何晚挂载的入口都能读到） =====
+let capturedDeferred: BeforeInstallPromptEvent | null = null
+let deferredVersion = 0
+const deferredListeners = new Set<() => void>()
+
+function emitDeferred() {
+  deferredVersion++
+  deferredListeners.forEach((listener) => listener())
+}
+
+function subscribeDeferred(listener: () => void) {
+  deferredListeners.add(listener)
+  return () => {
+    deferredListeners.delete(listener)
+  }
+}
+
+function getDeferredVersion() {
+  return deferredVersion
+}
+
+// ===== 模块级单例：指引弹窗（全局渲染，不受入口组件卸载影响） =====
+let guideOpenFlag = false
+let guideVersion = 0
+const guideListeners = new Set<() => void>()
+
+function emitGuide() {
+  guideVersion++
+  guideListeners.forEach((listener) => listener())
+}
+
+function subscribeGuide(listener: () => void) {
+  guideListeners.add(listener)
+  return () => {
+    guideListeners.delete(listener)
+  }
+}
+
+function getGuideVersion() {
+  return guideVersion
+}
+
+export function openInstallGuide() {
+  guideOpenFlag = true
+  emitGuide()
+}
+
+export function closeInstallGuide() {
+  guideOpenFlag = false
+  emitGuide()
+}
+
 function isStandalone(): boolean {
   if (typeof window === "undefined") return false
   if (window.matchMedia("(display-mode: standalone)").matches) return true
@@ -75,27 +132,36 @@ function isIOS(): boolean {
   return /iphone|ipad|ipod/i.test(ua) || (ua.includes("Macintosh") && navigator.maxTouchPoints > 1)
 }
 
-type InstallPlatform = "ios" | "android" | "desktop"
+type InstallPlatform = "ios" | "harmonyos" | "android" | "desktop"
 
 function getPlatform(): InstallPlatform {
   if (typeof navigator === "undefined") return "desktop"
+  const ua = navigator.userAgent
   if (isIOS()) return "ios"
-  if (/android/i.test(navigator.userAgent)) return "android"
+  // 鸿蒙：HarmonyOS UA，或华为/荣耀浏览器移动版（先于 Android 判断）
+  if (/HarmonyOS|OpenHarmony/i.test(ua) || (/Huawei|HONOR/i.test(ua) && /Mobile/i.test(ua))) {
+    return "harmonyos"
+  }
+  if (/android/i.test(ua)) return "android"
   return "desktop"
 }
 
-/** 捕获浏览器安装事件（各组件独立监听，事件可重复分发） */
+/** 捕获浏览器安装事件（存入模块级单例，各组件共享） */
 function useInstallPromptEvent() {
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null)
+  useSyncExternalStore(subscribeDeferred, getDeferredVersion, () => 0)
 
   useEffect(() => {
     if (typeof window === "undefined" || isStandalone()) return
 
     const onPrompt = (event: Event) => {
       event.preventDefault()
-      setDeferred(event as BeforeInstallPromptEvent)
+      capturedDeferred = event as BeforeInstallPromptEvent
+      emitDeferred()
     }
-    const onInstalled = () => setDeferred(null)
+    const onInstalled = () => {
+      capturedDeferred = null
+      emitDeferred()
+    }
 
     window.addEventListener("beforeinstallprompt", onPrompt)
     window.addEventListener("appinstalled", onInstalled)
@@ -105,7 +171,30 @@ function useInstallPromptEvent() {
     }
   }, [])
 
-  return deferred
+  return capturedDeferred
+}
+
+const GUIDE_STEPS: Record<InstallPlatform, string[]> = {
+  ios: [
+    "点浏览器底部中间的「分享」按钮（方框加向上箭头）",
+    "向下滑动菜单，找到「添加到主屏幕」并点击",
+    "桌面出现论坛图标，之后点图标即可全屏打开",
+  ],
+  harmonyos: [
+    "点华为浏览器右上角「⋮」或底部「☰」菜单",
+    "找到「添加到桌面」并点击",
+    "桌面出现论坛图标，之后点图标即可打开",
+  ],
+  android: [
+    "点浏览器右上角的「⋮」菜单",
+    "找到「安装应用」或「添加到主屏幕」并点击",
+    "桌面出现论坛图标，之后点图标即可打开",
+  ],
+  desktop: [
+    "看地址栏右侧有没有「安装」图标，直接点击即可",
+    "或者点浏览器右上角「⋮」菜单 →「安装 学生论坛」",
+    "安装后可从开始菜单 / 任务栏直接打开",
+  ],
 }
 
 export function InstallPrompt() {
@@ -126,9 +215,9 @@ export function InstallPrompt() {
   }, [mounted])
 
   const handleInstall = async () => {
-    if (!deferred) return
-    await deferred.prompt()
-    await deferred.userChoice
+    if (!capturedDeferred) return
+    await capturedDeferred.prompt()
+    await capturedDeferred.userChoice
   }
 
   const handleDismiss = () => {
@@ -179,23 +268,25 @@ export function InstallPrompt() {
       </div>
       )}
 
-      {/* iOS：只能引导用户手动操作 */}
+      {/* iOS / 鸿蒙等：点开详细指引（全局弹窗） */}
       {showBanner && !deferred && (
         <div className="fixed inset-x-4 bottom-4 z-[80] flex items-center gap-3 border-2 border-[#191914] bg-[#fffaf0] p-3 shadow-[4px_4px_0_#191914] animate-[fadeUp_0.5s_ease-out_forwards] dark:border-[#f5f0e5] dark:bg-[#191914] dark:shadow-[4px_4px_0_#f5f0e5] sm:inset-x-auto sm:right-5 sm:max-w-md sm:p-4">
-      <Share className="h-5 w-5 shrink-0 text-[#e4532f]" />
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-bold">把论坛添加到主屏幕</p>
-        <p className="mt-0.5 text-xs leading-relaxed text-[#777268] dark:text-[#989389]">
-          点 Safari 底部的「分享」按钮，选择「添加到主屏幕」
-        </p>
-      </div>
-      <button
-        onClick={handleDismiss}
-        aria-label="关闭"
-        className="-m-1 shrink-0 p-1 text-[#777268] hover:text-[#e4532f] dark:text-[#989389]"
-      >
-        <X className="h-4 w-4" />
-      </button>
+        <button type="button" onClick={openInstallGuide} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+          <Share className="h-5 w-5 shrink-0 text-[#e4532f]" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-bold">把论坛添加到主屏幕</span>
+            <span className="mt-0.5 block text-xs leading-relaxed text-[#777268] dark:text-[#989389]">
+              点这里查看本机操作步骤
+            </span>
+          </span>
+        </button>
+        <button
+          onClick={handleDismiss}
+          aria-label="关闭"
+          className="-m-1 shrink-0 p-1 text-[#777268] hover:text-[#e4532f] dark:text-[#989389]"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
       )}
 
@@ -210,24 +301,6 @@ export function InstallPrompt() {
   )
 }
 
-const GUIDE_STEPS: Record<InstallPlatform, string[]> = {
-  ios: [
-    "点浏览器底部中间的「分享」按钮（方框加向上箭头）",
-    "向下滑动菜单，找到「添加到主屏幕」并点击",
-    "桌面出现论坛图标，之后点图标即可全屏打开",
-  ],
-  android: [
-    "点浏览器右上角的「⋮」菜单",
-    "找到「安装应用」或「添加到主屏幕」并点击",
-    "桌面出现论坛图标，之后点图标即可打开",
-  ],
-  desktop: [
-    "看地址栏右侧有没有「安装」图标，直接点击即可",
-    "或者点浏览器右上角「⋮」菜单 →「安装 学生论坛」",
-    "安装后可从开始菜单 / 任务栏直接打开",
-  ],
-}
-
 interface InstallEntryProps {
   className?: string
   label?: string
@@ -235,11 +308,9 @@ interface InstallEntryProps {
   onAction?: () => void
 }
 
-/** 常驻安装入口：有安装事件直接触发，否则弹指引 */
+/** 常驻安装入口：有安装事件直接触发，否则打开全局指引 */
 export function InstallEntry({ className, label = "安装到桌面", onAction }: InstallEntryProps) {
   const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false)
-  const deferred = useInstallPromptEvent()
-  const [guideOpen, setGuideOpen] = useState(false)
 
   // 已安装：水合前（SSR / 首帧）先渲染普通按钮保证结构一致，水合后再切换为状态展示
   if (mounted && isStandalone()) {
@@ -256,65 +327,73 @@ export function InstallEntry({ className, label = "安装到桌面", onAction }:
 
   const handleClick = async () => {
     onAction?.()
-    if (deferred) {
-      await deferred.prompt()
-      await deferred.userChoice
+    // 直接读取模块级单例：菜单晚挂载也能拿到页面加载时捕获的事件
+    if (capturedDeferred) {
+      await capturedDeferred.prompt()
+      await capturedDeferred.userChoice
       return
     }
-    setGuideOpen(true)
+    // 无安装事件（iOS / 鸿蒙 / 不支持）→ 全局指引弹窗（不随菜单卸载）
+    openInstallGuide()
   }
 
+  return (
+    <button type="button" onClick={handleClick} className={cn("inline-flex items-center gap-1.5", className)}>
+      <Download className="h-3.5 w-3.5 shrink-0" />
+      {label}
+    </button>
+  )
+}
+
+/** 全局指引弹窗：挂在布局根部，任何入口触发、任何时刻都存活 */
+export function InstallGuideModal() {
+  useSyncExternalStore(subscribeGuide, getGuideVersion, () => 0)
+  const open = guideOpenFlag
   const platform = getPlatform()
+
+  if (!open) return null
+
   const steps = GUIDE_STEPS[platform]
 
   return (
-    <>
-      <button type="button" onClick={handleClick} className={cn("inline-flex items-center gap-1.5", className)}>
-        <Download className="h-3.5 w-3.5 shrink-0" />
-        {label}
-      </button>
-
-      {guideOpen && (
-        <div
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-[#11110f]/80 p-4 backdrop-blur-sm animate-page-enter"
-          onClick={() => setGuideOpen(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="安装到主屏幕指引"
-        >
-          <div
-            className="w-full max-w-sm border-2 border-[#191914] bg-[#fffaf0] p-5 text-[#191914] shadow-[6px_6px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#171713] dark:text-[#f5f0e5] dark:shadow-[6px_6px_0_#f5f0e5]"
-            onClick={(e) => e.stopPropagation()}
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-[#11110f]/80 p-4 backdrop-blur-sm animate-page-enter"
+      onClick={closeInstallGuide}
+      role="dialog"
+      aria-modal="true"
+      aria-label="安装到主屏幕指引"
+    >
+      <div
+        className="w-full max-w-sm border-2 border-[#191914] bg-[#fffaf0] p-5 text-[#191914] shadow-[6px_6px_0_#191914] dark:border-[#f5f0e5] dark:bg-[#171713] dark:text-[#f5f0e5] dark:shadow-[6px_6px_0_#f5f0e5]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <p className="font-serif text-lg font-bold">安装到主屏幕</p>
+          <button
+            onClick={closeInstallGuide}
+            aria-label="关闭"
+            className="-m-1 p-1 text-[#777268] hover:text-[#e4532f] dark:text-[#989389]"
           >
-            <div className="flex items-center justify-between gap-3">
-              <p className="font-serif text-lg font-bold">安装到主屏幕</p>
-              <button
-                onClick={() => setGuideOpen(false)}
-                aria-label="关闭"
-                className="-m-1 p-1 text-[#777268] hover:text-[#e4532f] dark:text-[#989389]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <ol className="mt-4 space-y-3">
-              {steps.map((step, index) => (
-                <li key={index} className="flex items-start gap-2.5">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border border-[#191914] bg-[#f3c84b] font-mono text-[10px] font-bold dark:border-[#f5f0e5]">
-                    {index + 1}
-                  </span>
-                  <span className="text-sm leading-relaxed text-[#777268] dark:text-[#989389]">{step}</span>
-                </li>
-              ))}
-            </ol>
-            {platform === "ios" && (
-              <p className="mt-4 border-t border-[#191914]/20 pt-3 text-xs leading-relaxed text-[#918b80] dark:border-white/20">
-                提示：需要 iOS 16.4 及以上系统，未来开启「通知推送」也依赖已添加到主屏幕。
-              </p>
-            )}
-          </div>
+            <X className="h-4 w-4" />
+          </button>
         </div>
-      )}
-    </>
+        <ol className="mt-4 space-y-3">
+          {steps.map((step, index) => (
+            <li key={index} className="flex items-start gap-2.5">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border border-[#191914] bg-[#f3c84b] font-mono text-[10px] font-bold dark:border-[#f5f0e5]">
+                {index + 1}
+              </span>
+              <span className="text-sm leading-relaxed text-[#777268] dark:text-[#989389]">{step}</span>
+            </li>
+          ))}
+        </ol>
+        {platform === "ios" && (
+          <p className="mt-4 border-t border-[#191914]/20 pt-3 text-xs leading-relaxed text-[#918b80] dark:border-white/20">
+            提示：需要 iOS 16.4 及以上系统，未来开启「通知推送」也依赖已添加到主屏幕。
+          </p>
+        )}
+      </div>
+    </div>
   )
 }
 

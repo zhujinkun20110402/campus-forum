@@ -8,7 +8,7 @@ import { HeaderWrapper } from "@/components/layout/header-wrapper"
 import { FooterWrapper } from "@/components/layout/footer-wrapper"
 import { NavigationProgress } from "@/components/layout/navigation-progress"
 import { ImportantNotice } from "@/components/layout/important-notice"
-import { InstallPrompt, ServiceWorkerRegister } from "@/components/layout/install-prompt"
+import { InstallPrompt, InstallGuideModal, ServiceWorkerRegister } from "@/components/layout/install-prompt"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
@@ -106,6 +106,7 @@ export default async function RootLayout({
           <FooterWrapper />
           <ImportantNotice />
           <InstallPrompt />
+          <InstallGuideModal />
           <ServiceWorkerRegister />
         </Providers>
       </body>
