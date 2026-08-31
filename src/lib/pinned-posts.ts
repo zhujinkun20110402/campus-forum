@@ -1,15 +1,21 @@
 /**
  * 帖子置顶功能 — 使用数据库存储
- * Post.pinned 字段控制置顶状态
+ * Post.pinned 字段控制管理员置顶状态；Post.selfPinnedAt 控制置顶卡自助置顶
  */
 import { prisma } from "@/lib/prisma"
+import { SELF_PIN_DURATION_MS } from "@/lib/reputation-milestones"
 
 /**
  * 获取所有置顶帖子的 ID（按 createdAt 降序，最新置顶的排前面）
  */
 export async function getPinnedPostIds(): Promise<string[]> {
   const pinnedPosts = await prisma.post.findMany({
-    where: { pinned: true },
+    where: {
+      OR: [
+        { pinned: true },
+        { selfPinnedAt: { gte: new Date(Date.now() - SELF_PIN_DURATION_MS) } },
+      ],
+    },
     select: { id: true, updatedAt: true },
     orderBy: { updatedAt: "desc" },
   })

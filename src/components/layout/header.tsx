@@ -51,8 +51,9 @@ const navLinks: NavLinkItem[] = [
 const mobileExtraLinks: NavLinkItem[] = [
   { href: "/status", label: "状态" },
   { href: "/postcards", label: "明信片" },
-  { href: "/relationships", label: "关系", icon: HeartHandshake, surface: "bg-[#d9ef61] dark:bg-[#3f4a1c]" },
+  { href: "/relationships", label: "关系", icon: HeartHandshake, surface: "bg-[#ffb4aa] dark:bg-[#4a2622]" },
   { href: "/category/activity", label: "活动" },
+  { href: "/reputation", label: "声望" },
   { href: "/invites", label: "邀请" },
 ]
 

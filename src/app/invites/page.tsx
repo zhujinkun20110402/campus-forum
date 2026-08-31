@@ -1,7 +1,10 @@
 import { CalendarClock, CheckCircle2, Clock3, LockKeyhole, Shield, Ticket, Users } from "lucide-react"
 import { AdminInviteGenerator, InviteCopyButton } from "@/components/invitations/invite-controls"
+import { ReputationInviteMint } from "@/components/invitations/reputation-invite-mint"
 import { EditorialHeading, EditorialHero, EditorialPanel } from "@/components/ui/editorial"
 import { getInviteCenterData } from "@/lib/invitations"
+import { prisma } from "@/lib/prisma"
+import { getBalances } from "@/lib/reputation-milestones"
 import { requireUser } from "@/lib/session"
 import { formatDate } from "@/lib/utils"
 
@@ -18,6 +21,17 @@ export default async function InvitesPage() {
   const user = await requireUser("/invites")
   const isAdmin = user.role === "ADMIN"
   const data = await getInviteCenterData(user.id, isAdmin)
+
+  // 声望邀请额度
+  const userRep = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { raputation: true, inviteQuotaUsed: true },
+  })
+  const balances = getBalances(userRep?.raputation ?? 0, user.id, {
+    pinCards: 0,
+    anonCards: 0,
+    inviteQuota: userRep?.inviteQuotaUsed ?? 0,
+  })
 
   return (
     <div className="min-h-screen bg-[#ece6da] dark:bg-[#10100e]">
@@ -53,6 +67,8 @@ export default async function InvitesPage() {
             meta={data.grant.eligible ? "三日邀请权限已解锁" : remainingLabel(data.grant.unlockAt)}
           />
 
+          <div className="mt-7 grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_330px]">
+            <div className="min-w-0">
           {!data.grant.eligible ? (
             <EditorialPanel className="mt-7 grid gap-5 p-6 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center sm:p-8">
               <div className="flex h-16 w-16 items-center justify-center border-2 border-[#191914] bg-[#f3c84b] text-[#191914] dark:border-[#f5f0e5]">
@@ -70,7 +86,7 @@ export default async function InvitesPage() {
               {data.ownedCodes.map((invite, index) => (
                 <article key={invite.id} className={`border-2 border-[#191914] p-5 text-[#191914] shadow-[5px_5px_0_#191914] dark:border-[#f5f0e5] dark:shadow-[5px_5px_0_#f5f0e5] ${invite.usedAt ? "bg-[#e5ded1]" : index % 2 === 0 ? "bg-[#d9ef61]" : "bg-[#b9ddbd]"}`}>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-mono text-[9px] font-bold tracking-[0.14em]">{invite.source === "ADMIN" ? "ADMIN ISSUED" : "MEMBER GRANT"}</span>
+                    <span className="font-mono text-[9px] font-bold tracking-[0.14em]">{invite.source === "ADMIN" ? "ADMIN ISSUED" : invite.source === "REPUTATION" ? "REPUTATION QUOTA" : "MEMBER GRANT"}</span>
                     <span className={`border border-[#191914] px-2 py-1 font-mono text-[8px] font-bold ${invite.usedAt ? "bg-[#ffb4aa]" : "bg-[#fffaf0]"}`}>
                       {invite.usedAt ? "USED" : "AVAILABLE"}
                     </span>
@@ -92,11 +108,17 @@ export default async function InvitesPage() {
               <p className="mt-3 font-serif text-xl font-bold">邀请码正在发放，请刷新页面</p>
             </EditorialPanel>
           )}
+            </div>
+
+            <aside className="space-y-5">
+              <ReputationInviteMint quota={balances.inviteQuota} />
+            </aside>
+          </div>
 
           <div className="mt-12 grid gap-5 md:grid-cols-3">
             {[
               [CalendarClock, "三日后解锁", "新账号需要先熟悉社区，注册满三天后获得邀请资格。"],
-              [Users, "每人三枚", "普通成员仅自动获得一次，共 3 枚邀请码。"],
+              [Users, "每人三枚", "普通成员自动获得 3 枚；活跃贡献还可在声望之路赚取更多额度。"],
               [CheckCircle2, "单次且永久", "邀请码没有过期时间，但成功注册后立即失效。"],
             ].map(([Icon, title, description]) => {
               const RuleIcon = Icon as React.ComponentType<{ className?: string }>

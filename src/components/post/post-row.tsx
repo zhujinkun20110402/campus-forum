@@ -26,6 +26,7 @@ interface PostRowProps {
       likes: number
     }
     createdAt: Date | string
+    anonymous?: boolean
   }
   hideAuthor?: boolean
   pinned?: boolean
@@ -57,7 +58,7 @@ const categoryStyles: Record<string, { chip: string; text: string }> = {
 
 /** 紧凑的论坛主题行：移动端与桌面端各自优化（行式扫读，信息密度高）。 */
 export function PostRow({ post, hideAuthor = false, pinned = false }: PostRowProps) {
-  const shouldHideAuthor = hideAuthor || post.category.slug === "confession"
+  const shouldHideAuthor = hideAuthor || post.anonymous || post.category.slug === "confession"
   const style = categoryStyles[post.category.slug] ?? categoryStyles["problem-discussion"]
   const authorName = shouldHideAuthor ? "匿名同学" : post.author.name ?? "未命名用户"
   const excerpt = getExcerpt(post.content)

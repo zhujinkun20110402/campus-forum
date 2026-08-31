@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import {
   ArrowUpRight,
+  Award,
   BookOpen,
   Calendar,
   Clock,
@@ -37,6 +38,7 @@ import { getCompetitiveRank, getFollowSummary } from "@/lib/social"
 import { getVisibleCampusStatusByUser } from "@/lib/campus-status"
 import { getReputationGiftState } from "@/lib/reputation-gifts"
 import { getStatusTextColor } from "@/lib/status-constants"
+import { TITLES } from "@/lib/reputation-milestones"
 import { getLevel, getLevelTitle, getRelationshipType } from "@/lib/relationship-config"
 import { getRelationshipState, getRelationshipsForUser, isMutualFollow } from "@/lib/relationships"
 
@@ -89,6 +91,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const hasPinnedPost = pinnedPostCount > 0
   const isChampion = competitiveRank === 1
 
+  // 主页主题（声望 600 解锁）：只影响页面底色与装饰色
+  const themeStyles: Record<string, { page: string; accent: string }> = {
+    paper: { page: "bg-[#ece6da] dark:bg-[#10100e]", accent: "bg-[#d9ef61]" },
+    cream: { page: "bg-[#f4e8d0] dark:bg-[#10100e]", accent: "bg-[#f2d0b2]" },
+    ink: { page: "bg-[#ded9cd] dark:bg-[#10100e]", accent: "bg-[#c8d7ef]" },
+  }
+  const activeTheme = themeStyles[user.profileTheme ?? ""] ?? themeStyles.paper
+
   const stats = [
     { label: "帖子", value: user._count.posts, icon: FileText },
     { label: "评论", value: user._count.comments, icon: MessageSquare },
@@ -108,9 +118,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <div className="min-h-screen bg-[#ece6da] dark:bg-[#10100e]">
+    <div className={cn("min-h-screen", activeTheme.page)}>
       <section className={cn("campus-paper relative overflow-hidden border-b-2 border-[#191914] px-4 pb-14 pt-28 dark:border-[#f5f0e5] sm:px-6 sm:pb-18 lg:px-8", isChampion && "bg-[#fff7dc] dark:bg-[#171713]")}>
-        <div aria-hidden className={cn("absolute -right-12 top-24 h-40 w-40 rotate-12 border-2 border-[#191914] dark:border-[#f5f0e5]", isChampion ? "bg-[#f3c84b]" : "bg-[#d9ef61]")} />
+        <div aria-hidden className={cn("absolute -right-12 top-24 h-40 w-40 rotate-12 border-2 border-[#191914] dark:border-[#f5f0e5]", isChampion ? "bg-[#f3c84b]" : activeTheme.accent)} />
         {isChampion && <div aria-hidden className="champion-spark absolute left-[8%] top-36 h-5 w-5 rotate-12 border-2 border-[#191914] bg-[#ffb4aa] dark:border-[#f5f0e5]" />}
         <div className="relative mx-auto max-w-6xl">
           <ScrollReveal>
@@ -146,6 +156,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                 <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
                   <h1 className="font-serif text-4xl font-bold tracking-tight sm:text-5xl">{user.name ?? "未命名用户"}</h1>
                   {user.role === "ADMIN" && <span className="border border-[#191914] bg-[#f3c84b] px-2 py-1 font-mono text-[9px] font-bold text-[#191914] dark:border-[#f5f0e5]">ADMIN</span>}
+                  {user.equippedTitle && (
+                    <span className="inline-flex items-center gap-1.5 border border-[#191914] bg-[#c8d7ef] px-2 py-1 font-mono text-[9px] font-bold text-[#191914] dark:border-[#f5f0e5]">
+                      <Award className="h-3 w-3" />
+                      {TITLES.find((title) => title.id === user.equippedTitle)?.name ?? user.equippedTitle}
+                    </span>
+                  )}
                   {isChampion && <span className="inline-flex items-center gap-1.5 border-2 border-[#191914] bg-[#191914] px-2.5 py-1 font-mono text-[9px] font-bold text-[#d9ef61] dark:border-[#f5f0e5]"><Trophy className="h-3.5 w-3.5" />RANK #01</span>}
                   <LevelBadge raputation={user.raputation} role={user.role} size="sm" />
                 </div>

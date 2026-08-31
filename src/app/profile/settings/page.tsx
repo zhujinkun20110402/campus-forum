@@ -2,11 +2,13 @@ import { redirect } from "next/navigation"
 import { Crown, Settings, Shield } from "lucide-react"
 import { ProfileForm } from "@/components/profile/profile-form"
 import { DraftSettings } from "@/components/profile/draft-settings"
+import { ReputationRewardsSettings } from "@/components/profile/reputation-rewards-settings"
 import { LevelBadge } from "@/components/reputation/level-badge"
 import { ReputationBar } from "@/components/reputation/reputation-bar"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { EditorialHero, EditorialPanel } from "@/components/ui/editorial"
 import { prisma } from "@/lib/prisma"
+import { PROFILE_THEMES, PROFILE_THEME_REP, getUnlockedTitles, isThemeUnlocked } from "@/lib/reputation-milestones"
 import { requireUser } from "@/lib/session"
 
 export default async function ProfileSettingsPage() {
@@ -14,7 +16,7 @@ export default async function ProfileSettingsPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: sessionUser.id },
-    select: { name: true, email: true, image: true, bio: true, role: true, raputation: true, hideFollowers: true, hideFollowing: true },
+    select: { name: true, email: true, image: true, bio: true, role: true, raputation: true, hideFollowers: true, hideFollowing: true, equippedTitle: true, profileTheme: true },
   })
 
   if (!user) redirect("/auth/signin")
@@ -69,6 +71,21 @@ export default async function ProfileSettingsPage() {
               <h2 className="mt-2 font-serif text-2xl font-bold">写作偏好</h2>
             </div>
             <DraftSettings />
+          </EditorialPanel>
+
+          <EditorialPanel className="mt-7 p-6 sm:p-8">
+            <div className="mb-7 border-b-2 border-[#191914] pb-5 dark:border-[#f5f0e5]">
+              <p className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#e4532f]">REPUTATION REWARDS</p>
+              <h2 className="mt-2 font-serif text-2xl font-bold">声望奖励</h2>
+            </div>
+            <ReputationRewardsSettings
+              equippedTitle={user.equippedTitle}
+              profileTheme={user.profileTheme}
+              unlockedTitles={getUnlockedTitles(user.raputation)}
+              themeUnlocked={isThemeUnlocked(user.raputation)}
+              themeUnlockRep={PROFILE_THEME_REP}
+              themes={PROFILE_THEMES}
+            />
           </EditorialPanel>
 
           <aside className="space-y-5 lg:sticky lg:top-24">

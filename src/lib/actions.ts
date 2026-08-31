@@ -15,6 +15,7 @@ import { createUserWithInvite } from "@/lib/invitations"
 import { NOTIFICATION_TYPES } from "@/lib/notifications"
 import { awardRelationshipXp } from "@/lib/relationship-actions"
 import { requireUser } from "@/lib/session"
+import { getBalances } from "@/lib/reputation-milestones"
 
 async function checkBanned(userId: string) {
   const user = await prisma.user.findUnique({
@@ -105,14 +106,41 @@ export async function createPost(_prevState: unknown, formData: FormData) {
   // 检查是否今日首次发帖（在创建帖子之前检查）
   const isFirstPostToday = !(await hasPostedToday(session.user.id))
 
+  // 匿名卡：非表白墙分类可匿名发布（消耗一张卡）
+  const wantsAnonymous = formData.get("anonymous") === "1"
+  let useAnonymous = false
+  if (wantsAnonymous && category.slug !== "confession") {
+    const author = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { raputation: true, anonCardsUsedCount: true },
+    })
+    const balances = getBalances(author?.raputation ?? 0, session.user.id, {
+      pinCards: 0,
+      anonCards: author?.anonCardsUsedCount ?? 0,
+      inviteQuota: 0,
+    })
+    if (balances.anonCards <= 0) {
+      return { message: "没有可用的匿名卡" }
+    }
+    useAnonymous = true
+  }
+
   const post = await prisma.post.create({
     data: {
       title,
       content,
       authorId: session.user.id,
       categoryId,
+      anonymous: useAnonymous,
     },
   })
+
+  if (useAnonymous) {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { anonCardsUsedCount: { increment: 1 } },
+    })
+  }
 
   // 声望奖励：发帖 +5，每日首次发帖额外 +3
   const repDelta = REP_POINTS.POST_CREATED + (isFirstPostToday ? REP_POINTS.DAILY_FIRST_POST : 0)

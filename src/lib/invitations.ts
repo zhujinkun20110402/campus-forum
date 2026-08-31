@@ -177,6 +177,26 @@ export async function createAdminInviteCodes(adminId: string, count: number) {
   throw new Error("邀请码生成失败")
 }
 
+/** 声望之路：用邀请额度铸造邀请码 */
+export async function mintReputationInviteCodes(userId: string, count: number) {
+  const safeCount = Math.max(1, Math.min(8, Math.floor(count)))
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const codes = generateInviteBatch(safeCount)
+    try {
+      await prisma.inviteCode.createMany({
+        data: codes.map((code) => ({ code, source: "REPUTATION", createdById: userId })),
+      })
+      return codes
+    } catch (error) {
+      const isCodeCollision = error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"
+      if (!isCodeCollision || attempt === 2) throw error
+    }
+  }
+
+  throw new Error("邀请码生成失败")
+}
+
 export async function getInviteCenterData(userId: string, isAdmin: boolean) {
   const grant = await ensureMemberInviteGrant(userId)
 

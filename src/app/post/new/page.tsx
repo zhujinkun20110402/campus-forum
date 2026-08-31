@@ -2,6 +2,7 @@ import { Lightbulb, PenLine, Sparkles } from "lucide-react"
 import { PostForm } from "@/components/post/post-form"
 import { EditorialHero, EditorialPanel } from "@/components/ui/editorial"
 import { prisma } from "@/lib/prisma"
+import { getBalances } from "@/lib/reputation-milestones"
 import { requireUser } from "@/lib/session"
 
 export default async function NewPostPage({
@@ -13,6 +14,17 @@ export default async function NewPostPage({
   const user = await requireUser(`/post/new${categorySlug ? `?category=${encodeURIComponent(categorySlug)}` : ""}`)
   const isAdmin = user.role === "ADMIN"
   const allCategories = await prisma.category.findMany()
+
+  // 匿名卡余额（> 0 时发帖表单显示匿名发布选项）
+  const userRep = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { raputation: true, anonCardsUsedCount: true },
+  })
+  const balances = getBalances(userRep?.raputation ?? 0, user.id, {
+    pinCards: 0,
+    anonCards: userRep?.anonCardsUsedCount ?? 0,
+    inviteQuota: 0,
+  })
 
   const categories = allCategories.filter((category) => {
     if (category.slug === "confession") return false
@@ -53,7 +65,7 @@ export default async function NewPostPage({
               <p className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#e4532f]">EDITOR / NEW POST</p>
               <h2 className="mt-2 font-serif text-2xl font-bold">整理你的表达</h2>
             </div>
-            <PostForm categories={categories} defaultCategoryId={categories.length === 1 ? categories[0].id : ""} />
+            <PostForm categories={categories} defaultCategoryId={categories.length === 1 ? categories[0].id : ""} anonCards={balances.anonCards} />
           </EditorialPanel>
 
           <aside className="space-y-5 lg:sticky lg:top-24">

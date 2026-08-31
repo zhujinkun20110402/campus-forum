@@ -2,6 +2,7 @@ import "server-only"
 
 import { prisma } from "@/lib/prisma"
 import { withTtl } from "@/lib/ttl-cache"
+import { SELF_PIN_DURATION_MS } from "@/lib/reputation-milestones"
 
 /**
  * 全站共享、低频变化的数据，用进程内 TTL 缓存减少数据库往返（省函数时长）。
@@ -38,9 +39,9 @@ export function getTrendingPostsCached() {
       },
     })
 
-    // 表白墙帖子在服务端即抹除作者信息，避免真实身份泄露（与原实现一致）
+    // 表白墙与匿名卡帖子在服务端即抹除作者信息，避免真实身份泄露（与原实现一致）
     return posts.map((post) =>
-      post.category.slug === "confession"
+      post.anonymous || post.category.slug === "confession"
         ? { ...post, author: { id: "anonymous", name: null, image: null, role: null, raputation: null } }
         : post
     )
@@ -49,9 +50,15 @@ export function getTrendingPostsCached() {
 
 export function getPinnedPostsCached() {
   // 置顶列表 TTL 短一些，管理员置顶/取消后 30 秒内可见
+  // 含自助置顶（置顶卡）：selfPinnedAt 在 24 小时内视为置顶
   return withTtl("pinned-posts", 30_000, () =>
     prisma.post.findMany({
-      where: { pinned: true },
+      where: {
+        OR: [
+          { pinned: true },
+          { selfPinnedAt: { gte: new Date(Date.now() - SELF_PIN_DURATION_MS) } },
+        ],
+      },
       orderBy: { updatedAt: "desc" },
       include: {
         author: {

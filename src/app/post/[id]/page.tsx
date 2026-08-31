@@ -7,15 +7,18 @@ import remarkGfm from "remark-gfm"
 import { CommentList } from "@/components/comment/comment-list"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { DeleteButton } from "@/components/post/delete-button"
+import { EditPostButton } from "@/components/post/edit-post-button"
 import { LikeButton } from "@/components/post/like-button"
 import { LightboxImage, PostImageLightbox } from "@/components/post/post-image-lightbox"
 import { PinButton } from "@/components/post/pin-button"
+import { PinCardButton } from "@/components/post/pin-card-button"
 import { ShareButton } from "@/components/post/share-button"
 import { ReportButton } from "@/components/report/report-button"
 import { LevelBadge } from "@/components/reputation/level-badge"
 import { EditorialHeading, EditorialPanel } from "@/components/ui/editorial"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { prisma } from "@/lib/prisma"
+import { isSelfPinnedActive } from "@/lib/reputation-milestones"
 import { cn, formatRelativeTime } from "@/lib/utils"
 import { requireUser } from "@/lib/session"
 
@@ -54,7 +57,9 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
   const isAuthor = currentUser.id === post.author.id
   const isAdmin = currentUser.role === "ADMIN"
   const isConfession = post.category.slug === "confession"
-  const pinned = post.pinned
+  const hideAuthorIdentity = isConfession || post.anonymous
+  const selfPinnedActive = isSelfPinnedActive(post.selfPinnedAt)
+  const pinned = post.pinned || selfPinnedActive
 
   // 表白墙帖子的评论区同样匿名化：抹除评论者真实身份（保留 id 用于区分“我”）
   if (isConfession) {
@@ -85,6 +90,11 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                 {post.category.name}
               </Link>
               <span className="flex items-center gap-1.5 font-mono text-[9px] tracking-[0.1em] text-[#777268] dark:text-[#989389]"><Clock className="h-3.5 w-3.5 text-[#e4532f]" />{formatRelativeTime(post.createdAt)}</span>
+              {post.editedAt && (
+                <span className="border border-[#191914]/35 px-2 py-1 font-mono text-[8px] font-bold tracking-[0.08em] text-[#777268] dark:border-white/35 dark:text-[#989389]">
+                  已编辑 · {formatRelativeTime(post.editedAt)}
+                </span>
+              )}
               {pinned && <span className="border border-[#191914] bg-[#f3c84b] px-2 py-1 font-mono text-[8px] font-bold text-[#191914] dark:border-[#f5f0e5]">PINNED</span>}
             </div>
 
@@ -93,17 +103,17 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
             </h1>
 
             <div className="mt-8 flex items-center gap-3">
-              {isConfession ? (
+              {hideAuthorIdentity ? (
                 <div className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-[#191914] bg-[#ffb4aa] font-bold text-[#191914] dark:border-[#f5f0e5]">?</div>
               ) : (
                 <Link href={`/profile/${post.author.id}`}><UserAvatar name={post.author.name} image={post.author.image} role={post.author.role} size="lg" /></Link>
               )}
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold">{isConfession ? "匿名同学" : (post.author.name ?? "未命名用户")}</p>
-                  {!isConfession && <LevelBadge raputation={post.author.raputation} role={post.author.role} size="xs" showTitle={false} />}
+                  <p className="text-sm font-bold">{hideAuthorIdentity ? "匿名同学" : (post.author.name ?? "未命名用户")}</p>
+                  {!hideAuthorIdentity && <LevelBadge raputation={post.author.raputation} role={post.author.role} size="xs" showTitle={false} />}
                 </div>
-                <p className="mt-1 font-mono text-[8px] tracking-[0.14em] text-[#918b80]">{isConfession ? "ANONYMOUS VOICE" : "CAMPUS AUTHOR"}</p>
+                <p className="mt-1 font-mono text-[8px] tracking-[0.14em] text-[#918b80]">{hideAuthorIdentity ? (isConfession ? "ANONYMOUS VOICE" : "ANONYMOUS POST") : "CAMPUS AUTHOR"}</p>
               </div>
             </div>
           </ScrollReveal>
@@ -132,6 +142,8 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                 <ShareButton postId={post.id} title={post.title} />
                 {!isAuthor && <ReportButton targetType="POST" targetId={post.id} />}
                 {isAdmin && <PinButton postId={post.id} initialPinned={pinned} />}
+                {isAuthor && <EditPostButton postId={post.id} title={post.title} content={post.content} createdAt={post.createdAt} />}
+                {isAuthor && <PinCardButton postId={post.id} selfPinnedActive={selfPinnedActive} />}
                 {(isAuthor || isAdmin) && <DeleteButton postId={post.id} />}
               </div>
             </EditorialPanel>

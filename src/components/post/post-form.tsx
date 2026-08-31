@@ -16,14 +16,17 @@ import { Check, FileText, Loader2, Send, X } from "lucide-react"
 interface PostFormProps {
   categories: { id: string; name: string }[]
   defaultCategoryId?: string
+  /** 可用匿名卡数量（> 0 时显示匿名发布选项） */
+  anonCards?: number
 }
 
-export function PostForm({ categories, defaultCategoryId = "" }: PostFormProps) {
+export function PostForm({ categories, defaultCategoryId = "", anonCards = 0 }: PostFormProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [isPending, startTransition] = useTransition()
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
   const [insertNotice, setInsertNotice] = useState(false)
+  const [useAnonCard, setUseAnonCard] = useState(false)
   const {
     register,
     handleSubmit,
@@ -169,6 +172,7 @@ export function PostForm({ categories, defaultCategoryId = "" }: PostFormProps) 
     formData.append("title", data.title)
     formData.append("content", data.content)
     formData.append("categoryId", data.categoryId)
+    if (useAnonCard) formData.append("anonymous", "1")
 
     // 先清草稿：发布成功会直接跳转；失败则在下面立刻把内容重新存回草稿
     clearDraft()
@@ -237,6 +241,23 @@ export function PostForm({ categories, defaultCategoryId = "" }: PostFormProps) 
         </select>
         {errors.categoryId && (
           <p className="border-l-4 border-[#d44120] bg-[#ffb4aa]/30 px-3 py-2 text-sm text-[#b52f1e]" role="alert">{errors.categoryId.message}</p>
+        )}
+
+        {anonCards > 0 && (
+          <label className="flex items-start gap-3 border border-[#191914]/30 bg-[#ece6da]/60 px-4 py-3 dark:border-white/30 dark:bg-[#292821]/60">
+            <input
+              type="checkbox"
+              checked={useAnonCard}
+              onChange={(event) => setUseAnonCard(event.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[#ff6b43]"
+            />
+            <span className="min-w-0">
+              <span className="block text-sm font-bold">使用匿名卡发布（剩余 {anonCards} 张）</span>
+              <span className="mt-0.5 block text-xs leading-relaxed text-[#777268] dark:text-[#989389]">
+                同学们看不到你的身份；管理员后台仍可追溯，违规双倍扣声望
+              </span>
+            </span>
+          </label>
         )}
       </div>
 

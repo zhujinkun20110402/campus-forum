@@ -29,6 +29,11 @@ model User {
   hideFollowers          Boolean   @default(false)
   hideFollowing          Boolean   @default(false)
   inviteGrantClaimedAt   DateTime?
+  pinCardsUsedCount      Int       @default(0)
+  anonCardsUsedCount     Int       @default(0)
+  inviteQuotaUsed        Int       @default(0)
+  profileTheme           String?   @db.VarChar(24)
+  equippedTitle          String?   @db.VarChar(24)
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
 
@@ -113,9 +118,12 @@ model Post {
   content    String   @db.Text
   authorId   String
   categoryId String
-  pinned     Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  pinned       Boolean   @default(false)
+  anonymous    Boolean   @default(false)
+  editedAt     DateTime?
+  selfPinnedAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   category      Category       @relation(fields: [categoryId], references: [id])
