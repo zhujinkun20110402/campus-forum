@@ -6,6 +6,7 @@ import rehypeHighlight from "rehype-highlight"
 import rehypeKatex from "rehype-katex"
 import remarkGfm from "remark-gfm"
 import remarkMath from "remark-math"
+import { preprocessLatex } from "@/lib/latex-preprocess"
 import { CommentList } from "@/components/comment/comment-list"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { DeleteButton } from "@/components/post/delete-button"
@@ -129,10 +130,10 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
               <article className="prose prose-stone max-w-none dark:prose-invert prose-a:text-[#d44120] prose-img:rounded-none">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm, remarkMath]}
-                  rehypePlugins={[rehypeKatex, rehypeHighlight]}
+                  rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: "ignore", errorColor: "#d44120" }], rehypeHighlight]}
                   components={{ img: LightboxImage }}
                 >
-                  {post.content}
+                  {preprocessLatex(post.content)}
                 </ReactMarkdown>
               </article>
 
