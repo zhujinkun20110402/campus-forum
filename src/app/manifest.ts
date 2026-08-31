@@ -6,6 +6,7 @@ import type { MetadataRoute } from "next"
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/",
     name: "学生论坛 · 鲜活校园",
     short_name: "学生论坛",
     description:
@@ -14,7 +15,9 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     scope: "/",
     display: "standalone",
+    display_override: ["standalone", "minimal-ui"],
     orientation: "portrait-primary",
+    prefer_related_applications: false,
     background_color: "#fffaf0",
     theme_color: "#191914",
     icons: [

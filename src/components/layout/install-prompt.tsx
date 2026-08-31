@@ -181,14 +181,14 @@ const GUIDE_STEPS: Record<InstallPlatform, string[]> = {
     "桌面出现论坛图标，之后点图标即可全屏打开",
   ],
   harmonyos: [
-    "点华为浏览器右上角「⋮」或底部「☰」菜单",
-    "找到「添加到桌面」并点击",
-    "桌面出现论坛图标，之后点图标即可打开",
+    "若浏览器弹出了系统安装提示，直接点「安装」即可",
+    "没有提示时：点右上角「⋮」或底部「☰」菜单",
+    "找到「添加到桌面」并点击，桌面出现论坛图标",
   ],
   android: [
-    "点浏览器右上角的「⋮」菜单",
+    "若浏览器弹出了系统安装提示，直接点「安装」即可",
+    "没有提示时：点浏览器右上角的「⋮」菜单",
     "找到「安装应用」或「添加到主屏幕」并点击",
-    "桌面出现论坛图标，之后点图标即可打开",
   ],
   desktop: [
     "看地址栏右侧有没有「安装」图标，直接点击即可",
@@ -387,6 +387,16 @@ export function InstallGuideModal() {
             </li>
           ))}
         </ol>
+        {/* 实测诊断：当前浏览器是否支持一键安装（beforeinstallprompt） */}
+        {platform !== "ios" && (
+          <p className="mt-4 border-t border-[#191914]/20 pt-3 font-mono text-[9px] font-bold tracking-[0.08em] dark:border-white/20">
+            {capturedDeferred ? (
+              <span className="text-[#326b42] dark:text-[#b9ddbd]">✓ 本浏览器支持一键安装 · 关闭本弹窗后再点一次「装到桌面」即可直接安装</span>
+            ) : (
+              <span className="text-[#918b80]">本浏览器未提供一键安装事件 · 请按上面步骤操作</span>
+            )}
+          </p>
+        )}
         {platform === "ios" && (
           <p className="mt-4 border-t border-[#191914]/20 pt-3 text-xs leading-relaxed text-[#918b80] dark:border-white/20">
             提示：需要 iOS 16.4 及以上系统，未来开启「通知推送」也依赖已添加到主屏幕。
