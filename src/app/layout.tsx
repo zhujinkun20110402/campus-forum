@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next"
 import { Noto_Serif_SC, Noto_Sans_SC, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
+// KaTeX 公式样式（帖子正文 LaTeX 支持）
+import "katex/dist/katex.min.css"
 import { Providers } from "@/components/layout/providers"
 import { HeaderWrapper } from "@/components/layout/header-wrapper"
 import { FooterWrapper } from "@/components/layout/footer-wrapper"

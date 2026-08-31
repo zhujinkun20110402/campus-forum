@@ -3,7 +3,9 @@ import { notFound } from "next/navigation"
 import { ArrowLeft, Clock, MessageSquare } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import rehypeHighlight from "rehype-highlight"
+import rehypeKatex from "rehype-katex"
 import remarkGfm from "remark-gfm"
+import remarkMath from "remark-math"
 import { CommentList } from "@/components/comment/comment-list"
 import { ScrollReveal } from "@/components/effects/scroll-reveal"
 import { DeleteButton } from "@/components/post/delete-button"
@@ -126,8 +128,8 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
             <EditorialPanel className="p-6 sm:p-10 lg:p-12">
               <article className="prose prose-stone max-w-none dark:prose-invert prose-a:text-[#d44120] prose-img:rounded-none">
                 <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeHighlight]}
+                  remarkPlugins={[remarkGfm, remarkMath]}
+                  rehypePlugins={[rehypeKatex, rehypeHighlight]}
                   components={{ img: LightboxImage }}
                 >
                   {post.content}

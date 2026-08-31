@@ -303,7 +303,7 @@ export function PostForm({ categories, defaultCategoryId = "", anonCards = 0 }: 
               value={field.value}
               onChange={field.onChange}
               onBlur={field.onBlur}
-              placeholder={"写点什么吧…\n\n支持 Markdown 格式；图片直接粘贴或拖进来，会自动插入正文"}
+              placeholder={"写点什么吧…\n\n支持 Markdown 格式；图片直接粘贴或拖进来，会自动插入正文\n支持 LaTeX 公式：$...$ 行内、$$...$$ 独立成行"}
               rows={10}
               className="min-h-[320px] resize-y rounded-none border-2 border-[#191914] bg-white p-4 font-mono text-base leading-7 text-[#191914] focus-visible:ring-[#ff6b43] focus-visible:ring-offset-0 dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5] sm:min-h-[280px] sm:text-[15px]"
             />
