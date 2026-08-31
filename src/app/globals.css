@@ -656,6 +656,58 @@ body {
   outline-offset: 3px;
 }
 
+/* ===== KaTeX 超宽公式：横向滚动 =====
+   技巧：.katex 用 width: max-content + margin auto，
+   放得下时保持居中；放不下时自动左对齐，完整可滚动（避免居中裁掉左侧） */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.6rem 0.25rem 0.8rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #ff6b43 #ece6da;
+}
+
+.katex-display > .katex {
+  display: block;
+  width: max-content;
+  max-width: none;
+  margin: 0 auto;
+}
+
+/* WebKit 滚动条（校刊风：墨线轨道 + 橙色滑块） */
+.katex-display::-webkit-scrollbar {
+  height: 10px;
+}
+
+.katex-display::-webkit-scrollbar-track {
+  background: #ece6da;
+  border: 1px solid #191914;
+}
+
+.katex-display::-webkit-scrollbar-thumb {
+  background: #ff6b43;
+  border: 2px solid #191914;
+}
+
+.katex-display::-webkit-scrollbar-thumb:hover {
+  background: #e4532f;
+}
+
+.dark .katex-display {
+  scrollbar-color: #ff6b43 #292821;
+}
+
+.dark .katex-display::-webkit-scrollbar-track {
+  background: #292821;
+  border-color: #f5f0e5;
+}
+
+.dark .katex-display::-webkit-scrollbar-thumb {
+  background: #ff6b43;
+  border-color: #f5f0e5;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
