@@ -18,15 +18,35 @@ interface PostFormProps {
   defaultCategoryId?: string
   /** 可用匿名卡数量（> 0 时显示匿名发布选项） */
   anonCards?: number
+  /** 声望 1600 解锁：投票帖 */
+  canPoll?: boolean
+  /** 声望 4400 解锁：定时发布 */
+  canSchedule?: boolean
+  /** 进行中的话题挑战（可参与） */
+  challenges?: { id: string; title: string }[]
+  /** 从挑战页跳转时预选的话题 */
+  defaultChallengeId?: string
 }
 
-export function PostForm({ categories, defaultCategoryId = "", anonCards = 0 }: PostFormProps) {
+export function PostForm({
+  categories,
+  defaultCategoryId = "",
+  anonCards = 0,
+  canPoll = false,
+  canSchedule = false,
+  challenges = [],
+  defaultChallengeId = "",
+}: PostFormProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [isPending, startTransition] = useTransition()
   const [uploadedImages, setUploadedImages] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
   const [insertNotice, setInsertNotice] = useState(false)
   const [useAnonCard, setUseAnonCard] = useState(false)
+  const [pollEnabled, setPollEnabled] = useState(false)
+  const [pollOptions, setPollOptions] = useState<string[]>(["", ""])
+  const [scheduledAt, setScheduledAt] = useState("")
+  const [challengeId, setChallengeId] = useState(defaultChallengeId)
   const {
     register,
     handleSubmit,
@@ -173,6 +193,12 @@ export function PostForm({ categories, defaultCategoryId = "", anonCards = 0 }: 
     formData.append("content", data.content)
     formData.append("categoryId", data.categoryId)
     if (useAnonCard) formData.append("anonymous", "1")
+    if (pollEnabled) {
+      const cleaned = pollOptions.map((option) => option.trim()).filter(Boolean)
+      formData.append("pollOptions", JSON.stringify(cleaned))
+    }
+    if (scheduledAt) formData.append("publishAt", new Date(scheduledAt).toISOString())
+    if (challengeId) formData.append("challengeId", challengeId)
 
     // 先清草稿：发布成功会直接跳转；失败则在下面立刻把内容重新存回草稿
     clearDraft()
@@ -258,6 +284,112 @@ export function PostForm({ categories, defaultCategoryId = "", anonCards = 0 }: 
               </span>
             </span>
           </label>
+        )}
+
+        {challenges.length > 0 && (
+          <div className="border border-[#191914]/30 bg-[#ece6da]/60 px-4 py-3 dark:border-white/30 dark:bg-[#292821]/60">
+            <label htmlFor="challengeId" className="block text-sm font-bold">
+              参与话题挑战
+              <span className="ml-2 font-mono text-[9px] font-medium tracking-[0.1em] text-[#989389]">OPTIONAL</span>
+            </label>
+            <select
+              id="challengeId"
+              value={challengeId}
+              onChange={(event) => setChallengeId(event.target.value)}
+              className="mt-2 h-10 w-full border-2 border-[#191914] bg-white px-3 text-sm font-medium text-[#191914] dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5]"
+            >
+              <option value="">不参与</option>
+              {challenges.map((challenge) => (
+                <option key={challenge.id} value={challenge.id}>
+                  {challenge.title}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {canPoll && (
+          <div className="border border-[#191914]/30 bg-[#ece6da]/60 px-4 py-3 dark:border-white/30 dark:bg-[#292821]/60">
+            <label className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={pollEnabled}
+                onChange={(event) => setPollEnabled(event.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-[#ff6b43]"
+              />
+              <span className="min-w-0">
+                <span className="block text-sm font-bold">添加投票（2-6 个选项）</span>
+                <span className="mt-0.5 block text-xs leading-relaxed text-[#777268] dark:text-[#989389]">
+                  发布后同学们可各投一票，投票不可修改
+                </span>
+              </span>
+            </label>
+
+            {pollEnabled && (
+              <div className="mt-3 space-y-2">
+                {pollOptions.map((option, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <input
+                      value={option}
+                      onChange={(event) =>
+                        setPollOptions((prev) => prev.map((item, i) => (i === index ? event.target.value : item)))
+                      }
+                      placeholder={`选项 ${index + 1}`}
+                      maxLength={50}
+                      className="h-10 w-full border-2 border-[#191914] bg-white px-3 text-sm font-medium text-[#191914] dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5]"
+                    />
+                    {pollOptions.length > 2 && (
+                      <button
+                        type="button"
+                        onClick={() => setPollOptions((prev) => prev.filter((_, i) => i !== index))}
+                        aria-label={`删除选项 ${index + 1}`}
+                        className="flex h-10 w-10 shrink-0 items-center justify-center border-2 border-[#191914] bg-[#fffaf0] text-[#191914] hover:bg-[#ffb4aa] dark:border-[#f5f0e5] dark:bg-[#191914] dark:text-[#f5f0e5]"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {pollOptions.length < 6 && (
+                  <button
+                    type="button"
+                    onClick={() => setPollOptions((prev) => [...prev, ""])}
+                    className="h-9 border-2 border-dashed border-[#191914]/50 px-3 text-xs font-bold text-[#777268] hover:border-[#191914] hover:text-[#191914] dark:border-white/50 dark:text-[#989389] dark:hover:border-white dark:hover:text-white"
+                  >
+                    + 添加选项
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {canSchedule && (
+          <div className="border border-[#191914]/30 bg-[#ece6da]/60 px-4 py-3 dark:border-white/30 dark:bg-[#292821]/60">
+            <label htmlFor="publishAt" className="block text-sm font-bold">
+              定时发布
+              <span className="ml-2 font-mono text-[9px] font-medium tracking-[0.1em] text-[#989389]">OPTIONAL</span>
+            </label>
+            <p className="mt-0.5 text-xs leading-relaxed text-[#777268] dark:text-[#989389]">
+              留空则立即发布；设定时间后，到点前只有你自己能看到这篇帖子
+            </p>
+            <input
+              id="publishAt"
+              type="datetime-local"
+              value={scheduledAt}
+              onChange={(event) => setScheduledAt(event.target.value)}
+              className="mt-2 h-10 w-full border-2 border-[#191914] bg-white px-3 text-sm font-medium text-[#191914] dark:border-[#f5f0e5] dark:bg-[#11110f] dark:text-[#f5f0e5]"
+            />
+            {scheduledAt && (
+              <button
+                type="button"
+                onClick={() => setScheduledAt("")}
+                className="mt-2 text-xs font-bold text-[#777268] underline decoration-1 underline-offset-2 hover:text-[#d44120] dark:text-[#989389]"
+              >
+                取消定时，改为立即发布
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -365,10 +497,10 @@ export function PostForm({ categories, defaultCategoryId = "", anonCards = 0 }: 
           {isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              发布中...
+              {scheduledAt ? "定时中..." : "发布中..."}
             </>
           ) : (
-            <><Send className="mr-2 h-4 w-4" />发布帖子</>
+            <><Send className="mr-2 h-4 w-4" />{scheduledAt ? "定时发布" : "发布帖子"}</>
           )}
         </Button>
       </div>

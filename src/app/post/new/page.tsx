@@ -2,15 +2,15 @@ import { Lightbulb, PenLine, Sparkles } from "lucide-react"
 import { PostForm } from "@/components/post/post-form"
 import { EditorialHero, EditorialPanel } from "@/components/ui/editorial"
 import { prisma } from "@/lib/prisma"
-import { getBalances } from "@/lib/reputation-milestones"
+import { getBalances, hasFeature } from "@/lib/reputation-milestones"
 import { requireUser } from "@/lib/session"
 
 export default async function NewPostPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>
+  searchParams: Promise<{ category?: string; challenge?: string }>
 }) {
-  const { category: categorySlug } = await searchParams
+  const { category: categorySlug, challenge: challengeParam } = await searchParams
   const user = await requireUser(`/post/new${categorySlug ? `?category=${encodeURIComponent(categorySlug)}` : ""}`)
   const isAdmin = user.role === "ADMIN"
   const allCategories = await prisma.category.findMany()
@@ -20,10 +20,21 @@ export default async function NewPostPage({
     where: { id: user.id },
     select: { raputation: true, anonCardsUsedCount: true },
   })
-  const balances = getBalances(userRep?.raputation ?? 0, user.id, {
+  const reputation = userRep?.raputation ?? 0
+  const balances = getBalances(reputation, user.id, {
     pinCards: 0,
     anonCards: userRep?.anonCardsUsedCount ?? 0,
     inviteQuota: 0,
+  })
+
+  // 声望解锁的高级发帖能力
+  const canPoll = hasFeature(reputation, "pollPost")
+  const canSchedule = hasFeature(reputation, "scheduledPost")
+  const activeChallenges = await prisma.topicChallenge.findMany({
+    where: { endsAt: { gt: new Date() } },
+    orderBy: { endsAt: "asc" },
+    take: 8,
+    select: { id: true, title: true },
   })
 
   const categories = allCategories.filter((category) => {
@@ -66,7 +77,17 @@ export default async function NewPostPage({
               <p className="font-mono text-[9px] font-bold tracking-[0.16em] text-[#e4532f]">EDITOR / NEW POST</p>
               <h2 className="mt-2 font-serif text-2xl font-bold">整理你的表达</h2>
             </div>
-            <PostForm categories={categories} defaultCategoryId={categories.length === 1 ? categories[0].id : ""} anonCards={balances.anonCards} />
+            <PostForm
+              categories={categories}
+              defaultCategoryId={categories.length === 1 ? categories[0].id : ""}
+              anonCards={balances.anonCards}
+              canPoll={canPoll}
+              canSchedule={canSchedule}
+              challenges={activeChallenges}
+              defaultChallengeId={
+                challengeParam && activeChallenges.some((item) => item.id === challengeParam) ? challengeParam : ""
+              }
+            />
           </EditorialPanel>
 
           <aside className="space-y-5 lg:sticky lg:top-24">

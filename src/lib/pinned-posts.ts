@@ -4,6 +4,7 @@
  */
 import { prisma } from "@/lib/prisma"
 import { SELF_PIN_DURATION_MS } from "@/lib/reputation-milestones"
+import { publishedCondition } from "@/lib/post-visibility"
 
 /**
  * 获取所有置顶帖子的 ID（按 createdAt 降序，最新置顶的排前面）
@@ -11,9 +12,14 @@ import { SELF_PIN_DURATION_MS } from "@/lib/reputation-milestones"
 export async function getPinnedPostIds(): Promise<string[]> {
   const pinnedPosts = await prisma.post.findMany({
     where: {
-      OR: [
-        { pinned: true },
-        { selfPinnedAt: { gte: new Date(Date.now() - SELF_PIN_DURATION_MS) } },
+      AND: [
+        publishedCondition(),
+        {
+          OR: [
+            { pinned: true },
+            { selfPinnedAt: { gte: new Date(Date.now() - SELF_PIN_DURATION_MS) } },
+          ],
+        },
       ],
     },
     select: { id: true, updatedAt: true },

@@ -2,7 +2,8 @@ import "server-only"
 
 import { prisma } from "@/lib/prisma"
 import { withTtl } from "@/lib/ttl-cache"
-import { SELF_PIN_DURATION_MS } from "@/lib/reputation-milestones"
+import { SELF_PIN_DURATION_MS, getFeatureRep } from "@/lib/reputation-milestones"
+import { publishedCondition } from "@/lib/post-visibility"
 
 /**
  * 全站共享、低频变化的数据，用进程内 TTL 缓存减少数据库往返（省函数时长）。
@@ -11,10 +12,13 @@ import { SELF_PIN_DURATION_MS } from "@/lib/reputation-milestones"
 
 const MINUTE = 60_000
 
+/** 荣誉墙门槛（声望达到即进入首页传奇榜） */
+export const HONOR_WALL_REP = getFeatureRep("honorWall") ?? 8800
+
 export function getSiteStatsCached() {
   return withTtl("site-stats", 5 * MINUTE, async () => {
     const [posts, users, comments] = await prisma.$transaction([
-      prisma.post.count(),
+      prisma.post.count({ where: publishedCondition() }),
       prisma.user.count(),
       prisma.comment.count(),
     ])
@@ -22,11 +26,30 @@ export function getSiteStatsCached() {
   })
 }
 
+/** 首页传奇荣誉墙：声望达到门槛的成员（最多 8 位） */
+export function getHonorWallCached() {
+  return withTtl("honor-wall", 5 * MINUTE, () =>
+    prisma.user.findMany({
+      where: { raputation: { gte: HONOR_WALL_REP }, role: { not: "BANNED" } },
+      orderBy: { raputation: "desc" },
+      take: 8,
+      select: {
+        id: true,
+        name: true,
+        image: true,
+        role: true,
+        raputation: true,
+        equippedTitle: true,
+      },
+    })
+  )
+}
+
 export function getTrendingPostsCached() {
   return withTtl("trending-posts", 2 * MINUTE, async () => {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
     const posts = await prisma.post.findMany({
-      where: { createdAt: { gte: sevenDaysAgo } },
+      where: { AND: [publishedCondition(), { createdAt: { gte: sevenDaysAgo } }] },
       orderBy: [
         { likes: { _count: "desc" } },
         { comments: { _count: "desc" } },
@@ -54,9 +77,14 @@ export function getPinnedPostsCached() {
   return withTtl("pinned-posts", 30_000, () =>
     prisma.post.findMany({
       where: {
-        OR: [
-          { pinned: true },
-          { selfPinnedAt: { gte: new Date(Date.now() - SELF_PIN_DURATION_MS) } },
+        AND: [
+          publishedCondition(),
+          {
+            OR: [
+              { pinned: true },
+              { selfPinnedAt: { gte: new Date(Date.now() - SELF_PIN_DURATION_MS) } },
+            ],
+          },
         ],
       },
       orderBy: { updatedAt: "desc" },
@@ -89,7 +117,7 @@ export function getCategoryCountsCached() {
   return withTtl("category-counts", 5 * MINUTE, () =>
     prisma.category.findMany({
       include: {
-        _count: { select: { posts: true } },
+        _count: { select: { posts: { where: publishedCondition() } } },
       },
     })
   )

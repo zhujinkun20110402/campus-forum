@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import { ActiveUsers } from "@/components/home/active-users"
 import { FeedLoader } from "@/components/home/feed-loader"
+import { HonorWall } from "@/components/home/honor-wall"
 import { PinnedPosts } from "@/components/home/pinned-posts"
 import { TrendingPosts } from "@/components/home/trending-posts"
 import { CampusStatusMiniBoard } from "@/components/presence/campus-status-mini-board"
@@ -41,6 +42,7 @@ import {
 } from "@/lib/cacheable-queries"
 import { getVisibleCampusStatuses } from "@/lib/campus-status"
 import { getCheckInStatus } from "@/lib/daily-check-in"
+import { publishedCondition } from "@/lib/post-visibility"
 import { cn } from "@/lib/utils"
 
 interface CategoryEntry {
@@ -397,9 +399,14 @@ async function HomeContent({ userId, feedMode }: { userId: string; feedMode: "la
   const [pinnedPosts, posts, trendingPosts, activeUsers, categoryCounts, checkInStatus, campusStatuses] = await Promise.all([
     getPinnedPostsCached(),
     prisma.post.findMany({
-      where: feedMode === "following"
-        ? { author: { followers: { some: { followerId: userId } } } }
-        : { pinned: false },
+      where: {
+        AND: [
+          publishedCondition(),
+          feedMode === "following"
+            ? { author: { followers: { some: { followerId: userId } } } }
+            : { pinned: false },
+        ],
+      },
       take: 12,
       orderBy: { createdAt: "desc" },
       include: {
@@ -499,6 +506,11 @@ async function HomeContent({ userId, feedMode }: { userId: string; feedMode: "la
               </ScrollReveal>
               <ScrollReveal direction="left" className="hidden lg:block">
                 <TrendingPosts posts={trendingPosts} />
+              </ScrollReveal>
+              <ScrollReveal direction="left" delay={0.06} className="hidden lg:block">
+                <Suspense fallback={null}>
+                  <HonorWall />
+                </Suspense>
               </ScrollReveal>
               <ScrollReveal direction="left" delay={0.08} className="hidden lg:block">
                 <ActiveUsers users={activeUsers} />

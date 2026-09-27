@@ -15,7 +15,16 @@ import { createUserWithInvite } from "@/lib/invitations"
 import { NOTIFICATION_TYPES } from "@/lib/notifications"
 import { awardRelationshipXp } from "@/lib/relationship-actions"
 import { requireUser } from "@/lib/session"
-import { getBalances } from "@/lib/reputation-milestones"
+import { getBalances, getFeatureRep, hasFeature } from "@/lib/reputation-milestones"
+import { MIN_SCHEDULE_AHEAD_MS, publishedCondition } from "@/lib/post-visibility"
+import { POLL_MAX_OPTIONS, POLL_MIN_OPTIONS, POLL_OPTION_MAX_LENGTH, buildPoll, type PollData } from "@/lib/poll"
+import { z } from "zod"
+import type { Prisma } from "@/generated/prisma/client"
+
+const pollOptionSchema = z
+  .array(z.string().trim().min(1).max(POLL_OPTION_MAX_LENGTH))
+  .min(POLL_MIN_OPTIONS)
+  .max(POLL_MAX_OPTIONS)
 
 async function checkBanned(userId: string) {
   const user = await prisma.user.findUnique({
@@ -106,23 +115,78 @@ export async function createPost(_prevState: unknown, formData: FormData) {
   // 检查是否今日首次发帖（在创建帖子之前检查）
   const isFirstPostToday = !(await hasPostedToday(session.user.id))
 
+  // 作者声望状态（匿名卡 / 投票帖 / 定时发布门槛共用）
+  const authorState = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { raputation: true, anonCardsUsedCount: true },
+  })
+  const authorRep = authorState?.raputation ?? 0
+
   // 匿名卡：非表白墙分类可匿名发布（消耗一张卡）
   const wantsAnonymous = formData.get("anonymous") === "1"
   let useAnonymous = false
   if (wantsAnonymous && category.slug !== "confession") {
-    const author = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { raputation: true, anonCardsUsedCount: true },
-    })
-    const balances = getBalances(author?.raputation ?? 0, session.user.id, {
+    const balances = getBalances(authorRep, session.user.id, {
       pinCards: 0,
-      anonCards: author?.anonCardsUsedCount ?? 0,
+      anonCards: authorState?.anonCardsUsedCount ?? 0,
       inviteQuota: 0,
     })
     if (balances.anonCards <= 0) {
       return { message: "没有可用的匿名卡" }
     }
     useAnonymous = true
+  }
+
+  // 投票帖（声望 1600 解锁）
+  let pollData: PollData | null = null
+  const pollRaw = String(formData.get("pollOptions") ?? "").trim()
+  if (pollRaw) {
+    if (!hasFeature(authorRep, "pollPost")) {
+      return { message: `声望达到 ${getFeatureRep("pollPost")} 才能发布投票帖` }
+    }
+    let texts: unknown
+    try {
+      texts = JSON.parse(pollRaw)
+    } catch {
+      return { message: "投票选项格式不正确" }
+    }
+    const parsed = pollOptionSchema.safeParse(texts)
+    if (!parsed.success) {
+      return {
+        message: `投票需要 ${POLL_MIN_OPTIONS}-${POLL_MAX_OPTIONS} 个选项，每项不超过 ${POLL_OPTION_MAX_LENGTH} 字`,
+      }
+    }
+    pollData = buildPoll(parsed.data)
+  }
+
+  // 定时发布（声望 4400 解锁）
+  let publishAt: Date | null = null
+  const publishRaw = String(formData.get("publishAt") ?? "").trim()
+  if (publishRaw) {
+    if (!hasFeature(authorRep, "scheduledPost")) {
+      return { message: `声望达到 ${getFeatureRep("scheduledPost")} 才能使用定时发布` }
+    }
+    const scheduled = new Date(publishRaw)
+    if (Number.isNaN(scheduled.getTime())) {
+      return { message: "定时发布时间格式不正确" }
+    }
+    if (scheduled.getTime() < Date.now() + MIN_SCHEDULE_AHEAD_MS) {
+      return { message: "定时发布时间至少要在 5 分钟之后" }
+    }
+    publishAt = scheduled
+  }
+
+  // 话题挑战参与
+  let challengeId: string | null = null
+  const challengeRaw = String(formData.get("challengeId") ?? "").trim()
+  if (challengeRaw) {
+    const challenge = await prisma.topicChallenge.findUnique({
+      where: { id: challengeRaw },
+      select: { id: true, endsAt: true },
+    })
+    if (!challenge) return { message: "话题挑战不存在" }
+    if (challenge.endsAt.getTime() <= Date.now()) return { message: "该话题挑战已经结束了" }
+    challengeId = challenge.id
   }
 
   const post = await prisma.post.create({
@@ -132,6 +196,9 @@ export async function createPost(_prevState: unknown, formData: FormData) {
       authorId: session.user.id,
       categoryId,
       anonymous: useAnonymous,
+      poll: pollData ? (pollData as unknown as Prisma.InputJsonValue) : undefined,
+      publishAt,
+      challengeId,
     },
   })
 
@@ -147,6 +214,7 @@ export async function createPost(_prevState: unknown, formData: FormData) {
   await adjustRaputation(session.user.id, repDelta)
 
   revalidatePath("/")
+  if (challengeId) revalidatePath(`/challenges/${challengeId}`)
   if (category.slug === "confession") {
     redirect("/confession")
   }
@@ -471,9 +539,14 @@ export async function getMorePosts(page: number, pageSize = 12, feed: "latest" |
   const user = await requireUser("/")
 
   const posts = await prisma.post.findMany({
-    where: feed === "following"
-      ? { author: { followers: { some: { followerId: user.id } } } }
-      : { pinned: false },
+    where: {
+      AND: [
+        publishedCondition(),
+        feed === "following"
+          ? { author: { followers: { some: { followerId: user.id } } } }
+          : { pinned: false },
+      ],
+    },
     skip: page * pageSize,
     take: pageSize,
     orderBy: { createdAt: "desc" },
@@ -499,7 +572,7 @@ export async function getTrendingPosts() {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
   const posts = await prisma.post.findMany({
-    where: { createdAt: { gte: sevenDaysAgo } },
+    where: { AND: [publishedCondition(), { createdAt: { gte: sevenDaysAgo } }] },
     orderBy: [
       { likes: { _count: "desc" } },
       { comments: { _count: "desc" } },
@@ -524,7 +597,7 @@ export async function getPinnedPosts() {
   await requireUser("/")
 
   const posts = await prisma.post.findMany({
-    where: { pinned: true },
+    where: { AND: [publishedCondition(), { pinned: true }] },
     orderBy: { updatedAt: "desc" },
     include: {
       author: {

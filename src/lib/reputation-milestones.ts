@@ -351,6 +351,18 @@ export function getUnlockedFeatures(rep: number, userId: string, used: GrantedTo
   return features
 }
 
+/** 某个功能对应的声望门槛（未配置返回 null） */
+export function getFeatureRep(key: FeatureKey): number | null {
+  const milestone = MILESTONES.find((node) => node.feature === key)
+  return milestone ? milestone.rep : null
+}
+
+/** 是否已解锁某功能（仅看声望门槛；匿名卡等消耗品另有余额判断） */
+export function hasFeature(rep: number, key: FeatureKey): boolean {
+  const threshold = getFeatureRep(key)
+  return threshold !== null && rep >= threshold
+}
+
 /** 某节点是否已达成 */
 export function isMilestoneReached(rep: number, milestone: MilestoneNode): boolean {
   return rep >= milestone.rep

@@ -4,6 +4,8 @@ import { ArchiveTrailEvidence } from "@/components/about/archive-trail-evidence"
 import { UserResultCard } from "@/components/social/user-result-card"
 import { EditorialHeading, EditorialHero, EditorialPanel } from "@/components/ui/editorial"
 import { prisma } from "@/lib/prisma"
+import type { Prisma } from "@/generated/prisma/client"
+import { publishedCondition } from "@/lib/post-visibility"
 import { requireUser } from "@/lib/session"
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
@@ -13,17 +15,18 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   // 多关键词支持：空格分隔，全部命中（AND）才返回；最多取 5 个词
   const terms = query.split(/\s+/).map((term) => term.trim()).filter(Boolean).slice(0, 5)
+  const termFilters: Prisma.PostWhereInput[] = terms.map((term) => ({
+    OR: [
+      { title: { contains: term, mode: "insensitive" } },
+      { content: { contains: term, mode: "insensitive" } },
+    ],
+  }))
 
   const [postCandidates, userCandidates] = terms.length
     ? await Promise.all([
         prisma.post.findMany({
           where: {
-            AND: terms.map((term) => ({
-              OR: [
-                { title: { contains: term, mode: "insensitive" } },
-                { content: { contains: term, mode: "insensitive" } },
-              ],
-            })),
+            AND: [publishedCondition(), ...termFilters],
           },
           take: 60,
           orderBy: { createdAt: "desc" },

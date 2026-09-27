@@ -31,6 +31,7 @@ import { ProfileStatus } from "@/components/presence/profile-status"
 import { EditorialHeading, EditorialPanel } from "@/components/ui/editorial"
 import { SafeImage } from "@/components/ui/safe-image"
 import { prisma } from "@/lib/prisma"
+import { publishedCondition } from "@/lib/post-visibility"
 import { cn, formatDate, formatRelativeTime } from "@/lib/utils"
 import { requireUser } from "@/lib/session"
 import { getSuccessfulInviteCount } from "@/lib/invitations"
@@ -73,7 +74,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     getVisibleCampusStatusByUser(currentUser.id, id),
     getReputationGiftState(currentUser.id),
     prisma.post.findMany({
-      where: { authorId: id, category: { slug: { not: "confession" } } },
+      where: {
+        AND: [publishedCondition(), { authorId: id, category: { slug: { not: "confession" } } }],
+      },
       include: { category: true, _count: { select: { comments: true, likes: true } } },
       orderBy: { createdAt: "desc" },
       take: 10,

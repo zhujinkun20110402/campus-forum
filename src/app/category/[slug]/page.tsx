@@ -18,6 +18,7 @@ import { ArchiveTrailEvidence } from "@/components/about/archive-trail-evidence"
 import { PostList } from "@/components/post/post-list"
 import { EditorialHeading, EditorialHero, EditorialPanel } from "@/components/ui/editorial"
 import { prisma } from "@/lib/prisma"
+import { publishedCondition } from "@/lib/post-visibility"
 import { requireUser } from "@/lib/session"
 
 const categoryConfig: Record<string, {
@@ -47,6 +48,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     where: { slug },
     include: {
       posts: {
+        where: publishedCondition(),
         take: 20,
         orderBy: { createdAt: "desc" },
         include: {

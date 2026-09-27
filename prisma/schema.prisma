@@ -57,6 +57,8 @@ model User {
   receivedRelationRequests RelationshipRequest[] @relation("RelationshipRequestTo")
   madeReports           Report[]               @relation("ReportReporter")
   handledReports        Report[]               @relation("ReportHandledBy")
+  pollVotes             PollVote[]
+  createdChallenges     TopicChallenge[]       @relation("ChallengeCreator")
 }
 
 model InviteCode {
@@ -122,6 +124,9 @@ model Post {
   anonymous    Boolean   @default(false)
   editedAt     DateTime?
   selfPinnedAt DateTime?
+  poll         Json?
+  publishAt    DateTime?
+  challengeId  String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -130,6 +135,41 @@ model Post {
   comments      Comment[]
   likes         Like[]
   notifications Notification[]
+  pollVotes     PollVote[]
+  challenge     TopicChallenge? @relation(fields: [challengeId], references: [id], onDelete: SetNull)
+
+  @@index([publishAt])
+  @@index([challengeId])
+}
+
+/** 投票帖选项投票记录：每个用户对每个帖子只能投一次 */
+model PollVote {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  optionId  String   @db.VarChar(32)
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+}
+
+/** 话题挑战：高声望用户可发起，帖子可参与 */
+model TopicChallenge {
+  id          String   @id @default(cuid())
+  title       String   @db.VarChar(60)
+  description String?  @db.VarChar(200)
+  createdById String
+  endsAt      DateTime
+  createdAt   DateTime @default(now())
+
+  createdBy User   @relation("ChallengeCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  posts     Post[]
+
+  @@index([endsAt])
 }
 
 model Comment {

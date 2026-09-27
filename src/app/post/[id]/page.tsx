@@ -15,6 +15,8 @@ import { LikeButton } from "@/components/post/like-button"
 import { LightboxImage, PostImageLightbox } from "@/components/post/post-image-lightbox"
 import { PinButton } from "@/components/post/pin-button"
 import { PinCardButton } from "@/components/post/pin-card-button"
+import { PollBlock } from "@/components/post/poll-block"
+import { PublishNowButton } from "@/components/post/publish-now-button"
 import { ShareButton } from "@/components/post/share-button"
 import { ReportButton } from "@/components/report/report-button"
 import { LevelBadge } from "@/components/reputation/level-badge"
@@ -22,7 +24,9 @@ import { EditorialHeading, EditorialPanel } from "@/components/ui/editorial"
 import { UserAvatar } from "@/components/user/user-avatar"
 import { prisma } from "@/lib/prisma"
 import { isSelfPinnedActive } from "@/lib/reputation-milestones"
-import { cn, formatRelativeTime } from "@/lib/utils"
+import { isScheduledPending } from "@/lib/post-visibility"
+import { parsePoll } from "@/lib/poll"
+import { cn, formatDate, formatRelativeTime } from "@/lib/utils"
 import { requireUser } from "@/lib/session"
 
 const categoryStyles: Record<string, string> = {
@@ -43,6 +47,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
     include: {
       author: { select: { id: true, name: true, image: true, role: true, raputation: true } },
       category: { select: { name: true, slug: true } },
+      challenge: { select: { id: true, title: true, endsAt: true } },
       comments: {
         orderBy: { createdAt: "asc" },
         include: {
@@ -63,6 +68,30 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
   const hideAuthorIdentity = isConfession || post.anonymous
   const selfPinnedActive = isSelfPinnedActive(post.selfPinnedAt)
   const pinned = post.pinned || selfPinnedActive
+
+  // 定时发布：未到时间只有作者与管理员可见
+  const scheduledPending = isScheduledPending(post.publishAt)
+  if (scheduledPending && !isAuthor && !isAdmin) notFound()
+
+  // 投票帖：统计各选项票数与本人投票
+  const poll = parsePoll(post.poll)
+  const [pollCounts, myVote] = poll
+    ? await Promise.all([
+        prisma.pollVote.groupBy({
+          by: ["optionId"],
+          where: { postId: post.id },
+          _count: { _all: true },
+        }),
+        prisma.pollVote.findUnique({
+          where: { postId_userId: { postId: post.id, userId: currentUser.id } },
+          select: { optionId: true },
+        }),
+      ])
+    : [[], null]
+  const pollCountMap: Record<string, number> = {}
+  for (const row of pollCounts) {
+    pollCountMap[row.optionId] = row._count._all
+  }
 
   // 表白墙帖子的评论区同样匿名化：抹除评论者真实身份（保留 id 用于区分“我”）
   if (isConfession) {
@@ -99,7 +128,28 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                 </span>
               )}
               {pinned && <span className="border border-[#191914] bg-[#f3c84b] px-2 py-1 font-mono text-[8px] font-bold text-[#191914] dark:border-[#f5f0e5]">PINNED</span>}
+              {post.challenge && (
+                <Link
+                  href={`/challenges/${post.challenge.id}`}
+                  className="border-2 border-[#191914] bg-[#c8d7ef] px-3 py-1.5 font-mono text-[9px] font-bold tracking-[0.1em] text-[#191914] dark:border-[#f5f0e5]"
+                >
+                  挑战 · {post.challenge.title}
+                </Link>
+              )}
             </div>
+
+            {scheduledPending && (
+              <div className="mt-6 flex flex-wrap items-center gap-3 border-2 border-dashed border-[#e4532f] bg-[#ffb4aa]/25 px-4 py-3">
+                <Clock className="h-4 w-4 shrink-0 text-[#e4532f]" />
+                <p className="min-w-0 flex-1 text-sm font-bold">
+                  定时发布中 · 将于 {formatDate(post.publishAt!)} 对其他同学可见
+                  <span className="ml-2 font-mono text-[9px] font-medium tracking-[0.1em] text-[#777268] dark:text-[#989389]">
+                    ONLY YOU CAN SEE THIS
+                  </span>
+                </p>
+                {isAuthor && <PublishNowButton postId={post.id} />}
+              </div>
+            )}
 
             <h1 className="mt-6 max-w-4xl font-serif text-4xl font-bold leading-[1.12] tracking-[-0.045em] text-[#191914] dark:text-[#f5f0e5] sm:text-5xl lg:text-6xl">
               {post.title}
@@ -136,6 +186,15 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
                   {preprocessLatex(post.content)}
                 </ReactMarkdown>
               </article>
+
+              {poll && (
+                <PollBlock
+                  postId={post.id}
+                  options={poll.options}
+                  counts={pollCountMap}
+                  myVote={myVote?.optionId ?? null}
+                />
+              )}
 
               <div className="mt-10 flex flex-wrap items-center gap-2 border-t-2 border-[#191914] pt-6 dark:border-[#f5f0e5]">
                 <LikeButton postId={post.id} likeCount={post._count.likes} isLiked={post.likes.some((like) => like.userId === currentUser.id)} />

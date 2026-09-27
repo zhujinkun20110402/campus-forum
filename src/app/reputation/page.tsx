@@ -116,6 +116,24 @@ export default async function ReputationPage() {
               ))}
             </div>
 
+            <div className="mt-5 flex flex-wrap gap-2">
+              {[
+                { href: "/post/new", label: "发帖（投票 / 定时）" },
+                { href: "/challenges", label: "话题挑战" },
+                { href: "/profile/settings", label: "称号与主页主题" },
+                { href: "/invites", label: "邀请额度" },
+                { href: "/", label: "首页荣誉墙" },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="border border-[#191914]/40 px-2.5 py-1.5 font-mono text-[9px] font-bold tracking-[0.1em] text-[#191914] transition-colors hover:border-[#191914] hover:bg-[#f3c84b] dark:border-white/40 dark:text-[#f5f0e5] dark:hover:border-white dark:hover:text-[#191914]"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
             <p className="mt-5 text-xs leading-relaxed text-[#777268] dark:text-[#989389]">
               下一个节点：{nextMilestone ? (
                 <>

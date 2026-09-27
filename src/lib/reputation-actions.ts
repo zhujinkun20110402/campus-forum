@@ -135,6 +135,27 @@ export async function mintReputationInviteCode() {
   return { success: true as const, code: codes[0] }
 }
 
+/** 定时发布中的帖子：作者立即发布 */
+export async function publishScheduledPost(postId: string) {
+  const user = await getUserRepState()
+  if (user.role === "BANNED") return { message: "账号已被封禁" }
+
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { id: true, authorId: true, publishAt: true, category: { select: { slug: true } } },
+  })
+  if (!post) return { message: "帖子不存在" }
+  if (post.authorId !== user.id) return { message: "只能发布自己的帖子" }
+  if (!post.publishAt) return { message: "这篇帖子不是定时发布" }
+
+  await prisma.post.update({ where: { id: postId }, data: { publishAt: null } })
+
+  revalidatePath("/")
+  revalidatePath(`/post/${postId}`)
+  revalidatePath(`/category/${post.category.slug}`)
+  return { success: true as const }
+}
+
 /** 装备 / 卸下称号（传空 titleId 表示卸下） */
 export async function equipTitle(formData: FormData) {
   const user = await getUserRepState()

@@ -21,6 +21,7 @@ const footerLinks = [
       { href: "/search", label: "搜索帖子与成员" },
       { href: "/leaderboard", label: "声望排行榜" },
       { href: "/reputation", label: "声望之路" },
+      { href: "/challenges", label: "话题挑战" },
       { href: "/status", label: "今日在场" },
       { href: "/postcards", label: "校园明信片" },
       { href: "/post/new", label: "发布新帖" },
